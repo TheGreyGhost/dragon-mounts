@@ -39,20 +39,20 @@ public class DragonLookHelper extends EntityLookHelper
      * Sets position to look at using entity
      */
     @Override
-    public void setLookPositionWithEntity(Entity p_75651_1_, float p_75651_2_, float p_75651_3_)
+    public void setLookPositionWithEntity(Entity entityToLookAt, float p_75651_2_, float p_75651_3_)
     {
-      this.posX = p_75651_1_.posX;
+      this.posX = entityToLookAt.posX;
 
-      if (p_75651_1_ instanceof EntityLivingBase)
+      if (entityToLookAt instanceof EntityLivingBase)
       {
-        this.posY = p_75651_1_.posY + (double)p_75651_1_.getEyeHeight();
+        this.posY = entityToLookAt.posY + (double)entityToLookAt.getEyeHeight();
       }
       else
       {
-        this.posY = (p_75651_1_.getEntityBoundingBox().minY + p_75651_1_.getEntityBoundingBox().maxY) / 2.0D;
+        this.posY = (entityToLookAt.getEntityBoundingBox().minY + entityToLookAt.getEntityBoundingBox().maxY) / 2.0D;
       }
 
-      this.posZ = p_75651_1_.posZ;
+      this.posZ = entityToLookAt.posZ;
       this.deltaLookYaw = p_75651_2_;
       this.deltaLookPitch = p_75651_3_;
       this.isLooking = true;
@@ -62,11 +62,11 @@ public class DragonLookHelper extends EntityLookHelper
      * Sets position to look at
      */
     @Override
-    public void setLookPosition(double p_75650_1_, double p_75650_3_, double p_75650_5_, float p_75650_7_, float p_75650_8_)
+    public void setLookPosition(double targetXPos, double targetYpos, double targetZpos, float p_75650_7_, float p_75650_8_)
     {
-      this.posX = p_75650_1_;
-      this.posY = p_75650_3_;
-      this.posZ = p_75650_5_;
+      this.posX = targetXPos;
+      this.posY = targetYpos;
+      this.posZ = targetZpos;
       this.deltaLookYaw = p_75650_7_;
       this.deltaLookPitch = p_75650_8_;
       this.isLooking = true;
@@ -84,17 +84,16 @@ public class DragonLookHelper extends EntityLookHelper
 
       this.entity.rotationPitch = 0.0F;
 
-      if (this.isLooking)
-      {
+      if (this.isLooking) {
         this.isLooking = false;
-        double d0 = this.posX - this.entity.posX;
-        double d1 = this.posY - (this.entity.posY + (double)this.entity.getEyeHeight());
-        double d2 = this.posZ - this.entity.posZ;
-        double d3 = (double)MathHelper.sqrt_double(d0 * d0 + d2 * d2);
-        float f = (float)(Math.atan2(d2, d0) * 180.0D / Math.PI) - 90.0F;
-        float f1 = (float)(-(Math.atan2(d1, d3) * 180.0D / Math.PI));
-        this.entity.rotationPitch = this.updateRotation(this.entity.rotationPitch, f1, this.deltaLookPitch);
-        this.entity.rotationYawHead = this.updateRotation(this.entity.rotationYawHead, f, this.deltaLookYaw);
+        double deltaX = this.posX - this.entity.posX;
+        double deltaY = this.posY - (this.entity.posY + (double)this.entity.getEyeHeight());
+        double deltaZ = this.posZ - this.entity.posZ;
+        double projectionOntoXZ = (double)MathHelper.sqrt_double(deltaX * deltaX + deltaZ * deltaZ);
+        float yaw = (float)(Math.atan2(deltaZ, deltaX) * 180.0D / Math.PI) - 90.0F;
+        float pitch = (float)(-(Math.atan2(deltaY, projectionOntoXZ) * 180.0D / Math.PI));
+        this.entity.rotationPitch = this.updateRotation(this.entity.rotationPitch, pitch, this.deltaLookPitch);
+        this.entity.rotationYawHead = this.updateRotation(this.entity.rotationYawHead, yaw, this.deltaLookYaw);
         lookRotationYawHead = Float.toString(this.entity.rotationYawHead);
       }
       else
