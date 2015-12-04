@@ -57,6 +57,8 @@ public class RotatingQuad
       newU[i] = u[(i + numberOf90Rotations) % 4];
       newV[i] = v[(i + numberOf90Rotations) % 4];
     }
+    u = newU;
+    v = newV;
   }
 
   private double [] u = new double[4];

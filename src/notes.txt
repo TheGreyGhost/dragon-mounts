@@ -1,3 +1,37 @@
+High-level description of breath weapon code
+There is minimal communication between the client and the server.
+
+Client sends the current target (eg entityID) to the server, which keeps track of all players' targets and sends them to other clients (via DataWatcher on the corresponding dragon entity) when the dragon starts breathing. That's the only network traffic related to the breath weapon, i.e. ranging from ten bytes per second to a few hundred bytes per second.
+
+The spawning of EntityFX on the client is done locally based on the DataWatcher target.
+The collision calculations between the breath weapon and nearby blocks+entities are done by the server and the results (damage etc) are synchronised to the clients by vanilla; but there is no Entity or EntityFX information exchanged between the two. The collision calculations themselves have a couple of basic optimisations to speed them up.
+
+Briefly how it works:
+On client:
+DragonOrbControl monitors user input and sends a DragonTargetMessage to the server when the player's target has changed.
+
+On server:
+Receives DragonTargetMessage, caches the corresponding BreathWeaponTarget locally (in DragonOrbTargets)
+
+DragonBreathHelper then uses AI to move the dragon to an appropriate range and to start breathing when ready - the breathing target is sent to nearby clients using a DataWatcher on the dragon.
+
+Back on client:
+DragonBreathHelper for each each dragon retrieves the current target from the DataWatcher, then spawns the breath using
+BreathWeaponEmitter, which creates a stream of FlameBreathFX for rendering & collision, each with a corresponding BreathNode to model the size, aging, power etc of each FlameBreathFX.
+
+Meanwhile on the server, the effects of the breath weapon are modelled by creating a stream of EntityBreathNodes with corresponding BreathNodes, similar to the client. (The EntityBreathNodes are not spawned, just stored in a collection). Collision detection is performed between the EntityBreathNodes and the blocks and nearby entities - once a block or entity has suffered enough collisions with nodes, it takes damage / gets smelted / etc.
+The main classes modelling this are DragonBreathHelper, BreathWeapon, BreathNode, EntityBreathNode, BreathAffectedBlock/Entity
+The collision detection is in BreathAffectedArea and NodeLineSegment.
+
+Adding new types of breath is intended to be done by overriding
+BreathWeapon,
+BreathWeaponEmitter, with different equivalents for FlameBreathFX.
+BreathNode
+but not all the classes implement this fully yet (for example, BreathAffectedArea will need to use BreathWeapon to spawn BreathNodes with the correct speed and size; BreathNode is currently hard-coded values).
+
+Pretty much all the other changes to the code are related to making sure the breath weapon nodes spawn from the dragon's mouth - which is affected by yaw and pitch and size etc - so I moved the positioning code into a common class for both server and client. That was pretty fiddly to get right.
+
+
 Still to do:
 - document code structure
 OK strip out debugging
