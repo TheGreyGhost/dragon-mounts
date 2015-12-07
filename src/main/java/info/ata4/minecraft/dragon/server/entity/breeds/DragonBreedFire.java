@@ -9,7 +9,11 @@
  */
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterFire;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeaponFire;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -45,4 +49,23 @@ public class DragonBreedFire extends DragonBreed {
     public void onDisable(EntityTameableDragon dragon) {
       dragon.setDragonAvoidWater(false);
     }
+
+    /** return a new fire breathweapon FX emitter
+     * @return
+     */
+    @Override
+    public BreathWeaponFXEmitter getBreathWeaponFXEmitter(EntityTameableDragon dragon)
+    {
+        return new BreathWeaponFXEmitterFire();
+    }
+
+    /** return a new BreathWeapon based on breed
+     * @return
+     */
+    @Override
+    public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
+    {
+        return new BreathWeaponFire(dragon);
+    }
+
 }

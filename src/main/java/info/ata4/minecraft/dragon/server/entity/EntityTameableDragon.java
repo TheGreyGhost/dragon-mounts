@@ -118,7 +118,7 @@ public class EntityTameableDragon extends EntityFlyingTameable {
         addHelper(new DragonLifeStageHelper(this, INDEX_TICKS_SINCE_CREATION));
         addHelper(new DragonReproductionHelper(this, INDEX_BREEDER, INDEX_REPRO_COUNT));
         addHelper(new DragonParticleHelper(this));
-        addHelper(new DragonBreathHelper(this, INDEX_BREATH_WEAPON));
+//        addHelper(new DragonBreathHelper(this, INDEX_BREATH_WEAPON)); // todo remove.  Need lazy initialisation
 
         if (DragonMounts.instance.getConfig().isDebug()) {
             addHelper(new DragonDebug(this));
@@ -719,7 +719,17 @@ public class EntityTameableDragon extends EntityFlyingTameable {
     }
 
     public DragonBreathHelper getBreathHelper() {
-        return getHelper(DragonBreathHelper.class);
+      if (isEgg()) {  // can't breathe yet; makes no sense to ask for BreathHelper.  Breed may still change,
+        throw new IllegalStateException("Asked for DragonBreathHelper but dragon is still egg stage");
+      }
+
+      DragonBreathHelper dragonHelper = getHelper(DragonBreathHelper.class);
+      if (dragonHelper == null) { // lazy initialisation
+          dragonHelper = new DragonBreathHelper(this, INDEX_BREATH_WEAPON);
+        addHelper(dragonHelper);
+      }
+
+        return dragonHelper;
     }
 
     public boolean getBooleanData(int index) {

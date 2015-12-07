@@ -10,7 +10,9 @@
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
 import info.ata4.minecraft.dragon.DragonMounts;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.util.DamageSource;
@@ -24,7 +26,7 @@ import java.util.Set;
  * 
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  */
-public class DragonBreed {
+public abstract class DragonBreed {
     
     private final String name;
     private final String skin;
@@ -144,5 +146,21 @@ public class DragonBreed {
     public int getNumberOfTailSegments() {return 12;}
 
     public int getNumberOfWingFingers() {return 4;}
+
+    /** return a new Breath Weapon FX Emitter based on breed
+     * @return
+     */
+    public  BreathWeaponFXEmitter getBreathWeaponFXEmitter(EntityTameableDragon dragon)  // todo later: abstract
+    {
+      throw new UnsupportedOperationException();
+    }
+
+    /** return a new BreathWeapon based on breed
+     * @return
+     */
+    public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)               // todo later: abstract
+    {
+        throw new UnsupportedOperationException();
+    }
 
 }

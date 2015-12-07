@@ -321,34 +321,36 @@ public class DragonAnimatorCommon {
         sitVal *= 0.95f;
         sitTimer.set(sitVal);
 
-        // update bite opening transition and breath transitions
-        DragonBreathHelper.BreathState breathState = entity.getBreathHelper().getCurrentBreathState();
-        switch (breathState) {
-            case IDLE: {  // breath is idle, handle bite attack
-                int ticksSinceLastAttack = entity.getTicksSinceLastAttack();
-                final int JAW_OPENING_TIME_FOR_ATTACK = 5;
-                boolean jawFlag = (ticksSinceLastAttack >= 0 && ticksSinceLastAttack < JAW_OPENING_TIME_FOR_ATTACK);
-                biteTimer.add(jawFlag ? 0.2f : -0.2f);
-                breathTimer.set(0.0F);
-                break;
-            }
-            case STARTING: {
-                biteTimer.set(0.0F);
-                breathTimer.set(entity.getBreathHelper().getBreathStateFractionComplete());
-                break;
-            }
-            case STOPPING: {
-                float breathStateFractionComplete = entity.getBreathHelper().getBreathStateFractionComplete();
-                breathTimer.set(1.0F - breathStateFractionComplete);
-                break;
-            }
-            case SUSTAIN: {
-                breathTimer.set(1.0F);
-                break;
-            }
-            default: {
-                System.err.println("unexpected breathstate:" + breathState);
-                return;
+        if (!entity.isEgg()) {
+            // update bite opening transition and breath transitions
+            DragonBreathHelper.BreathState breathState = entity.getBreathHelper().getCurrentBreathState();
+            switch (breathState) {
+                case IDLE: {  // breath is idle, handle bite attack
+                    int ticksSinceLastAttack = entity.getTicksSinceLastAttack();
+                    final int JAW_OPENING_TIME_FOR_ATTACK = 5;
+                    boolean jawFlag = (ticksSinceLastAttack >= 0 && ticksSinceLastAttack < JAW_OPENING_TIME_FOR_ATTACK);
+                    biteTimer.add(jawFlag ? 0.2f : -0.2f);
+                    breathTimer.set(0.0F);
+                    break;
+                }
+                case STARTING: {
+                    biteTimer.set(0.0F);
+                    breathTimer.set(entity.getBreathHelper().getBreathStateFractionComplete());
+                    break;
+                }
+                case STOPPING: {
+                    float breathStateFractionComplete = entity.getBreathHelper().getBreathStateFractionComplete();
+                    breathTimer.set(1.0F - breathStateFractionComplete);
+                    break;
+                }
+                case SUSTAIN: {
+                    breathTimer.set(1.0F);
+                    break;
+                }
+                default: {
+                    System.err.println("unexpected breathstate:" + breathState);
+                    return;
+                }
             }
         }
 

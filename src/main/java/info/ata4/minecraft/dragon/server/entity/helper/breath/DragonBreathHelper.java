@@ -1,6 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
-import info.ata4.minecraft.dragon.client.render.BreathWeaponEmitter;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.client.sound.SoundController;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeapon;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
@@ -49,10 +49,12 @@ public class DragonBreathHelper extends DragonHelper
     DATA_WATCHER_BREATH_TARGET = dataWatcherIndexBreathTarget;
     dataWatcher.addObject(DATA_WATCHER_BREATH_TARGET, "");
     if (dragon.isClient()) {
-      breathWeaponEmitter = new BreathWeaponEmitter();
+      breathWeaponFXEmitter = dragon.getBreed().getBreathWeaponFXEmitter(dragon);
     }
-    breathAffectedArea = new BreathAffectedArea(new BreathWeapon(dragon));
+    BreathWeapon breathWeapon = dragon.getBreed().getBreathWeapon(dragon);
+    breathAffectedArea = new BreathAffectedArea(breathWeapon);
   }
+
   public enum  BreathState {
     IDLE, STARTING, SUSTAIN, STOPPING
     }
@@ -242,9 +244,9 @@ public class DragonBreathHelper extends DragonHelper
       Vec3 origin = dragon.getAnimator().getThroatPosition();
       Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
       if (destination != null && currentBreathState == BreathState.SUSTAIN) {
-        breathWeaponEmitter.setBeamEndpoints(origin, destination);
+        breathWeaponFXEmitter.setBeamEndpoints(origin, destination);
         BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
-        breathWeaponEmitter.spawnBreathParticles(dragon.getEntityWorld(), power, tickCounter);
+        breathWeaponFXEmitter.spawnBreathParticles(dragon.getEntityWorld(), power, tickCounter);
       }
     }
 
@@ -310,7 +312,7 @@ public class DragonBreathHelper extends DragonHelper
   private BreathWeaponTarget lastBreathTargetSent = null;   // server: the last target sent to the client thru DataWatcher
   private BreathState currentBreathState = BreathState.IDLE;
   private int transitionStartTick;
-  private BreathWeaponEmitter breathWeaponEmitter = null;
+  private BreathWeaponFXEmitter breathWeaponFXEmitter = null;
   private int tickCounter = 0;
   private BreathWeaponTarget breathWeaponTarget;
 

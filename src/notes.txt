@@ -33,11 +33,11 @@ Pretty much all the other changes to the code are related to making sure the bre
 
 
 Still to do:
-- document code structure
+OK document code structure
 OK strip out debugging
 OK sound of flame
 OK dragon sounds roar juvenile
-- test with built version; dedicated server version
+OK test with built version; dedicated server version
 OK- breath effect on entities
 OK- breath effect on blocks
 OK- dragon should not burn itself
@@ -59,6 +59,38 @@ OK visual targeting indication
 OK breath immunity for player holding orb? for rider
 - add flying motion vector to breath vector?
 - aiming is awkward when riding the dragon.
+- make dragon partially transparent when being ridden
+- bug fix: dragon doesn't swim
+- bug fix: dragon disappears when still inside field of view
+
+---------------
+BreathWeapon types:
+Air-
+Gusts of strong wind to buffet mobs and shred scenery (make it fly away?)
+
+Ender-
+Purple fireball as per Xbox version?
+
+Fire-
+Already done
+
+Forest-
+Acidic gas cloud green
+
+Ghost-
+Electricity
+
+Ice-
+Ice shards / similar to sleet in game
+
+Water
+Generates water - washes player with; generates water
+
+Nether
+Fireballs as per ghast
+
+
+----------
 
 ** have to exclude test sources in order to build properly - tests won't execute during build.
 

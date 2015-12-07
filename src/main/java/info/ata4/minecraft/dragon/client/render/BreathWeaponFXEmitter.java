@@ -2,6 +2,7 @@ package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.EntityFX;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
@@ -13,7 +14,8 @@ import net.minecraft.world.World;
  * (1) setBeamEndpoints() to set the current beam origin and destination
  * (2) spawnBreathParticles() to spawn the particles()
  */
-public class BreathWeaponEmitter {
+public abstract class BreathWeaponFXEmitter
+{
 
   protected Vec3 origin;
   protected Vec3 direction;
@@ -41,7 +43,18 @@ public class BreathWeaponEmitter {
    * @param power the strength of the beam
    * @param tickCount
    */
-  public void spawnBreathParticles(World world, BreathNode.Power power, int tickCount)
+  abstract public void spawnBreathParticles(World world, BreathNode.Power power, int tickCount);
+
+
+  /**
+   * Spawn a number of EntityFX, interpolating between the direction at the previous tick and the direction of the current tick
+   * Useful for breath weapons consisting of many particles, such as Fire.
+   * @param world
+   * @param power
+   * @param particlesPerTick number of particles to spawn
+   * @param tickCount running count of the number of ticks the game has performed
+   */
+  protected void spawnMultipleWithSmoothedDirection(World world, BreathNode.Power power, int particlesPerTick, int tickCount)
   {
     if (tickCount != previousTickCount + 1) {
       previousDirection = direction;
@@ -50,23 +63,20 @@ public class BreathWeaponEmitter {
       if (previousDirection == null) previousDirection = direction;
       if (previousOrigin == null) previousOrigin = origin;
     }
-    final int PARTICLES_PER_TICK = 4;
-    for (int i = 0; i < PARTICLES_PER_TICK; ++i) {
-      float partialTickHeadStart = i / (float)PARTICLES_PER_TICK;
+    for (int i = 0; i < particlesPerTick; ++i) {
+      float partialTickHeadStart = i / (float)particlesPerTick;
       Vec3 interpDirection = interpolateVec(previousDirection, direction, partialTickHeadStart);
       Vec3 interpOrigin = interpolateVec(previousOrigin, origin, partialTickHeadStart);
-      FlameBreathFX flameBreathFX = FlameBreathFX.createFlameBreathFX(world,
-              interpOrigin.xCoord, interpOrigin.yCoord, interpOrigin.zCoord,
-              interpDirection.xCoord, interpDirection.yCoord, interpDirection.zCoord,
-              power,
-              partialTickHeadStart);
-
-      Minecraft.getMinecraft().effectRenderer.addEffect(flameBreathFX);
+      EntityFX entityFX = createSingleParticle(world, interpOrigin, interpDirection, power, partialTickHeadStart);
+      Minecraft.getMinecraft().effectRenderer.addEffect(entityFX);
     }
     previousDirection = direction;
     previousOrigin = origin;
     previousTickCount = tickCount;
   }
+
+
+  protected abstract EntityFX createSingleParticle(World world, Vec3 origin, Vec3 direction, BreathNode.Power power, float partialTickHeadStart);
 
   /**
    * interpolate from vector 1 to vector 2 using fraction
