@@ -107,6 +107,8 @@ public class EntityTameableDragon extends EntityFlyingTameable {
 
         // enables walking over blocks
         stepHeight = 1;
+        this.ignoreFrustumCheck = true; // makes sure that dragon renders even when its bounding box (which encloses its body only) is out of view.
+
     }
 
     @Override

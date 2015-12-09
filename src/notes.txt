@@ -61,7 +61,7 @@ OK breath immunity for player holding orb? for rider
 - aiming is awkward when riding the dragon.
 - make dragon partially transparent when being ridden
 - bug fix: dragon doesn't swim
-- bug fix: dragon disappears when still inside field of view
+OK bug fix: dragon disappears when still inside field of view
 
 ---------------
 BreathWeapon types:

@@ -8,23 +8,23 @@ import net.minecraft.world.World;
 /**
  * Created by TGG on 7/12/2015.
  */
-public class BreathWeaponFXEmitterFire extends BreathWeaponFXEmitter
+public class BreathWeaponFXEmitterIce extends BreathWeaponFXEmitter
 {
   public void spawnBreathParticles(World world, BreathNode.Power power, int tickCount)
   {
-    final int FIRE_PARTICLES_PER_TICK = 4;
-    spawnMultipleWithSmoothedDirection(world, power, FIRE_PARTICLES_PER_TICK, tickCount);
+    final int ICE_PARTICLES_PER_TICK = 4;
+    spawnMultipleWithSmoothedDirection(world, power, ICE_PARTICLES_PER_TICK, tickCount);
   }
 
   @Override
   protected  EntityFX createSingleParticle(World world, Vec3 spawnOrigin, Vec3 spawnDirection, BreathNode.Power power, float partialTickHeadStart)
   {
-    BreathFXFire breathFXFire = BreathFXFire.createBreathFXFire(world,
+    BreathFXIce breathFXIce = BreathFXIce.createBreathFXIce(world,
             spawnOrigin.xCoord, spawnOrigin.yCoord, spawnOrigin.zCoord,
             spawnDirection.xCoord, spawnDirection.yCoord, spawnDirection.zCoord,
             power,
             partialTickHeadStart);
-    return breathFXFire;
+    return breathFXIce;
   }
 
 }

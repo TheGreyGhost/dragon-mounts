@@ -21,11 +21,11 @@ import java.util.Random;
  * EntityFX that makes up the flame breath weapon; client side.
  *
  * Usage:
- * (1) create a new FlameBreathFX using createFlameBreathFX
+ * (1) create a new BreathFXFire using createBreathFXIce
  * (2) spawn it as per normal
  *
  */
-public class FlameBreathFX extends EntityFX {
+public class BreathFXFire extends EntityFX {
   private final ResourceLocation fireballRL = new ResourceLocation("dragonmounts:entities/breath_fire");
 
   private final float SMOKE_CHANCE = 0.1f;
@@ -47,9 +47,9 @@ public class FlameBreathFX extends EntityFX {
    * @param power the power of the ball
    * @param partialTicksHeadStart if spawning multiple EntityFX per tick, use this parameter to spread the starting
    *                              location in the direction
-   * @return the new FlameBreathFX
+   * @return the new BreathFXFire
    */
-  public static FlameBreathFX createFlameBreathFX(World world, double x, double y, double z,
+  public static BreathFXFire createBreathFXFire(World world, double x, double y, double z,
                                                   double directionX, double directionY, double directionZ,
                                                   BreathNode.Power power,
                                                   float partialTicksHeadStart)
@@ -64,12 +64,12 @@ public class FlameBreathFX extends EntityFX {
     x += actualMotion.xCoord * partialTicksHeadStart;
     y += actualMotion.yCoord * partialTicksHeadStart;
     z += actualMotion.zCoord * partialTicksHeadStart;
-    FlameBreathFX newFlameBreathFX = new FlameBreathFX(world, x, y, z, actualMotion, breathNode);
-    return newFlameBreathFX;
+    BreathFXFire newBreathFXFire = new BreathFXFire(world, x, y, z, actualMotion, breathNode);
+    return newBreathFXFire;
   }
 
-  private FlameBreathFX(World world, double x, double y, double z, Vec3 motion,
-                        BreathNode i_breathNode) {
+  private BreathFXFire(World world, double x, double y, double z, Vec3 motion,
+                       BreathNode i_breathNode) {
     super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
 
     breathNode = i_breathNode;
@@ -99,7 +99,7 @@ public class FlameBreathFX extends EntityFX {
 
   // this function is used by EffectRenderer.addEffect() to determine whether depthmask writing should be on or not.
   // by default, vanilla turns off depthmask writing for entityFX with alphavalue less than 1.0
-  // FlameBreathFX uses alphablending but we want depthmask writing on, otherwise translucent objects (such as water)
+  // BreathFXFire uses alphablending but we want depthmask writing on, otherwise translucent objects (such as water)
   //   render over the top of our breath.
   @Override
   public float func_174838_j()

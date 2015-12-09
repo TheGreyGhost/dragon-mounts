@@ -15,5 +15,7 @@ public class TextureStitcherBreathFX
   public void stitcherEventPre(TextureStitchEvent.Pre event) {
     ResourceLocation flameRL = new ResourceLocation("dragonmounts:entities/breath_fire");
     event.map.registerSprite(flameRL);
+    ResourceLocation iceRL = new ResourceLocation("dragonmounts:entities/breath_ice");
+    event.map.registerSprite(iceRL);
   }
 }
