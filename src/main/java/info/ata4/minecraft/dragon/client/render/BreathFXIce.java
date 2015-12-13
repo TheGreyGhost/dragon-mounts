@@ -26,7 +26,7 @@ import java.util.Random;
  *
  */
 public class BreathFXIce extends EntityFX {
-  private final ResourceLocation iceCrystalCloudRL = new ResourceLocation("dragonmounts:entities/breath_ice");
+  private final ResourceLocation iceCrystalCloudRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_ice");
 
   private final float ICE_PUFF_CHANCE = 0.1f;
   private final float LARGE_ICE_PUFF_CHANCE = 0.3f;
@@ -86,7 +86,41 @@ public class BreathFXIce extends EntityFX {
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(iceCrystalCloudRL.toString());
     func_180435_a(sprite);
     entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
+
+    textureUV = setRandomTexture(this.particleIcon);
   }
+
+  // the texture for ice is made of four alternative textures, stacked 2x2
+  //  choose one of the four at random, and also flip and rotated randomly
+  private RotatingQuad setRandomTexture(TextureAtlasSprite textureAtlasSprite)
+  {
+    Random random = new Random();
+    double minU = textureAtlasSprite.getMinU();
+    double maxU = textureAtlasSprite.getMaxU();
+    double midU = (minU + maxU) / 2.0;
+    double minV = textureAtlasSprite.getMinV();
+    double maxV = textureAtlasSprite.getMaxV();
+    double midV = (minV + maxV) / 2.0;
+
+    if (random.nextBoolean()) {
+      minU = midU;
+    } else {
+      maxU = midU;
+    }
+    if (random.nextBoolean()) {
+      minV = midV;
+    } else {
+      maxV = midV;
+    }
+
+    RotatingQuad tex = new RotatingQuad(minU, minV, maxU, maxV);
+    if (random.nextBoolean()) {
+      tex.mirrorLR();
+    }
+    tex.rotate90(random.nextInt(4));
+    return tex;
+  }
+
 
   /**
    * Returns 1, which means "use a texture from the blocks + items texture sheet"
@@ -141,18 +175,6 @@ public class BreathFXIce extends EntityFX {
                             float edgeLRdirectionX, float edgeUDdirectionY, float edgeLRdirectionZ,
                             float edgeUDdirectionX, float edgeUDdirectionZ)
   {
-    double minU = this.particleIcon.getMinU();
-    double maxU = this.particleIcon.getMaxU();
-    double minV = this.particleIcon.getMinV();
-    double maxV = this.particleIcon.getMaxV();
-    RotatingQuad tex = new RotatingQuad(minU, minV, maxU, maxV);
-    Random random = new Random();
-    if (random.nextBoolean()) {
-      tex.mirrorLR();
-    }
-    tex.rotate90(random.nextInt(4));
-
-    //todo : randomise texture position with the 32x32 texture; add random rotation of the drawing points around the centre
 
     double scale = 0.1F * this.particleScale;
     final double scaleLR = scale;
@@ -164,21 +186,21 @@ public class BreathFXIce extends EntityFX {
 
     worldRenderer.setColorRGBA_F(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
     worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
-            y - edgeUDdirectionY * scaleUD,
-            z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
-            tex.getU(0),  tex.getV(0));
+                                  y - edgeUDdirectionY * scaleUD,
+                                  z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
+                                  textureUV.getU(0), textureUV.getV(0));
     worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
-            y + edgeUDdirectionY * scaleUD,
-            z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
-            tex.getU(1),  tex.getV(1));
+                                  y + edgeUDdirectionY * scaleUD,
+                                  z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
+                                  textureUV.getU(1), textureUV.getV(1));
     worldRenderer.addVertexWithUV(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
-            y + edgeUDdirectionY * scaleUD,
-            z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
-            tex.getU(2),  tex.getV(2));
+                                  y + edgeUDdirectionY * scaleUD,
+                                  z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
+                                  textureUV.getU(2),  textureUV.getV(2));
     worldRenderer.addVertexWithUV(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
-            y - edgeUDdirectionY * scaleUD,
-            z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
-            tex.getU(3),  tex.getV(3));
+                                  y - edgeUDdirectionY * scaleUD,
+                                  z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
+                                  textureUV.getU(3), textureUV.getV(3));
   }
 
   /** call once per tick to update the EntityFX size, position, collisions, etc
@@ -248,4 +270,5 @@ public class BreathFXIce extends EntityFX {
   }
 
   private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
+  private RotatingQuad textureUV;
 }

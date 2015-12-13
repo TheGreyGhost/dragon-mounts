@@ -66,7 +66,7 @@ OK bug fix: dragon disappears when still inside field of view
 ---------------
 BreathWeapon types:
 Air-
-Gusts of strong wind to buffet mobs and shred scenery (make it fly away?)
+Gusts of strong wind to buffet mobs and shred scenery (make it fly away?). blow away items the player is holding
 
 Ender-
 Purple fireball as per Xbox version?
