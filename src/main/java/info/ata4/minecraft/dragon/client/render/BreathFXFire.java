@@ -1,6 +1,7 @@
 package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFire;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
@@ -57,7 +58,7 @@ public class BreathFXFire extends EntityFX {
     Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
-    BreathNode breathNode = new BreathNode(power);
+    BreathNode breathNode = new BreathNodeFire(power);
     breathNode.randomiseProperties(rand);
     Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 

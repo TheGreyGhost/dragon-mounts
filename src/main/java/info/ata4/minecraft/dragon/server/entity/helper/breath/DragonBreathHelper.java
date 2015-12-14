@@ -229,7 +229,8 @@ public class DragonBreathHelper extends DragonHelper
       Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
       if (destination != null && currentBreathState == BreathState.SUSTAIN) {
         BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
-        breathAffectedArea.continueBreathing(dragon.getEntityWorld(), origin, destination, power);
+        BreathNodeFactory breathNodeFactory = dragon.getBreed().getBreathNodeFactory();
+        breathAffectedArea.continueBreathing(dragon.getEntityWorld(), origin, destination, breathNodeFactory, power);
       }
     }
     breathAffectedArea.updateTick(dragon.worldObj);

@@ -1,6 +1,7 @@
 package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeIce;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
@@ -28,7 +29,7 @@ import java.util.Random;
 public class BreathFXIce extends EntityFX {
   private final ResourceLocation iceCrystalCloudRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_ice");
 
-  private final float ICE_PUFF_CHANCE = 0.1f;
+  private final float ICE_PUFF_CHANCE = 0.5f;
   private final float LARGE_ICE_PUFF_CHANCE = 0.3f;
 
   private static final float MAX_ALPHA = 1.00F;
@@ -57,7 +58,7 @@ public class BreathFXIce extends EntityFX {
     Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
-    BreathNode breathNode = new BreathNode(power);
+    BreathNode breathNode = new BreathNodeIce(power);
     breathNode.randomiseProperties(rand);
     Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 
@@ -225,7 +226,8 @@ public class BreathFXIce extends EntityFX {
 
     // spawn a smoke trail after some time
     if (ICE_PUFF_CHANCE != 0 && rand.nextFloat() < lifetimeFraction && rand.nextFloat() <= ICE_PUFF_CHANCE) {
-      worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, motionX * 0.5, motionY * 0.5, motionZ * 0.5);
+      final double VERTICAL_PUFF_SPEED = 4.0 / 20.0;  // blocks per tick
+      worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, motionX * 0.5, VERTICAL_PUFF_SPEED, motionZ * 0.5);
     }
 
     // smoke / steam when hitting water.  node is responsible for aging to death

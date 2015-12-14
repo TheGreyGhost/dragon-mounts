@@ -13,8 +13,7 @@ import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterFire;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterIce;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
-import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
-import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeaponFire;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
@@ -86,8 +85,12 @@ public class DragonBreedIce extends DragonBreed {
   @Override
   public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
   {
-    return new BreathWeaponFire(dragon);
+    return new BreathWeaponIce(dragon);
   }
 
-
+  @Override
+  public BreathNodeFactory getBreathNodeFactory()
+  {
+    return new BreathNodeIce.BreathNodeIceFactory();
+  }
 }

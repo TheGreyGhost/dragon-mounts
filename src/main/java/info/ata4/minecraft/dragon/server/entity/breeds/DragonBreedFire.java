@@ -12,6 +12,8 @@ package info.ata4.minecraft.dragon.server.entity.breeds;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterFire;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFactory;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFire;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeaponFire;
 import net.minecraft.init.Blocks;
@@ -66,6 +68,12 @@ public class DragonBreedFire extends DragonBreed {
     public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
     {
         return new BreathWeaponFire(dragon);
+    }
+
+    @Override
+    public BreathNodeFactory getBreathNodeFactory()
+    {
+      return new BreathNodeFire.BreathNodeFireFactory();
     }
 
 }

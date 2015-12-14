@@ -12,8 +12,11 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
@@ -50,6 +53,15 @@ public class BreathWeaponIce extends BreathWeapon
     Block block = iBlockState.getBlock();
 
     Random rand = new Random();
+
+    // effects- which occur after the block has been exposed for sufficient time
+    // coat blocks with snow.  Gradually builds up and will coat everything
+    // freeze water to ice - freeze deeper once a higher threshold is reached
+    // extinguish fire
+    // lava turns to obsidian
+    // glass shatters
+    // hard stone blocks shatter
+    // leaves, grass, flowers, plants, etc destroyed
 
     // Flammable blocks: set fire to them once they have been exposed enough.  After sufficient exposure, destroy the
     //   block (otherwise -if it's raining, the burning block will keep going out)
@@ -91,6 +103,11 @@ public class BreathWeaponIce extends BreathWeapon
   @Override
   public BreathAffectedEntity affectEntity(World world, Integer entityID, BreathAffectedEntity currentHitDensity)
   {
+    // extinguish fire on entity
+    // apply cold damage.  The normal armour protection does not apply.  Instead, metal armor worsens damage.
+    //   Leather and diamond armor protects.
+    // cancels invisibility, slows victim
+
     checkNotNull(world);
     checkNotNull(entityID);
     checkNotNull(currentHitDensity);
@@ -110,18 +127,28 @@ public class BreathWeaponIce extends BreathWeapon
       }
     }
 
-    if (entity.isImmuneToFire()) return currentHitDensity;
-
-    final float CATCH_FIRE_THRESHOLD = 5.0F;
-    final float BURN_SECONDS_PER_HIT_DENSITY = 1.0F;
-    final float DAMAGE_PER_HIT_DENSITY = 0.5F;
-
-    float hitDensity = currentHitDensity.getHitDensity();
-    if (hitDensity > CATCH_FIRE_THRESHOLD) {
-      entity.setFire((int)(hitDensity * BURN_SECONDS_PER_HIT_DENSITY));
+    if (entity.isBurning()) {
+      entity.extinguish();
     }
+
+    final float DAMAGE_PER_HIT_DENSITY = 0.1F;
+    float armorDamageModifier = getArmorDamageModifier(entity);
+    float hitDensity = currentHitDensity.getHitDensity();
     if (currentHitDensity.applyDamageThisTick()) {
-      entity.attackEntityFrom(DamageSource.inFire, hitDensity * DAMAGE_PER_HIT_DENSITY);
+      entity.attackEntityFrom(DamageSource.magic,
+              hitDensity * DAMAGE_PER_HIT_DENSITY * armorDamageModifier);
+
+      if (entity instanceof EntityLivingBase) {
+        EntityLivingBase entityLivingBase = (EntityLivingBase)entity;
+        if (entityLivingBase.isPotionActive(Potion.invisibility.id)) {
+          entityLivingBase.removePotionEffect(Potion.invisibility.id);
+        }
+
+        int duration = 10 * 20;          // 10 seconds
+        final int EFFECT_AMPLIFIER = 3;  // not sure why this is 3; other vanilla uses that value
+        PotionEffect slowDown = new PotionEffect(Potion.moveSlowdown.id, duration, EFFECT_AMPLIFIER);
+        entityLivingBase.addPotionEffect(slowDown);
+      }
     }
 
     return currentHitDensity;
@@ -242,6 +269,56 @@ public class BreathWeaponIce extends BreathWeapon
       return Blocks.dirt.getDefaultState();
     }
     return null;
+  }
+
+  /**
+   * How much does the entity's armour modify the damage?
+   * Up to double for all-conductive armour; down to half for all-insulating armour
+   * @param armoredEntity
+   * @return multiplier (1.0= unmodified) for the cold damage
+   */
+  private static float getArmorDamageModifier(Entity armoredEntity)
+  {
+    final float UNMODIFIED = 1.0F;
+    if (!(armoredEntity instanceof EntityLivingBase)) {
+      return UNMODIFIED;
+    }
+    EntityLivingBase entityLivingBase = (EntityLivingBase)armoredEntity;
+
+    final int FIRST_ARMOUR_INDEX = 1;
+    final int LAST_ARMOUR_INDEX = 4;
+    final float ARMOUR_SLOTS_COUNT = LAST_ARMOUR_INDEX - FIRST_ARMOUR_INDEX + 1;
+
+    int conductorCount = 0;
+    int insulatorCount = 0;
+    for (int slot = FIRST_ARMOUR_INDEX; slot <= LAST_ARMOUR_INDEX; ++slot) {
+      ItemStack itemStack = entityLivingBase.getEquipmentInSlot(slot);
+      if (itemStack != null && itemStack.getItem() instanceof ItemArmor) {
+        ItemArmor.ArmorMaterial material = ((ItemArmor) itemStack.getItem()).getArmorMaterial();
+        switch (material) {
+          case IRON:
+          case CHAIN:
+          case GOLD: {
+            ++conductorCount;
+            break;
+          }
+
+          case LEATHER:
+          case DIAMOND: {
+            ++insulatorCount;
+            break;
+          }
+
+          default:{  // no effect
+            break;
+          }
+        }
+      }
+    }
+    float damageMultiplier = UNMODIFIED
+                             * (1 + conductorCount / ARMOUR_SLOTS_COUNT)
+                             / (1 + insulatorCount / ARMOUR_SLOTS_COUNT);
+    return damageMultiplier;
   }
 
   /**

@@ -40,13 +40,14 @@ public class BreathAffectedArea
    * @param destination the destination of the beam, used to calculate direction
    * @param power
    */
-  public void continueBreathing(World world, Vec3 origin, Vec3 destination, BreathNode.Power power)
+  public void continueBreathing(World world, Vec3 origin, Vec3 destination,
+                                BreathNodeFactory breathNodeFactory,  BreathNode.Power power)
   {
     Vec3 direction = destination.subtract(origin).normalize();
 
     EntityBreathNode newNode = EntityBreathNode.createEntityBreathNodeServer(
             world, origin.xCoord, origin.yCoord, origin.zCoord, direction.xCoord, direction.yCoord, direction.zCoord,
-            power);
+            breathNodeFactory, power);
 
     entityBreathNodes.add(newNode);
   }

@@ -12,6 +12,7 @@ package info.ata4.minecraft.dragon.server.entity.breeds;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFactory;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureAttribute;
@@ -159,6 +160,11 @@ public abstract class DragonBreed {
      * @return
      */
     public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)               // todo later: abstract
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public BreathNodeFactory getBreathNodeFactory()
     {
         throw new UnsupportedOperationException();
     }

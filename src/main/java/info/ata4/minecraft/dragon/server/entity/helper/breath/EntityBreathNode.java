@@ -26,13 +26,13 @@ import java.util.Random;
 class EntityBreathNode extends Entity
 {
   public static EntityBreathNode createEntityBreathNodeServer(World world, double x, double y, double z,
-                                                                    double directionX, double directionY, double directionZ,
-                                                                    BreathNode.Power power)
+                                                              double directionX, double directionY, double directionZ,
+                                                              BreathNodeFactory breathNodeFactory, BreathNode.Power power)
   {
     Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
-    BreathNode breathNode = new BreathNode(power);
+    BreathNode breathNode = breathNodeFactory.createBreathNode(power);
     Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
     // don't randomise the other properties (size, age) on the server.
 
