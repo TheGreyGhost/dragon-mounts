@@ -1,11 +1,12 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.util.ItemUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.*;
+import net.minecraft.block.material.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -23,8 +24,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Vec3i;
 import net.minecraft.world.World;
 
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -152,6 +152,66 @@ public class BreathWeaponIce extends BreathWeapon
     }
 
     return currentHitDensity;
+  }
+
+
+  private static Map<Material, Integer> materialShatterTime = Maps.newHashMap();
+
+  private void affectBlock(Block whichBlock)
+  {
+    if (whichBlock == null) return;
+    Material material = whichBlock.getMaterial();
+    if (material == null) return;
+
+    if (materialShatterTime.containsKey(material)) {
+      Integer shatterTime = materialShatterTime.get(material);
+
+      return;
+    }
+
+    eventually, snow turns to ice
+
+    if (material == Material.water) {
+    }
+    if (material == Material.lava){
+      if (material == Material.fire) {
+
+      }
+      if (material == Material.ice) {
+
+      }
+      if (material == Material.packedIce) {
+
+      }
+      if (material == Material.snow) {
+
+      }
+      if (material == Material.craftedSnow) {
+
+      }
+
+  }
+
+  private void initialiseStatics()
+  {
+    materialShatterTime.clear();
+    final int INSTANT = 0;
+    final int MODERATE = 10;
+    final int SLOW = 50;
+    materialShatterTime.put(Material.grass, INSTANT);
+    materialShatterTime.put(Material.leaves, INSTANT);
+    materialShatterTime.put(Material.plants, INSTANT);
+    materialShatterTime.put(Material.vine, INSTANT);
+    materialShatterTime.put(Material.web, INSTANT);
+    materialShatterTime.put(Material.gourd, INSTANT);
+    materialShatterTime.put(Material.sponge, MODERATE);
+    materialShatterTime.put(Material.glass, MODERATE);
+    materialShatterTime.put(Material.cactus, MODERATE);
+    materialShatterTime.put(Material.rock, SLOW);
+
+
+
+  }
   }
 
   private BlockBurnProperties getBurnProperties(IBlockState iBlockState)
