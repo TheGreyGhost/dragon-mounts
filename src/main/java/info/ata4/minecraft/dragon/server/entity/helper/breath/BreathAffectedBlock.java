@@ -43,7 +43,16 @@ public class BreathAffectedBlock
     for (EnumFacing facing : EnumFacing.values()) {
       maxDensity = Math.max(maxDensity, hitDensity[facing.getIndex()]);
     }
+    previousMaxHitDensity = maxDensity;
     return maxDensity;
+  }
+
+  /**
+   * What was the last value that getMaxHitDensity() returned?
+   * @return the last value returned from getMaxHitDensity(), or 0 if never called.
+   */
+  public float getPreviousMaxHitDensity() {
+    return previousMaxHitDensity;
   }
 
   private final float BLOCK_DECAY_PERCENTAGE_PER_TICK = 10.0F;
@@ -81,5 +90,6 @@ public class BreathAffectedBlock
   }
 
   private float [] hitDensity;
+  private float previousMaxHitDensity = 0;
   private int timeSinceLastHit;
 }
