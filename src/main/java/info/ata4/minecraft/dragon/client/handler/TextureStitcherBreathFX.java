@@ -17,5 +17,7 @@ public class TextureStitcherBreathFX
     event.map.registerSprite(flameRL);
     ResourceLocation iceRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_ice");
     event.map.registerSprite(iceRL);
+    ResourceLocation waterRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_water");
+    event.map.registerSprite(waterRL);
   }
 }

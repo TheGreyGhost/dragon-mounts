@@ -9,6 +9,11 @@
  */
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterIce;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterWater;
+import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -32,4 +37,22 @@ public class DragonBreedWater extends DragonBreed {
         addHabitatBiome(BiomeGenBase.swampland);
     }
 
+
+    @Override
+    public BreathWeaponFXEmitter getBreathWeaponFXEmitter(EntityTameableDragon dragon)
+    {
+        return new BreathWeaponFXEmitterWater();
+    }
+
+    @Override
+    public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
+    {
+        return new BreathWeaponWater(dragon);
+    }
+
+    @Override
+    public BreathNodeFactory getBreathNodeFactory()
+    {
+        return new BreathNodeWater.BreathNodeWaterFactory();
+    }
 }

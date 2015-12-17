@@ -4,6 +4,7 @@ import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.client.sound.SoundController;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeapon;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.breeds.DragonBreed;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonHelper;
 import info.ata4.minecraft.dragon.server.network.BreathWeaponTarget;
 import info.ata4.minecraft.dragon.server.network.DragonOrbTargets;
@@ -48,6 +49,16 @@ public class DragonBreathHelper extends DragonHelper
     super(dragon);
     DATA_WATCHER_BREATH_TARGET = dataWatcherIndexBreathTarget;
     dataWatcher.addObject(DATA_WATCHER_BREATH_TARGET, "");
+    refreshBreed(dragon);
+  }
+
+  // changes the breath weapon after the breed is changed
+  public void refreshBreed(EntityTameableDragon dragon)
+  {
+    DragonBreed newBreed = dragon.getBreed();
+    if (currentBreed == newBreed) return;
+    currentBreed = newBreed;
+
     if (dragon.isClient()) {
       breathWeaponFXEmitter = dragon.getBreed().getBreathWeaponFXEmitter(dragon);
     }
@@ -221,6 +232,7 @@ public class DragonBreathHelper extends DragonHelper
 
   private void onLivingUpdateServer()
   {
+    refreshBreed(dragon);
     BreathWeaponTarget target = getTarget();
     updateBreathState(target);
 
@@ -238,6 +250,7 @@ public class DragonBreathHelper extends DragonHelper
 
   private void onLivingUpdateClient()
   {
+    refreshBreed(dragon);
     BreathWeaponTarget target = getTarget();
     updateBreathState(target);
 
@@ -318,5 +331,5 @@ public class DragonBreathHelper extends DragonHelper
   private BreathWeaponTarget breathWeaponTarget;
 
   private BreathAffectedArea breathAffectedArea;
-
+  private DragonBreed currentBreed = null;
 }
