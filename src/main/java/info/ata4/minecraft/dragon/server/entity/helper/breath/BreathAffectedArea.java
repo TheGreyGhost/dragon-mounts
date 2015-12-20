@@ -2,6 +2,7 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -83,6 +84,9 @@ public class BreathAffectedArea
 
   private void implementEffectsOnBlocksTick(World world, HashMap<Vec3i, BreathAffectedBlock> affectedBlocks )
   {
+    if (!DragonMounts.instance.getConfig().isBreathAffectsBlocks()) {
+      return;
+    }
     for (Map.Entry<Vec3i, BreathAffectedBlock> blockInfo : affectedBlocks.entrySet()) {
       BreathAffectedBlock newHitDensity = breathWeapon.affectBlock(world, blockInfo.getKey(), blockInfo.getValue());
       blockInfo.setValue(newHitDensity);

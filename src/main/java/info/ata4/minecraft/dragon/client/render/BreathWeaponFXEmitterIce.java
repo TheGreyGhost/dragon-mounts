@@ -17,13 +17,14 @@ public class BreathWeaponFXEmitterIce extends BreathWeaponFXEmitter
   }
 
   @Override
-  protected  EntityFX createSingleParticle(World world, Vec3 spawnOrigin, Vec3 spawnDirection, BreathNode.Power power, float partialTickHeadStart)
+  protected  EntityFX createSingleParticle(World world, Vec3 spawnOrigin, Vec3 spawnDirection, BreathNode.Power power,
+                                           int tickCount, float partialTickHeadStart)
   {
     BreathFXIce breathFXIce = BreathFXIce.createBreathFXIce(world,
             spawnOrigin.xCoord, spawnOrigin.yCoord, spawnOrigin.zCoord,
             spawnDirection.xCoord, spawnDirection.yCoord, spawnDirection.zCoord,
             power,
-            partialTickHeadStart);
+            tickCount, partialTickHeadStart);
     return breathFXIce;
   }
 

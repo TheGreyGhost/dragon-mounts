@@ -6,6 +6,8 @@ import net.minecraft.client.particle.EntityFX;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
+import java.util.Random;
+
 /**
  * Created by TGG on 21/06/2015.
  * Used to spawn breath particles on the client side (in future: will be different for different breath weapons)
@@ -56,6 +58,7 @@ public abstract class BreathWeaponFXEmitter
    */
   protected void spawnMultipleWithSmoothedDirection(World world, BreathNode.Power power, int particlesPerTick, int tickCount)
   {
+    Random random = new Random();
     if (tickCount != previousTickCount + 1) {
       previousDirection = direction;
       previousOrigin = origin;
@@ -64,10 +67,10 @@ public abstract class BreathWeaponFXEmitter
       if (previousOrigin == null) previousOrigin = origin;
     }
     for (int i = 0; i < particlesPerTick; ++i) {
-      float partialTickHeadStart = i / (float)particlesPerTick;
+      float partialTickHeadStart = (i + random.nextFloat()) / (float)particlesPerTick;   // random is for jitter to prevent aliasing
       Vec3 interpDirection = interpolateVec(previousDirection, direction, partialTickHeadStart);
       Vec3 interpOrigin = interpolateVec(previousOrigin, origin, partialTickHeadStart);
-      EntityFX entityFX = createSingleParticle(world, interpOrigin, interpDirection, power, partialTickHeadStart);
+      EntityFX entityFX = createSingleParticle(world, interpOrigin, interpDirection, power, tickCount, partialTickHeadStart);
       Minecraft.getMinecraft().effectRenderer.addEffect(entityFX);
     }
     previousDirection = direction;
@@ -76,7 +79,8 @@ public abstract class BreathWeaponFXEmitter
   }
 
 
-  protected abstract EntityFX createSingleParticle(World world, Vec3 origin, Vec3 direction, BreathNode.Power power, float partialTickHeadStart);
+  protected abstract EntityFX createSingleParticle(World world, Vec3 origin, Vec3 direction, BreathNode.Power power,
+                                                   int tickCount, float partialTickHeadStart);
 
   /**
    * interpolate from vector 1 to vector 2 using fraction

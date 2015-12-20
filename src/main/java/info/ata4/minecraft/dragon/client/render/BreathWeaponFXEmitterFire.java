@@ -17,7 +17,8 @@ public class BreathWeaponFXEmitterFire extends BreathWeaponFXEmitter
   }
 
   @Override
-  protected  EntityFX createSingleParticle(World world, Vec3 spawnOrigin, Vec3 spawnDirection, BreathNode.Power power, float partialTickHeadStart)
+  protected  EntityFX createSingleParticle(World world, Vec3 spawnOrigin, Vec3 spawnDirection, BreathNode.Power power,
+                                           int tickCount, float partialTickHeadStart)
   {
     BreathFXFire breathFXFire = BreathFXFire.createBreathFXFire(world,
             spawnOrigin.xCoord, spawnOrigin.yCoord, spawnOrigin.zCoord,

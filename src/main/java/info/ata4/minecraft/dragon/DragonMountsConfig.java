@@ -22,22 +22,28 @@ import java.util.List;
 /**
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  * Holds the configuration information and synchronises the various copies of it
- * The configuration information is stored in three places: 1) in the
- * configuration file on disk, as text 2) in the Configuration object config
- * (accessed by the mod GUI), as text 3) in the MBEConfiguration variables
- * (fields), as native values (integer, double, etc) Usage: Setup: (1) During
- * preInit(), create an instance of DragonMountsConfig a) set up the format of
- * the configuration file b) load the settings from the existing file, or if it
- * doesn't exist yet - create it with default values (2) On the client proxy
- * (not dedicated server), call clientInit() to register an OnConfigChangedEvent
- * handler- your GUI will modify the config object, and when it is closed it
- * will trigger a OnConfigChangedEvent, which should call syncFromGUI(). Usage:
- * (3) You can read the fields such as eggsInChests using the getter methods (4)
- * If you modify the configuration fields, you can save them to disk using
- * syncFromFields() (5) To reload the values from disk, call syncFromFile() (6)
- * If you have used a GUI to alter the config values, call syncFromGUI(). (If
- * you called clientInit(), this will happen automatically) See
- * ForgeModContainer for more examples
+ * The configuration information is stored in three places:
+ * 1) in the configuration file on disk, as text
+ * 2) in the Configuration object config (accessed by the mod GUI), as text
+ * 3) in the MBEConfiguration variables (fields), as native values (integer, double, etc)
+ * Usage:
+ * Setup:
+ * (1) During preInit(), create an instance of DragonMountsConfig
+ *   a) set up the format of the configuration file
+ *   b) load the settings from the existing file, or if it
+ *      doesn't exist yet - create it with default values
+ * (2) On the client proxy (not dedicated server), call clientInit() to register an OnConfigChangedEvent
+ *     handler- your GUI will modify the config object, and when it is closed it
+ *     will trigger a OnConfigChangedEvent, which should call syncFromGUI().
+ *
+ * Usage:
+ * (3) You can read the fields such as eggsInChests using the getter methods
+ * (4) If you modify the configuration fields, you can save them to disk using
+ *     syncFromFields()
+ * (5) To reload the values from disk, call syncFromFile()
+ * (6) If you have used a GUI to alter the config values, call syncFromGUI(). (If
+ *   you called clientInit(), this will happen automatically)
+ * See ForgeModContainer for more examples
  */
 public class DragonMountsConfig {
     
@@ -51,6 +57,7 @@ public class DragonMountsConfig {
     private boolean orbTargetAutoLock = true;
     private boolean orbHighlightTarget = true;
     private boolean orbHolderImmune = true;
+    private boolean breathAffectsBlocks = true;
 
     public DragonMountsConfig(Configuration i_config) {
         config = i_config;
@@ -88,7 +95,9 @@ public class DragonMountsConfig {
         return orbHolderImmune;
     }
 
-    public Configuration getConfig() {
+    public boolean isBreathAffectsBlocks() {return breathAffectsBlocks;}
+
+  public Configuration getConfig() {
         return config;
     }
 
@@ -114,10 +123,12 @@ public class DragonMountsConfig {
     }
 
     /**
-     * Synchronise the three copies of the data 1) loadConfigFromFile &&
-     * readFieldsFromConfig -> initialise everything from the disk file 2)
-     * !loadConfigFromFile && readFieldsFromConfig --> copy everything from the
-     * config file (altered by GUI) 3) !loadConfigFromFile &&
+     * Synchronise the three copies of the data
+     * 1) loadConfigFromFile &&
+     * readFieldsFromConfig -> initialise everything from the disk file
+     * 2) !loadConfigFromFile && readFieldsFromConfig --> copy everything from the
+     * config file (altered by GUI)
+     * 3) !loadConfigFromFile &&
      * !readFieldsFromConfig --> copy everything from the native fields
      *
      * @param loadConfigFromFile if true, load the config field from the
@@ -179,7 +190,12 @@ public class DragonMountsConfig {
         propOrbHolderImmune.comment = "Is the orb holder immune to dragon breath?";
         propOrbHolderImmune.setLanguageKey("gui.config.options.orb_holder_immune");
 
-        final int DEFAULT_ENTITY_ID_AUTOASSIGN = -1;
+        final boolean DEFAULT_AFFECTS_BLOCKS = true;
+        Property propBreathAffectsBlocks = config.get(CATEGORY_NAME_OPTIONS, "breathAffectsBlocks", DEFAULT_AFFECTS_BLOCKS);
+        propBreathAffectsBlocks.comment = "Does dragon breath affect blocks?";
+        propBreathAffectsBlocks.setLanguageKey("gui.config.options.breath_affects_blocks");
+
+      final int DEFAULT_ENTITY_ID_AUTOASSIGN = -1;
         final int MIN_ENTITY_ID = -1;
         final int MAX_ENTITY_ID = 255;
         String ENTITY_ID_COMMENT = "Overrides the entity ID for dragons to fix problems with manual IDs from "
@@ -201,6 +217,7 @@ public class DragonMountsConfig {
         propOrderOptions.add(propOrbHighlightTarget.getName()); //push the config value's name into the ordered list
         propOrderOptions.add(propOrbTargetAutoLock.getName());
         propOrderOptions.add(propOrbHolderImmune.getName());
+        propOrderOptions.add(propBreathAffectsBlocks.getName());
         propOrderOptions.add(propEggsInChests.getName());
         config.setCategoryPropertyOrder(CATEGORY_NAME_OPTIONS, propOrderOptions);
 
@@ -221,6 +238,7 @@ public class DragonMountsConfig {
             orbTargetAutoLock = propOrbTargetAutoLock.getBoolean(DEFAULT_AUTOLOCK);
             orbHighlightTarget = propOrbHighlightTarget.getBoolean(DEFAULT_HIGHLIGHT);
             orbHolderImmune = propOrbHolderImmune.getBoolean(DEFAULT_IMMUNE);
+          breathAffectsBlocks = propBreathAffectsBlocks.getBoolean(DEFAULT_AFFECTS_BLOCKS);
             dragonEntityID = propDragonEntityID.getInt(DEFAULT_ENTITY_ID_AUTOASSIGN);
             if (dragonEntityID > MAX_ENTITY_ID || dragonEntityID < MIN_ENTITY_ID) {
                 dragonEntityID = DEFAULT_ENTITY_ID_AUTOASSIGN;
@@ -235,6 +253,7 @@ public class DragonMountsConfig {
         propOrbTargetAutoLock.set(orbTargetAutoLock);
         propOrbHighlightTarget.set(orbHighlightTarget);
         propOrbHolderImmune.set(orbHolderImmune);
+        propBreathAffectsBlocks.set(breathAffectsBlocks);
         propDragonEntityID.set(dragonEntityID);
         propDebug.set(debug);
 

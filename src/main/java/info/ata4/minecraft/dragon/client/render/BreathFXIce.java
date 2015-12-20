@@ -53,6 +53,7 @@ public class BreathFXIce extends EntityFX {
   public static BreathFXIce createBreathFXIce(World world, double x, double y, double z,
                                               double directionX, double directionY, double directionZ,
                                               BreathNode.Power power,
+                                              int tickCount,
                                               float partialTicksHeadStart)
   {
     Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
