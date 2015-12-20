@@ -46,6 +46,10 @@ public class RotatingQuad
     v = newV;
   }
 
+  /**
+   * Rotate the texture anticlockwise
+   * @param numberOf90Rotations number of 90 degree rotations, anti-clockwise
+   */
   public void rotate90(int numberOf90Rotations)
   {
     numberOf90Rotations %= 4;

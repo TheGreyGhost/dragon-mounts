@@ -10,7 +10,9 @@ import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemArmor;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -30,6 +32,9 @@ public class BreathFXWater extends EntityFX {
   private final ResourceLocation waterSquirtCloudRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_water");
 
   // breath_water is four textures in a 2x2 grid
+  //  all four are water balls with cutouts
+
+  // OLD:
   // top left = white sphere ("spray")
   // top right = large droplet sphere
   // bottom left = cluster of small droplet spheres
@@ -38,7 +43,7 @@ public class BreathFXWater extends EntityFX {
   private final float SPLASH_CHANCE = 0.1f;
   private final float LARGE_SPLASH_CHANCE = 0.3f;
 
-  private static final float MAX_ALPHA = 1.00F;
+  private static final float MAX_ALPHA = 0.75F;
 
   private BreathNode breathNode;
 
@@ -74,6 +79,12 @@ public class BreathFXWater extends EntityFX {
     y += actualMotion.yCoord * partialTicksHeadStart;
     z += actualMotion.zCoord * partialTicksHeadStart;
     BreathFXWater breathFXWater = new BreathFXWater(world, x, y, z, actualMotion, breathNode, spray);
+
+    double NANOSECONDS_PER_TICK = 1.0E9 / 20.0;
+    long timeNow = System.nanoTime();
+    double tickNumber = (timeNow / NANOSECONDS_PER_TICK);
+    tickNumber += partialTicksHeadStart;
+    breathFXWater.ticksInFlight = tickNumber;
     return breathFXWater;
   }
 
@@ -97,6 +108,11 @@ public class BreathFXWater extends EntityFX {
     entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
 
     textureUV = setRandomTexture(this.particleIcon, spray);
+    clockwiseRotation = rand.nextBoolean();
+    final float MIN_ROTATION_SPEED = 2.0F; // revolutions per second
+    final float MAX_ROTATION_SPEED = 6.0F; // revolutions per second
+    rotationSpeedQuadrantsPerTick = MIN_ROTATION_SPEED + rand.nextFloat() * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
+    rotationSpeedQuadrantsPerTick *= 4.0 / 20.0F; // convert to quadrants per tick
   }
 
   // the texture for water is made of four alternative textures, stacked 2x2
@@ -116,23 +132,27 @@ public class BreathFXWater extends EntityFX {
     renderScaleFactor = 1.0F;
 
     if (spray) {
-      whichImage = WhichImage.SPRAY;
+//      whichImage = WhichImage.SPRAY;
       maxU = midU; maxV = midV;
     } else {
-      switch (random.nextInt(3)) {
+      switch (random.nextInt(4)) {
         case 0: {
-          whichImage = WhichImage.SPHERE;
+//          whichImage = WhichImage.SPHERE;
           minU = midU; maxV = midV;
           break;
         }
         case 1: {
-          whichImage = WhichImage.DROPLETS;
+//          whichImage = WhichImage.DROPLETS;
           maxU = midU; minV = midV;
           break;
         }
         case 2: {
-          whichImage = WhichImage.TEARDROP;
+//          whichImage = WhichImage.TEARDROP;
           minU = midU; minV = midV;
+          break;
+        }
+        case 3: {
+          maxU = midU; maxV = midV;
           break;
         }
       }
@@ -140,14 +160,14 @@ public class BreathFXWater extends EntityFX {
 
 
     RotatingQuad tex = new RotatingQuad(minU, minV, maxU, maxV);
-    if (whichImage == WhichImage.SPRAY) {
+//    if (whichImage == WhichImage.SPRAY) {
       if (random.nextBoolean()) {
         tex.mirrorLR();
       }
       tex.rotate90(random.nextInt(4));
-    } else {
+//    } else {
       renderScaleFactor = random.nextFloat() * 0.5F + 0.5F;
-    }
+//    }
     return tex;
   }
 
@@ -217,7 +237,11 @@ public class BreathFXWater extends EntityFX {
     // centre of rendering is now y midpt not ymin
     double z = this.prevPosZ + (this.posZ - this.prevPosZ) * partialTick - interpPosZ;
 
-    float alphaValue = (whichImage == WhichImage.SPRAY) ? 0.5F : this.particleAlpha;
+    final double WIGGLE_CYCLE_IN_TICKS = 4.0;
+    final double WIGGLE_MAGNITUDE = 0.1 * scale;
+    double wiggle = WIGGLE_MAGNITUDE * sinusGenerator((ticksInFlight + partialTick) * WIGGLE_CYCLE_IN_TICKS);
+
+    float alphaValue = this.particleAlpha;
     worldRenderer.setColorRGBA_F(this.particleRed, this.particleGreen, this.particleBlue, alphaValue);
     worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
                                   y - edgeUDdirectionY * scaleUD,
@@ -237,6 +261,27 @@ public class BreathFXWater extends EntityFX {
                                   textureUV.getU(3), textureUV.getV(3));
   }
 
+  /** generates a sum-of-sines pattern - wiggles between +/- 1.0 in a smooth way that doesn't repeat (at least,
+   *   not that the viewer can tell).
+   *   The wiggle has a period of approximately 1.0, i.e. it reaches maximum approximately at 1.0, 2.0, 3.0, 4.0 etc
+   * @param cycles animation parameter.  The wiggle reaches maximum approximately every 1.0
+   * @return -1.0 -> 1.0
+   */
+  private double sinusGenerator(double cycles)
+  {
+    final double AMPLITUDES[] = {0.2F, 0.75F, 1.0F};   // amplitudes and frequencies just picked by trial and error
+    final double FREQUENCIES[] = {37.0F, 13.0F, 11.0F};
+    final double PERIOD_FACTOR = 2 * Math.PI / 11.0F;
+    double amplitudesSum = 0;
+    double sumOfSines = 0;
+    for (int i = 0; i < AMPLITUDES.length; ++i) {
+      amplitudesSum += AMPLITUDES[i];
+      sumOfSines += AMPLITUDES[i] * Math.sin(cycles * PERIOD_FACTOR * FREQUENCIES[i]);
+    }
+    sumOfSines /= amplitudesSum;
+    return sumOfSines;
+  }
+
   /** call once per tick to update the EntityFX size, position, collisions, etc
    */
   @Override
@@ -252,6 +297,12 @@ public class BreathFXWater extends EntityFX {
     } else {
       particleAlpha = MAX_ALPHA * (1 - lifetimeFraction);
     }
+
+    rotationResidual += rotationSpeedQuadrantsPerTick;
+    int quadrantsRotated = MathHelper.floor_float(rotationResidual);
+    textureUV.rotate90(clockwiseRotation ? -quadrantsRotated: quadrantsRotated);
+    rotationResidual %= 1.0F;
+    ++ticksInFlight;
 
     final float PARTICLE_SCALE_RELATIVE_TO_SIZE = 5.0F; // factor to convert from particleSize to particleScale
     float currentParticleSize = breathNode.getCurrentRenderDiameter();
@@ -306,8 +357,15 @@ public class BreathFXWater extends EntityFX {
 
   private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
   private RotatingQuad textureUV;
+  private boolean clockwiseRotation;
+  private float rotationSpeedQuadrantsPerTick;
+  private float rotationResidual = 0;
 
   private float renderScaleFactor;
-  private enum WhichImage {SPRAY, SPHERE, TEARDROP, DROPLETS}
-  private WhichImage whichImage;
+//  private enum WhichImage {SPRAY, SPHERE, TEARDROP, DROPLETS}
+//  private WhichImage whichImage;
+
+  private double ticksInFlight = 0;
+
+
 }
