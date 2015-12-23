@@ -121,6 +121,7 @@ public class BreathWeaponFire extends BreathWeapon
     }
     if (currentHitDensity.applyDamageThisTick()) {
       entity.attackEntityFrom(DamageSource.inFire, hitDensity * DAMAGE_PER_HIT_DENSITY);
+      currentHitDensity.resetHitDensity();
     }
 
     return currentHitDensity;

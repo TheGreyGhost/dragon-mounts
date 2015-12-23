@@ -329,6 +329,7 @@ public class BreathWeaponIce extends BreathWeapon
     if (currentHitDensity.applyDamageThisTick()) {
       entity.attackEntityFrom(DamageSource.magic,
               hitDensity * DAMAGE_PER_HIT_DENSITY * armorDamageModifier);
+      currentHitDensity.resetHitDensity();
 
       if (entity instanceof EntityLivingBase) {
         EntityLivingBase entityLivingBase = (EntityLivingBase)entity;

@@ -1,5 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.util.Vec3;
 
 /**
@@ -13,11 +14,13 @@ import net.minecraft.util.Vec3;
  *  3) Every tick, call decayEntityEffectTick
  *
  *  Query the entity's damage by
- *  1) getHitDensity
+ *  1a) getHitDensity
+ *  1b) getHitDensityDirection
  *  2) isUnaffected
  *  3) each tick: if applyDamageThisTick() is true, apply the weapon damage now.  (This is used to space out the
  *     damage so that armour doesn't protect so much (eg 20 damage delivered once per second instead of 1 damage
  *     delivered twenty times per second - (a player with armour is invulnerable to that)  )
+ *     When damage is applied, call resetHitDensity() to clear the density
  */
 public class BreathAffectedEntity
 {
@@ -30,12 +33,33 @@ public class BreathAffectedEntity
 
   /**
    * increases the hit density of the entity
+   * @param beamDirection the direction that the breathweapon is travelling (need not be normalised)
    * @param increase the amount to increase the hit density by
    */
   public void addHitDensity(Vec3 beamDirection, float increase)
   {
+    Vec3 oldWeightedDirection = MathX.multiply(averageDirection.normalize(), hitDensity);
+    Vec3 addedWeightedDirection = MathX.multiply(beamDirection.normalize(), increase);
+    Vec3 newAverageDirection = oldWeightedDirection.add(addedWeightedDirection);
+    averageDirection = newAverageDirection;
+
     hitDensity += increase;
     timeSinceLastHit = 0;
+  }
+
+  public void resetHitDensity()
+  {
+    hitDensity = 0;
+  }
+
+  /**
+   * Gets the average direction of the applied hitDensity (--> for example: if the breath weapon is a stream of water,
+   *   this returns the average direction the water is travelling in).
+   * @return the direction with density (i.e. not normalised - magnitude equals the hitDensity)
+   */
+  public Vec3 getHitDensityDirection()
+  {
+    return averageDirection;
   }
 
   public float getHitDensity()
@@ -90,4 +114,5 @@ public class BreathAffectedEntity
   private float hitDensity;
   private int timeSinceLastHit;
   private int ticksUntilDamageApplied;
+  private Vec3 averageDirection = new Vec3(0, 0, 0);
 }
