@@ -9,8 +9,12 @@
  */
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterAir;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterWater;
 import info.ata4.minecraft.dragon.server.entity.EntityFlyingTameable;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -49,4 +53,23 @@ public class DragonBreedAir extends DragonBreed {
     public void onDisable(EntityTameableDragon dragon) {
         dragon.getAttributeMap().getAttributeInstance(EntityFlyingTameable.MOVE_SPEED_AIR).removeModifier(MODIFIER);
     }
+
+  @Override
+  public BreathWeaponFXEmitter getBreathWeaponFXEmitter(EntityTameableDragon dragon)
+  {
+    return new BreathWeaponFXEmitterAir();
+  }
+
+  @Override
+  public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
+  {
+    return new BreathWeaponAir(dragon);
+  }
+
+  @Override
+  public BreathNodeFactory getBreathNodeFactory()
+  {
+    return new BreathNodeAir.BreathNodeAirFactory();
+  }
+
 }
