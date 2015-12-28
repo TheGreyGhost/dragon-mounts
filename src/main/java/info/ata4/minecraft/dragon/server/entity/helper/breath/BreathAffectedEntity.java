@@ -3,6 +3,8 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.util.Vec3;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
 * Created by TGG on 7/08/2015.
  *  * Models an entity which is being affected by the breath weapon
@@ -78,9 +80,7 @@ public class BreathAffectedEntity
     return true;
   }
 
-  private float ENTITY_DECAY_PERCENTAGE_PER_TICK = 5.0F;
-  private float ENTITY_RESET_EFFECT_THRESHOLD = 0.01F;
-  private final int TICKS_BEFORE_DECAY_STARTS = 40;
+  private final float ENTITY_RESET_EFFECT_THRESHOLD = 0.01F;
   private final int TICKS_BETWEEN_DAMAGE_APPLICATION = 20;  // apply damage every x ticks
 
   /** updates the breath weapon's effect for a given entity
@@ -93,13 +93,29 @@ public class BreathAffectedEntity
     if (timeSinceLastHit == 0 && ticksUntilDamageApplied > 0) {
       --ticksUntilDamageApplied;
     }
-    if (++timeSinceLastHit < TICKS_BEFORE_DECAY_STARTS) return;
-    hitDensity *= (1.0F - ENTITY_DECAY_PERCENTAGE_PER_TICK / 100.0F);
+    if (++timeSinceLastHit < ticksBeforeDecayStarts) return;
+    hitDensity *= (1.0F - entityDecayPercentagePerTick / 100.0F);
     if (hitDensity < ENTITY_RESET_EFFECT_THRESHOLD){
       hitDensity = 0.0F;
     }
+    averageDirection = MathX.multiply(averageDirection.normalize(), hitDensity);
+
     ++ticksUntilDamageApplied;
     ticksUntilDamageApplied = Math.min(ticksUntilDamageApplied, TICKS_BETWEEN_DAMAGE_APPLICATION);
+  }
+
+  /**
+   * Decay the hit Density, without regard for how long ago the last hit occurred
+   * @param decayPercentagePerTick the pecentage decay per tick [0.0 - 100.0]
+   * @param delayUntilDecayTicks the delay in ticks until decay starts (delay since last call to addHitDensity)
+   *                             must be >= 0
+   */
+  public void setDecayParameters(float decayPercentagePerTick, int delayUntilDecayTicks)
+  {
+    checkArgument(decayPercentagePerTick >= 0.0 && decayPercentagePerTick <= 100.0);
+    checkArgument(delayUntilDecayTicks >= 0);
+    entityDecayPercentagePerTick = decayPercentagePerTick;
+    ticksBeforeDecayStarts = delayUntilDecayTicks;
   }
 
   /**
@@ -115,4 +131,8 @@ public class BreathAffectedEntity
   private int timeSinceLastHit;
   private int ticksUntilDamageApplied;
   private Vec3 averageDirection = new Vec3(0, 0, 0);
+
+  private float entityDecayPercentagePerTick = 5.0F;
+  private int ticksBeforeDecayStarts = 40;
+
 }

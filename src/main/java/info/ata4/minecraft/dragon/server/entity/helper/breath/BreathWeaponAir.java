@@ -17,9 +17,11 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -48,11 +50,11 @@ public class BreathWeaponAir extends BreathWeapon
     Random rand = new Random();
 
     // effects- which occur after the block has been exposed for sufficient time
-    // soft blocks such as sand, clay, etc get destroyed (washed away)
-    // leaves, grass, flowers, plants, etc get washed away (destroyed)
-    // lava turns to obsidian
-    // extinguish fire and torches
-    // coat blocks with water.  Gradually builds up and will coat everything
+    // soft blocks such as sand, leaves, grass, flowers, plants, etc get blown away (destroyed)
+    // blows away snow but not ice
+    // shatters panes, but not glass
+    // extinguish torches
+    // causes fire to spread rapidly - NO, this looks stupid, so delete it
 
     if (block == null) return currentHitDensity;
     Material material = block.getMaterial();
@@ -69,27 +71,22 @@ public class BreathWeaponAir extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.lava) {
-      final float THRESHOLD_LAVA_QUENCH = 10;
-      if (currentHitDensity.getMaxHitDensity() > THRESHOLD_LAVA_QUENCH) {
-        quenchLava(world, blockPos);
-        return new BreathAffectedBlock();
-      }
-      return currentHitDensity;
-    }
-
     if (material == Material.fire) {
-      final float THRESHOLD_FIRE_EXTINGUISH = 1;
-      if (currentHitDensity.getMaxHitDensity() > THRESHOLD_FIRE_EXTINGUISH) {
-        extinguishFire(world, blockPos);
-        return new BreathAffectedBlock();
+      final float THRESHOLD_FIRE_SPREAD = 1;
+      final float MAX_FIRE_DENSITY = 10;
+      final int MAX_PATH_LENGTH = 4;
+      double density = currentHitDensity.getMaxHitDensity();
+      if (density > THRESHOLD_FIRE_SPREAD) {
+        int pathLength = MathHelper.floor_double(MAX_PATH_LENGTH / MAX_FIRE_DENSITY * density);
+        if (pathLength > MAX_PATH_LENGTH) {
+          pathLength = MAX_PATH_LENGTH;
+        }
+//        System.out.println("Spread fire pathlength:" + pathLength); //todo remove
+//        spreadFire(world, blockPos, pathLength);
       }
       return currentHitDensity;
     }
 
-    if (material == Material.water) {
-      return deepenWater(world, block, blockPos, currentHitDensity);
-    }
     if (block == Blocks.torch) {
       final float THRESHOLD_FIRE_EXTINGUISH = 1;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_FIRE_EXTINGUISH) {
@@ -100,93 +97,24 @@ public class BreathWeaponAir extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.air) {
-      final int THRESHOLD_DEEPEN_WATER_LAYER = 1;
-      if (currentHitDensity.getMaxHitDensity() < THRESHOLD_DEEPEN_WATER_LAYER) {
-        return currentHitDensity;
+    if (block == Blocks.glass_pane || block == Blocks.stained_glass_pane) {
+      final float THRESHOLD_SMASH_PANE = 1;
+      if (currentHitDensity.getMaxHitDensity() > THRESHOLD_SMASH_PANE) {
+        final boolean DROP_BLOCK = true;
+        world.destroyBlock(blockPos, DROP_BLOCK);
+        return new BreathAffectedBlock();
       }
-      IBlockState blockUnderneath = world.getBlockState(blockPos.down());
-
-      final int MINIMUM_DEPTH = 7;
-
-      if (blockUnderneath.getBlock().getMaterial().blocksMovement()) {
-        world.setBlockState(blockPos,
-                Blocks.flowing_water.getDefaultState().withProperty(BlockLiquid.LEVEL, MINIMUM_DEPTH));
-      }
+      return currentHitDensity;
     }
 
     return currentHitDensity;
-  }
-
-  // If this is a water block with level, make level deeper
-  private BreathAffectedBlock deepenWater(World world, Block block, BlockPos blockPos,
-                                          BreathAffectedBlock currentHitDensity)
-  {
-    IBlockState currentBlockState = world.getBlockState(blockPos);
-    if (block.getMaterial() == Material.water && block instanceof BlockDynamicLiquid) {
-      final int THRESHOLD_DEEPEN_WATER_LEVEL = 1;
-      if (currentHitDensity.getMaxHitDensity() < THRESHOLD_DEEPEN_WATER_LEVEL) {
-        return currentHitDensity;
-      }
-
-      IBlockState newBlockState;
-      Integer currentLevel = (Integer)currentBlockState.getValue(BlockDynamicLiquid.LEVEL);
-      Integer newLevel = oneWaterLevelHigher(currentLevel);
-
-      if (currentLevel != newLevel) {
-        newBlockState = currentBlockState.withProperty(BlockDynamicLiquid.LEVEL, newLevel);
-        world.setBlockState(blockPos, newBlockState);
-      }
-      return new BreathAffectedBlock();
-    }
-    return currentHitDensity;
-  }
-
-  // key parts copied from BlockLiquid
-  private Integer oneWaterLevelHigher(Integer currentLevel)
-  {
-    if (currentLevel == null || currentLevel == 0 || currentLevel >= 8) {
-      return currentLevel;
-    }
-    return --currentLevel;
-  }
-
-  // quench a lava and turn it to obsidian
-  // copy from BlockLiquid.checkForMixing()
-  private void quenchLava(World world, BlockPos blockPos)
-  {
-    world.setBlockState(blockPos, Blocks.obsidian.getDefaultState());
-    double wx = blockPos.getX();
-    double wy = blockPos.getY();
-    double wz = blockPos.getZ();
-    world.playSoundEffect(wx + 0.5D, wy + 0.5D, wz + 0.5D, "random.fizz",
-            0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
-
-    for (int i = 0; i < 8; ++i) {
-      world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, wx + Math.random(), wy + 1.2D, wz + Math.random(),
-              0.0D, 0.0D, 0.0D, new int[0]);
-    }
-  }
-
-  // extinguish any fire
-  private void extinguishFire(World world, BlockPos blockPos)
-  {
-    world.setBlockToAir(blockPos);
-    double wx = blockPos.getX();
-    double wy = blockPos.getY();
-    double wz = blockPos.getZ();
-    world.playSoundEffect(wx + 0.5D, wy + 0.5D, wz + 0.5D, "random.fizz",
-            0.5F, 3.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
   }
 
   @Override
   public BreathAffectedEntity affectEntity(World world, Integer entityID, BreathAffectedEntity currentHitDensity)
   {
     // 1) extinguish fire on entity
-    // 2) pushes entity in the direction of the water
-    // 3) apply water damage
-    // 4) cancels all potion effects
-
+    // 2) pushes entity in the direction of the air, with upward thrust added
     checkNotNull(world);
     checkNotNull(entityID);
     checkNotNull(currentHitDensity);
@@ -210,27 +138,75 @@ public class BreathWeaponAir extends BreathWeapon
       entity.extinguish();
     }
 
+//    System.out.format("Old entity motion:[%.2f, %.2f, %.2f]\n", entity.motionX, entity.motionY, entity.motionZ);
+    // push in the direction of the wind, but add a vertical upthrust as well
+    final double FORCE_MULTIPLIER = 0.05;
+    final double VERTICAL_FORCE_MULTIPLIER = 0.05;
+    float airForce = currentHitDensity.getHitDensity();
+    Vec3 airForceDirection = currentHitDensity.getHitDensityDirection();
+    Vec3 airMotion = MathX.multiply(airForceDirection, FORCE_MULTIPLIER);
 
-    final double FORCE_MULTIPLIER = 0.01;
-    Vec3 waterForceDirection = currentHitDensity.getHitDensityDirection();
-    Vec3 waterMotion = MathX.multiply(waterForceDirection, FORCE_MULTIPLIER);
-    entity.addVelocity(waterMotion.xCoord, waterMotion.yCoord, waterMotion.zCoord);
+    final double WT_ENTITY = 0.5;
+    final double WT_AIR = 1 - WT_ENTITY;
+    entity.motionX = WT_ENTITY * entity.motionX + WT_AIR * airMotion.xCoord;
+    entity.motionZ = WT_ENTITY * entity.motionZ + WT_AIR * airMotion.zCoord;
 
-    final float DAMAGE_PER_HIT_DENSITY = 0.1F;
-    float hitDensity = currentHitDensity.getHitDensity();
-    if (currentHitDensity.applyDamageThisTick()) {
-      entity.attackEntityFrom(DamageSource.magic,
-              hitDensity * DAMAGE_PER_HIT_DENSITY);
-      currentHitDensity.resetHitDensity();
-
-      if (entity instanceof EntityLivingBase) {
-        EntityLivingBase entityLivingBase = (EntityLivingBase)entity;
-        entityLivingBase.clearActivePotions();
-      }
+    final double UPFORCE_THRESHOLD = 1.0;
+    if (airForce > UPFORCE_THRESHOLD) {
+      final double GRAVITY_OFFSET = -0.08;
+      Vec3 up = new Vec3(0, 1, 0);
+      Vec3 upMotion = MathX.multiply(up, VERTICAL_FORCE_MULTIPLIER * airForce);
+//      System.out.format("upMotion:%s\n", upMotion);
+      entity.motionY = WT_ENTITY * (entity.motionY - GRAVITY_OFFSET) + WT_AIR * upMotion.yCoord;
     }
+
+//    System.out.format("airMotion:%s\n", airMotion);
+//    System.out.format("New entity motion:[%.2f, %.2f, %.2f]\n", entity.motionX, entity.motionY, entity.motionZ);
+
+    final int DELAY_UNTIL_DECAY = 5;
+    final float DECAY_PERCENTAGE_PER_TICK = 10.0F;
+    currentHitDensity.setDecayParameters(DECAY_PERCENTAGE_PER_TICK, DELAY_UNTIL_DECAY);
 
     return currentHitDensity;
   }
+
+//  /** flood fill from the starting block for the indicated number of blocks, setting fire to blocks
+//   * @param world
+//   * @param blockPos
+//   * @param maxPathLength maximum path length to flood fill to [0 - 10]
+//   */
+//  private void spreadFire(World world, BlockPos blockPos, int maxPathLength)
+//  {
+//    checkArgument(maxPathLength >= 0 && maxPathLength <= 10);
+//    HashSet<BlockPos> blocksToSearchFrom = new HashSet<BlockPos>();
+//    HashSet<BlockPos> blocksSearched = new HashSet<BlockPos>();
+//    HashSet<BlockPos> blocksToIgnite = new HashSet<BlockPos>();
+//
+//    blocksToSearchFrom.add(blockPos);
+//    for (int pathLength = 0; pathLength < maxPathLength; ++pathLength) {
+//      HashSet<BlockPos> blocksToSearchFromNext = new HashSet<BlockPos>();
+//
+//      for (BlockPos whichBlock : blocksToSearchFrom) {
+//        for (EnumFacing whichDirection : EnumFacing.VALUES) {
+//          BlockPos adjacent = whichBlock.offset(whichDirection);
+//          if (!blocksSearched.contains(adjacent)) {
+//            blocksSearched.add(adjacent);
+//
+//            IBlockState adjacentBlockState = world.getBlockState(adjacent);
+//            Material material = adjacentBlockState.getBlock().getMaterial();
+//            if (material == Material.air) {
+//              blocksToSearchFromNext.add(adjacent);
+//              blocksToIgnite.add(adjacent);
+//            }
+//          }
+//        }
+//      }
+//    }
+//
+//    for (BlockPos blockPosIgnite : blocksToIgnite) {
+//      world.setBlockState(blockPosIgnite, Blocks.fire.getDefaultState());
+//    }
+//  }
 
   private static Map<Material, Integer> materialDisintegrateTime = Maps.newHashMap();  // lazy initialisation
 
@@ -245,16 +221,11 @@ public class BreathWeaponAir extends BreathWeapon
     materialDisintegrateTime.put(Material.vine, INSTANT);
     materialDisintegrateTime.put(Material.web, INSTANT);
     materialDisintegrateTime.put(Material.gourd, INSTANT);
-    materialDisintegrateTime.put(Material.grass, MODERATE);
     materialDisintegrateTime.put(Material.sponge, MODERATE);
     materialDisintegrateTime.put(Material.sand, MODERATE);
-    materialDisintegrateTime.put(Material.ice, MODERATE);
-    materialDisintegrateTime.put(Material.packedIce, MODERATE);
     materialDisintegrateTime.put(Material.snow, MODERATE);
     materialDisintegrateTime.put(Material.craftedSnow, MODERATE);
-    materialDisintegrateTime.put(Material.clay, SLOW);
-    materialDisintegrateTime.put(Material.cactus, SLOW);
-    materialDisintegrateTime.put(Material.rock, SLOW);
+    materialDisintegrateTime.put(Material.cactus, MODERATE);
   }
 
 }

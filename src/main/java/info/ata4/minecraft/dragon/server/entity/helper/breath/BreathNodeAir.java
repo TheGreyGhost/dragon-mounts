@@ -27,7 +27,7 @@ public class BreathNodeAir extends BreathNode {
   private static final float AIR_INITIAL_SPEED = 3.0F;                // blocks per tick at full speed
   private static final float AIR_NODE_DIAMETER_IN_BLOCKS = 3.0F;
   private static final int AIR_DEFAULT_AGE_IN_TICKS = 30;
-  private static final double SPEED_VARIATION_ABS = 0.01;          // plus or minus this amount (3 std deviations)
+  private static final double SPEED_VARIATION_ABS = 0.15;          // plus or minus this amount (3 std deviations)
 
   /**
    * Update the age of the node based on what is happening (collisions) to the associated entity

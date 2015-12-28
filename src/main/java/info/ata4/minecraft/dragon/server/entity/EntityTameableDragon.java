@@ -203,6 +203,7 @@ public class EntityTameableDragon extends EntityFlyingTameable {
 
     @Override
     public void onLivingUpdate() {
+//        System.out.format("motionY: %.2f\n", motionY);
         if (!DebugFreezeAnimator.isFrozen()) {
             for (DragonHelper helper : helpers.values()) {
                 helper.onLivingUpdate();

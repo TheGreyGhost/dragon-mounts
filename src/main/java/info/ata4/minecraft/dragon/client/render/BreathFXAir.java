@@ -1,6 +1,7 @@
 package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeAir;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeWater;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
@@ -33,7 +34,7 @@ public class BreathFXAir extends EntityFX {
   private final float SPLASH_CHANCE = 0.1f;
   private final float LARGE_SPLASH_CHANCE = 0.3f;
 
-  private static final float MAX_ALPHA = 0.75F;
+  private static final float MAX_ALPHA = 0.35F;
 
   private BreathNode breathNode;
 
@@ -59,7 +60,7 @@ public class BreathFXAir extends EntityFX {
     Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
-    BreathNode breathNode = new BreathNodeWater(power);
+    BreathNode breathNode = new BreathNodeAir(power);
     breathNode.randomiseProperties(rand);
     Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 
@@ -308,17 +309,6 @@ public class BreathFXAir extends EntityFX {
     final float PARTICLE_SCALE_RELATIVE_TO_SIZE = 5.0F; // factor to convert from particleSize to particleScale
     float currentParticleSize = breathNode.getCurrentRenderDiameter();
     particleScale = PARTICLE_SCALE_RELATIVE_TO_SIZE * currentParticleSize;
-
-//    // spawn a smoke trail after some time
-//    if (SPLASH_CHANCE != 0 && rand.nextFloat() < lifetimeFraction && rand.nextFloat() <= SPLASH_CHANCE) {
-//      final double VERTICAL_PUFF_SPEED = 4.0 / 20.0;  // blocks per tick
-//      worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, motionX * 0.5, VERTICAL_PUFF_SPEED, motionZ * 0.5);
-//    }
-//
-//    // smoke / steam when hitting water.  node is responsible for aging to death
-//    if (handleWaterMovement()) {
-//      worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, 0, 0, 0);
-//    }
 
     float newAABBDiameter = breathNode.getCurrentAABBcollisionSize();
 
