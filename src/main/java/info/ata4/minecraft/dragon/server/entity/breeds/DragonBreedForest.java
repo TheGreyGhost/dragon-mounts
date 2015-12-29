@@ -9,7 +9,11 @@
  */
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterAir;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterForest;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockTallGrass;
@@ -91,5 +95,24 @@ public class DragonBreedForest extends DragonBreed {
 //                        && FOOTPRINT.canPlaceBlockAt(world, bx, by, bz)) {
 //                    world.setBlock(bx, by, bz, FOOTPRINT);
 //                }
+
+  @Override
+  public BreathWeaponFXEmitter getBreathWeaponFXEmitter(EntityTameableDragon dragon)
+  {
+    return new BreathWeaponFXEmitterForest();
+  }
+
+  @Override
+  public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
+  {
+    return new BreathWeaponForest(dragon);
+  }
+
+  @Override
+  public BreathNodeFactory getBreathNodeFactory()
+  {
+    return new BreathNodeForest.BreathNodeForestFactory();
+  }
+
 }
 
