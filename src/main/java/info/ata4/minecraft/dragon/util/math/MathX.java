@@ -54,6 +54,20 @@ public class MathX {
       return mean + rawValue * threeSigma / 3.0;
     }
 
+    /** choose a random point on a sphere centred at the origin, with a given radius
+     *  The points are evenly distributed over the surface of the sphere
+     *  http://mathworld.wolfram.com/SpherePointPicking.html
+     * @param rand
+     * @param radius radius of the sphere
+     * @return The point on the sphere
+     */
+    public static Vec3 getRandomPointOnSphere(Random rand, double radius)
+    {
+      Vec3 raw = new Vec3(rand.nextGaussian(), rand.nextGaussian(), rand.nextGaussian());
+      Vec3 result = MathX.multiply(raw.normalize(), radius);
+      return result;
+    }
+
     // float cosine function, may use LUT
     public static float cos(float a) {
         if (useLUT) {

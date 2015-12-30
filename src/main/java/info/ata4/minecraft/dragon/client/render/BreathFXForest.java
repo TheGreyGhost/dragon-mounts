@@ -1,8 +1,9 @@
 package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
-import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeAir;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeForest;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
+import info.ata4.minecraft.dragon.util.math.MathX;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EntityFX;
@@ -32,7 +33,7 @@ public class BreathFXForest extends EntityFX {
   private final float SPLASH_CHANCE = 0.1f;
   private final float LARGE_SPLASH_CHANCE = 0.3f;
 
-  private static final float MAX_ALPHA = 0.20F;
+  private static final float MAX_ALPHA = 0.80F;
 
   private BreathNode breathNode;
 
@@ -58,7 +59,7 @@ public class BreathFXForest extends EntityFX {
     Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
-    BreathNode breathNode = new BreathNodeAir(power);
+    BreathNode breathNode = new BreathNodeForest(power);
     breathNode.randomiseProperties(rand);
     Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 
@@ -103,6 +104,7 @@ public class BreathFXForest extends EntityFX {
 
     spawnTimeTicks = i_spawnTimeTicks;
     ticksSinceSpawn = timeInFlightTicks;
+    glowCycleTickLength = GLOW_CYCLE_TICKS_MIN + rand.nextInt(GLOW_CYCLE_TICKS_MAX + 1 - GLOW_CYCLE_TICKS_MIN);
   }
 
   // the texture for water is made of four alternative textures, stacked 2x2
@@ -115,11 +117,22 @@ public class BreathFXForest extends EntityFX {
     Random random = new Random();
     double minU = textureAtlasSprite.getMinU();
     double maxU = textureAtlasSprite.getMaxU();
-//    double midU = (minU + maxU) / 2.0;
+    double midU = (minU + maxU) / 2.0;
     double minV = textureAtlasSprite.getMinV();
     double maxV = textureAtlasSprite.getMaxV();
-//    double midV = (minV + maxV) / 2.0;
+    double midV = (minV + maxV) / 2.0;
     renderScaleFactor = 1.0F;
+
+    if (random.nextBoolean()) {
+      minU = midU;
+    } else {
+      maxU = midU;
+    }
+    if (random.nextBoolean()) {
+      minV = midV;
+    } else {
+      maxV = midV;
+    }
 
     RotatingQuad tex = new RotatingQuad(minU, minV, maxU, maxV);
 //    if (whichImage == WhichImage.SPRAY) {
@@ -153,10 +166,29 @@ public class BreathFXForest extends EntityFX {
     return 1.0F;
   }
 
+
+  private static final int MIN_LIGHT = 0x08;
+  private static final int MAX_LIGHT = 0x0f;
+  private static final int GLOW_CYCLE_TICKS_MIN = 10;
+  private static final int GLOW_CYCLE_TICKS_MAX = 20;
+
   @Override
   public int getBrightnessForRender(float partialTick)
   {
-    return 0xf000f0;
+    if (glowCycleTickCount > glowCycleTickLength) {
+      glowCycleTickCount = 0;
+    }
+    double cycleFraction = glowCycleTickCount / (double)glowCycleTickLength;
+    double light;
+    if (cycleFraction >= 0.5) {
+      light = MathX.slerp(MIN_LIGHT, MAX_LIGHT, 2 * (1.0 - cycleFraction));
+    } else {
+      light = MathX.slerp(MIN_LIGHT, MAX_LIGHT, 2 * cycleFraction);
+    }
+    int lightInt = (int)light;
+    int brightnessValue = (lightInt << 4) | (lightInt << 20);
+//    System.out.format("cycleFraction %.2f; light %.1f; brightnessValue: %d", cycleFraction, light, brightnessValue);
+    return brightnessValue;
   }
 
   /**
@@ -263,19 +295,20 @@ public class BreathFXForest extends EntityFX {
     final float OLD_AGE = 0.75F;
 
     float lifetimeFraction = breathNode.getLifetimeFraction();
-    if (lifetimeFraction < YOUNG_AGE) {
-      particleAlpha = MAX_ALPHA;
-    } else if (lifetimeFraction < OLD_AGE) {
-      particleAlpha = MAX_ALPHA;
-    } else {
-      particleAlpha = MAX_ALPHA * (1 - lifetimeFraction);
-    }
+//    if (lifetimeFraction < YOUNG_AGE) {     // fading looks silly because depthmask writing sometimes causes the faded to hide the unfaded
+//      particleAlpha = MAX_ALPHA;
+//    } else if (lifetimeFraction < OLD_AGE) {
+//      particleAlpha = MAX_ALPHA;
+//    } else {
+//      particleAlpha = MAX_ALPHA * (1 - lifetimeFraction);
+//    }
 
-    rotationResidual += rotationSpeedQuadrantsPerTick;
-    int quadrantsRotated = MathHelper.floor_float(rotationResidual);
-    textureUV.rotate90(clockwiseRotation ? -quadrantsRotated: quadrantsRotated);
-    rotationResidual %= 1.0F;
+//    rotationResidual += rotationSpeedQuadrantsPerTick;
+//    int quadrantsRotated = MathHelper.floor_float(rotationResidual);
+//    textureUV.rotate90(clockwiseRotation ? -quadrantsRotated: quadrantsRotated);
+//    rotationResidual %= 1.0F;
     ++ticksSinceSpawn;
+    ++glowCycleTickCount;
 
     final float PARTICLE_SCALE_RELATIVE_TO_SIZE = 5.0F; // factor to convert from particleSize to particleScale
     float currentParticleSize = breathNode.getCurrentRenderDiameter();
@@ -286,6 +319,7 @@ public class BreathFXForest extends EntityFX {
     prevPosX = posX;
     prevPosY = posY;
     prevPosZ = posZ;
+    breathNode.modifyEntityVelocity(this);
     entityMoveAndResizeHelper.moveAndResizeEntity(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
 
     if (isCollided && onGround) {
@@ -330,6 +364,8 @@ public class BreathFXForest extends EntityFX {
 //  private double ticksInFlight = 0;
   private double spawnTimeTicks = 0;
   private double ticksSinceSpawn = 0;
+  private int glowCycleTickCount = 0;
+  private int glowCycleTickLength = 0;
 
 //  // the wiggle at the dragon's mouth performs a cycle every WIGGLE_CYCLE_IN_TICKS ticks.
 //  // the forward movement of this shape, compared to the movement speed of the breathnodes themselves, is

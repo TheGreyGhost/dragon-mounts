@@ -39,7 +39,6 @@ public abstract class BreathNode
   private float relativeSizeOfThisNode = 1.0F;
   private float relativeLifetimeOfThisNode = 1.0F;
 
-//  private static final double SPEED_VARIATION_ABS = 0.1;  // plus or minus this amount (3 std deviations)
   private static final double AGE_VARIATION_FACTOR = 0.25;  // plus or minus this amount (3 std deviations)
   private static final double SIZE_VARIATION_FACTOR = 0.25;   // plus or minus this amount (3 std deviations)
 
@@ -59,18 +58,6 @@ public abstract class BreathNode
    * @return the initial motion vector (speed and direction)
    */
   public abstract Vec3 getRandomisedStartingMotion(Vec3 initialDirection, Random rand);
-//  {
-//    float initialSpeed = getStartingSpeed();
-//    Vec3 direction = initialDirection.normalize();
-//
-//    double actualMotionX = direction.xCoord + MathX.getTruncatedGaussian(rand, 0, SPEED_VARIATION_ABS);
-//    double actualMotionY = direction.yCoord + MathX.getTruncatedGaussian(rand, 0, SPEED_VARIATION_ABS);
-//    double actualMotionZ = direction.zCoord + MathX.getTruncatedGaussian(rand, 0, SPEED_VARIATION_ABS);
-//    actualMotionX *= initialSpeed;
-//    actualMotionY *= initialSpeed;
-//    actualMotionZ *= initialSpeed;
-//    return new Vec3(actualMotionX, actualMotionY, actualMotionZ);
-//  }
 
   protected Vec3 getRandomisedStartingMotion(Vec3 initialDirection, Random rand, double speedVariationAbsolute)
   {
@@ -86,11 +73,15 @@ public abstract class BreathNode
     return new Vec3(actualMotionX, actualMotionY, actualMotionZ);
   }
 
-
   public float getStartingSpeed()
   {
     return speedPowerFactor * INITIAL_SPEED;
   }
+
+  /**
+   * Modifies the entity's velocity depending on the breathnode state (eg its age)
+   */
+  public void modifyEntityVelocity(Entity entity) {return;}
 
   public float getMaxLifeTime()
   {
@@ -112,28 +103,6 @@ public abstract class BreathNode
   public void updateAge(Entity parentEntity)
   {
     ageTicks = calculateNewAge(parentEntity, ageTicks);
-//    if (parentEntity.isInWater()) {  // extinguish in water
-//      ageTicks = getMaxLifeTime() + 1;
-//      return;
-//    }
-//
-//    if (ageTicks++ > getMaxLifeTime()) {
-//      return;
-//    }
-//
-//    // collision ages breath node faster
-//    if (parentEntity.isCollided) {
-//      ageTicks += 5;
-//    }
-//
-//    // slow breath nodes age very fast (they look silly when sitting still)
-//    final double SPEED_THRESHOLD = getStartingSpeed() * 0.25;
-//    double speedSQ = parentEntity.motionX * parentEntity.motionX
-//                    + parentEntity.motionY * parentEntity.motionY
-//                    + parentEntity.motionZ * parentEntity.motionZ;
-//    if (speedSQ < SPEED_THRESHOLD * SPEED_THRESHOLD) {
-//      ageTicks += 20;
-//    }
   }
 
   /**
@@ -166,19 +135,6 @@ public abstract class BreathNode
    * @return the size (diameter) of the area of effect of the breathnode in blocks
    */
   public abstract float getCurrentDiameterOfEffect();
-//  {
-//    float lifetimeFraction = getLifetimeFraction();
-//
-//    float fractionOfFullSize = 1.0F;
-//    if (lifetimeFraction < YOUNG_AGE) {
-//      fractionOfFullSize = MathHelper.sin(lifetimeFraction / YOUNG_AGE * (float) Math.PI / 2.0F);
-//    }
-//
-//    final float NODE_MAX_SIZE = NODE_DIAMETER_IN_BLOCKS * sizePowerFactor * relativeSizeOfThisNode;
-//    final float INITIAL_SIZE = 0.2F * NODE_MAX_SIZE;
-//    return INITIAL_SIZE + (NODE_MAX_SIZE - INITIAL_SIZE) * MathHelper.clamp_float(fractionOfFullSize, 0.0F, 1.0F);
-//  }
-
 
   /** get the current size (diameter) of the area of effect of the breath node, in blocks
    * This is a beam whose diameter is constant apart from an initial rapid expansion.

@@ -68,6 +68,7 @@ class EntityBreathNode extends Entity
     prevPosX = posX;
     prevPosY = posY;
     prevPosZ = posZ;
+    breathNode.modifyEntityVelocity(this);
     collisions = entityMoveAndResizeHelper.moveAndResizeEntity(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
     intensityAtCollision = getCurrentIntensity();
 
