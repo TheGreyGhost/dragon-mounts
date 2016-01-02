@@ -5,21 +5,17 @@ import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.util.ItemUtils;
 import info.ata4.minecraft.dragon.util.math.MathX;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockBush;
-import net.minecraft.block.BlockDirt;
-import net.minecraft.block.BlockTallGrass;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.gen.feature.*;
 
 import java.util.Map;
 import java.util.Random;
@@ -268,6 +264,99 @@ public class BreathWeaponForest extends BreathWeapon
   // turn dirt to grass
   // turn
   private void checkForSuitableGround(World world, BlockPos blockPos) {
+
+    // WorldGenCactus
+    if (worldIn.isAirBlock(blockpos1))
+    {
+      int j = 1 + p_180709_2_.nextInt(p_180709_2_.nextInt(3) + 1);
+
+      for (int k = 0; k < j; ++k)
+      {
+        if (Blocks.cactus.canBlockStay(worldIn, blockpos1))
+        {
+          worldIn.setBlockState(blockpos1.up(k), Blocks.cactus.getDefaultState(), 2);
+        }
+      }
+    }
+
+    //WorldGenReed
+    BlockPos blockpos2 = blockpos1.down();
+
+    if (worldIn.getBlockState(blockpos2.west()).getBlock().getMaterial() == Material.water || worldIn.getBlockState(blockpos2.east()).getBlock().getMaterial() == Material.water || worldIn.getBlockState(blockpos2.north()).getBlock().getMaterial() == Material.water || worldIn.getBlockState(blockpos2.south()).getBlock().getMaterial() == Material.water)
+    {
+      int j = 2 + p_180709_2_.nextInt(p_180709_2_.nextInt(3) + 1);
+
+      for (int k = 0; k < j; ++k)
+      {
+        if (Blocks.reeds.canBlockStay(worldIn, blockpos1))
+        {
+          worldIn.setBlockState(blockpos1.up(k), Blocks.reeds.getDefaultState(), 2);
+        }
+      }
+    }
+
+    //WorldGenVines
+    EnumFacing[] aenumfacing = EnumFacing.Plane.HORIZONTAL.facings();
+    int i = aenumfacing.length;
+
+    for (int j = 0; j < i; ++j)
+    {
+      EnumFacing enumfacing = aenumfacing[j];
+
+      if (Blocks.vine.canPlaceBlockOnSide(worldIn, p_180709_3_, enumfacing))
+      {
+        IBlockState iblockstate = Blocks.vine.getDefaultState().withProperty(BlockVine.NORTH, Boolean.valueOf(enumfacing == EnumFacing.NORTH)).withProperty(BlockVine.EAST, Boolean.valueOf(enumfacing == EnumFacing.EAST)).withProperty(BlockVine.SOUTH, Boolean.valueOf(enumfacing == EnumFacing.SOUTH)).withProperty(BlockVine.WEST, Boolean.valueOf(enumfacing == EnumFacing.WEST));
+        worldIn.setBlockState(p_180709_3_, iblockstate, 2);
+        break;
+      }
+    }
+
+    //WorldGenTallGrass
+    GRASS(1, "tall_grass"),
+            FERN(2, "fern");
+
+    this.field_175907_a = Blocks.tallgrass.getDefaultState().withProperty(BlockTallGrass.TYPE, p_i45629_1_);
+
+    if (worldIn.isAirBlock(blockpos1) && Blocks.tallgrass.canBlockStay(worldIn, blockpos1, this.field_175907_a))
+    {
+      worldIn.setBlockState(blockpos1, this.field_175907_a, 2);
+    }
+
+    //WorldGenWaterLily
+    if (worldIn.isAirBlock(new BlockPos(j, k, l)) && Blocks.waterlily.canPlaceBlockAt(worldIn, new BlockPos(j, k, l)))
+    {
+      worldIn.setBlockState(new BlockPos(j, k, l), Blocks.waterlily.getDefaultState(), 2);
+    }
+
+    tests:
+        canPlaceBlockAt
+
+
+
+    //WorldGenFlowers
+    new WorldGenFlowers(Blocks.yellow_flower, BlockFlower.EnumFlowerType.DANDELION);
+    BiomeGenBase p_150513_1_;
+    BlockFlower.EnumFlowerType enumflowertype = p_150513_1_.pickRandomFlower(this.randomGenerator, blockpos);
+    BlockFlower blockflower = enumflowertype.getBlockType().getBlock();
+
+    if (worldIn.isAirBlock(blockpos1) && (!worldIn.provider.getHasNoSky() || blockpos1.getY() < 255) && this.flower.canBlockStay(worldIn, blockpos1, this.field_175915_b))
+    {
+      worldIn.setBlockState(blockpos1, this.field_175915_b, 2);
+    }
+
+    // WorldGenDoublePlant -
+    BlockDoublePlant.EnumPlantType.SYRINGA;
+    BlockDoublePlant.EnumPlantType.ROSE;
+    BlockDoublePlant.EnumPlantType.PAEONIA;
+    BlockDoublePlant.EnumPlantType.GRASS;
+    BlockDoublePlant.EnumPlantType.SUNFLOWER;
+    BlockDoublePlant.EnumPlantType.FERN;
+    if (worldIn.isAirBlock(blockpos1) && (!worldIn.provider.getHasNoSky() || blockpos1.getY() < 254) && Blocks.double_plant.canPlaceBlockAt(worldIn, blockpos1))
+    {
+      Blocks.double_plant.placeAt(worldIn, blockpos1, this.field_150549_a, 2);
+      flag = true;
+    }
+
     BlockPos blockPosOneDown = blockPos.down();
     IBlockState blockOneDown = world.getBlockState(blockPosOneDown);
 
@@ -311,12 +400,25 @@ double_plant
 
               melon
                       pumpkin
+    Blocks.farmland
 
     if (this == Blocks.wheat)          return net.minecraftforge.common.EnumPlantType.Crop;
     if (this == Blocks.carrots)        return net.minecraftforge.common.EnumPlantType.Crop;
     if (this == Blocks.potatoes)       return net.minecraftforge.common.EnumPlantType.Crop;
     if (this == Blocks.melon_stem)     return net.minecraftforge.common.EnumPlantType.Crop;
     if (this == Blocks.pumpkin_stem)   return net.minecraftforge.common.EnumPlantType.Crop;
+
+    switch (p_151559_1_.nextInt(5))
+    {
+      case 0:
+        return Blocks.carrots;
+      case 1:
+        return Blocks.potatoes;
+      default:
+        return Blocks.wheat;
+    }
+
+
     if (this == Blocks.deadbush)       return net.minecraftforge.common.EnumPlantType.Desert;
     if (this == Blocks.waterlily)      return net.minecraftforge.common.EnumPlantType.Water;
     if (this == Blocks.red_mushroom)   return net.minecraftforge.common.EnumPlantType.Cave;

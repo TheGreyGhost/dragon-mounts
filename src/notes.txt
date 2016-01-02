@@ -309,6 +309,18 @@ looking is handled by movement AI.
 
 
 
+    tests:
+        canBlockStay-multiple Block.cactus; Block.reeds
+        canPlaceBlockOnSide Blocks.vine
+        canBlockStay - tallgrass (grass, fern); flowers
+        canPlaceBlockAt - waterlily, double plant (various)
+
+    place:
+        setBlockState-multiple Block.cactus, Block.reeds
+        setBlockState with custom state
+        setBlockState - tallgrass (grass, fern), waterlily, flowers
+        placeAt - doubleplant
+
 
 
 
