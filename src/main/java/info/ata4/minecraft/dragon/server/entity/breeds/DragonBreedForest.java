@@ -90,12 +90,6 @@ public class DragonBreedForest extends DragonBreed {
         }
     }
 
-//                if (world.getBlock(bx, by, bz) == Blocks.dirt
-//                        && world.canBlockSeeTheSky(bx, by, bz)
-//                        && FOOTPRINT.canPlaceBlockAt(world, bx, by, bz)) {
-//                    world.setBlock(bx, by, bz, FOOTPRINT);
-//                }
-
   @Override
   public BreathWeaponFXEmitter getBreathWeaponFXEmitter(EntityTameableDragon dragon)
   {

@@ -6,6 +6,9 @@ import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.util.ItemUtils;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockBush;
+import net.minecraft.block.BlockDirt;
+import net.minecraft.block.BlockTallGrass;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -25,6 +28,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by TGG on 7/12/2015.
+ * effect on blocks:
+ * - dirt turns to grass
+ * - any living blocks - plants, leaves, etc, spread to adjacent empty blocks at a random rate
+ * - crops (eg wheat) grow to max
+ * - saplings to grow to full
+ * - ploughed soil sprouts random crops
+ * - turns coal to wood
+ * - wood objects grow leaves
+ * - torch or fire causes a small explosion
+ * - cobblestone becomes mossy cobblestone
+ * effect on entities:
+ * - poison plus minor damage armor not protecting
  */
 public class BreathWeaponForest extends BreathWeapon
 {
@@ -48,19 +63,13 @@ public class BreathWeaponForest extends BreathWeapon
 
     Random rand = new Random();
 
-    // effects- which occur after the block has been exposed for sufficient time
-    // soft blocks such as sand, leaves, grass, flowers, plants, etc get blown away (destroyed)
-    // blows away snow but not ice
-    // shatters panes, but not glass
-    // extinguish torches
-    // causes fire to spread rapidly - NO, this looks stupid, so delete it
-
     if (block == null) return currentHitDensity;
     Material material = block.getMaterial();
+
     if (material == null) return currentHitDensity;
 
-    if (materialDisintegrateTime.containsKey(material)) {
-      Integer disintegrationTime = materialDisintegrateTime.get(material);
+    if (materialGrowthTime.containsKey(material)) {
+      Integer disintegrationTime = materialGrowthTime.get(material);
       if (disintegrationTime != null
               && currentHitDensity.getMaxHitDensity() > disintegrationTime) {
         final boolean DROP_BLOCK = true;
@@ -207,24 +216,121 @@ public class BreathWeaponForest extends BreathWeapon
 //    }
 //  }
 
-  private static Map<Material, Integer> materialDisintegrateTime = Maps.newHashMap();  // lazy initialisation
+  private static Map<Material, Integer> materialGrowthTime = Maps.newHashMap();  // lazy initialisation
 
   private void initialiseStatics()
   {
-    if (!materialDisintegrateTime.isEmpty()) return;
+    if (!materialGrowthTime.isEmpty()) return;
     final int INSTANT = 0;
     final int MODERATE = 10;
     final int SLOW = 50;
-    materialDisintegrateTime.put(Material.leaves, INSTANT);
-    materialDisintegrateTime.put(Material.plants, INSTANT);
-    materialDisintegrateTime.put(Material.vine, INSTANT);
-    materialDisintegrateTime.put(Material.web, INSTANT);
-    materialDisintegrateTime.put(Material.gourd, INSTANT);
-    materialDisintegrateTime.put(Material.sponge, MODERATE);
-    materialDisintegrateTime.put(Material.sand, MODERATE);
-    materialDisintegrateTime.put(Material.snow, MODERATE);
-    materialDisintegrateTime.put(Material.craftedSnow, MODERATE);
-    materialDisintegrateTime.put(Material.cactus, MODERATE);
+    materialGrowthTime.put(Material.leaves, INSTANT);
+    materialGrowthTime.put(Material.plants, INSTANT);  // cocoa, flower, reed, bush
+    materialGrowthTime.put(Material.vine, INSTANT);  // vine, deadbush, double plant, tallgrass
+    materialGrowthTime.put(Material.web, INSTANT);
+    materialGrowthTime.put(Material.gourd, INSTANT); //melon, pumpkin
+    materialGrowthTime.put(Material.cactus, MODERATE);
+
+    canPlaceBlockAt
+
+    IPlantable
+    BlockBush
+
+    if (this == Blocks.wheat)          return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.carrots)        return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.potatoes)       return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.melon_stem)     return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.pumpkin_stem)   return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.deadbush)       return net.minecraftforge.common.EnumPlantType.Desert;
+    if (this == Blocks.waterlily)      return net.minecraftforge.common.EnumPlantType.Water;
+    if (this == Blocks.red_mushroom)   return net.minecraftforge.common.EnumPlantType.Cave;
+    if (this == Blocks.brown_mushroom) return net.minecraftforge.common.EnumPlantType.Cave;
+    if (this == Blocks.nether_wart)    return net.minecraftforge.common.EnumPlantType.Nether;
+    if (this == Blocks.sapling)        return net.minecraftforge.common.EnumPlantType.Plains;
+    if (this == Blocks.tallgrass)      return net.minecraftforge.common.EnumPlantType.Plains;
+    if (this == Blocks.double_plant)   return net.minecraftforge.common.EnumPlantType.Plains;
+    if (this == Blocks.red_flower)     return net.minecraftforge.common.EnumPlantType.Plains;
+    if (this == Blocks.yellow_flower)  return net.minecraftforge.common.EnumPlantType.Plains;
+
+
+
   }
+
+  private static class
+  
+
+  private void checkForPlantSpread()
+  {
+
+  }
+
+
+  // turn dirt to grass
+  // turn
+  private void checkForSuitableGround(World world, BlockPos blockPos) {
+    BlockPos blockPosOneDown = blockPos.down();
+    IBlockState blockOneDown = world.getBlockState(blockPosOneDown);
+
+    if (blockOneDown.getBlock() == Blocks.dirt
+            && blockOneDown.getValue(BlockDirt.VARIANT) == BlockDirt.DirtType.DIRT
+        ) {
+      world.setBlockState(blockPosOneDown, Blocks.grass.getDefaultState());
+    }
+
+    if (blockOneDown.getBlock() == Blocks.grass && Blocks.tallgrass.canPlaceBlockAt(world, blockPos)) {
+
+
+
+
+
+      world.setBlockState(blockPos,
+                          Blocks.tallgrass.getDefaultState()
+                                          .withProperty(BlockTallGrass.TYPE, BlockTallGrass.EnumType.GRASS));
+    }
+
+    Blocks.farmland
+
+  }
+
+  private IBlockState getRandomSpawnPlant(IBlockState blockToGrowOn)
+  {
+    if (blockToGrowOn.getBlock() == Blocks.grass) {
+
+    } else if (blockToGrowOn.getBlock() == Blocks.farmland) {
+
+    } else if (blockToGrowOn.getBlock() == Blocks.sand) {
+
+    } else if (blockToGrowOn.getBlock() == Blocks.water) {
+      Blocks.waterlily
+    }
+
+
+      waterlily
+
+double_plant
+
+              melon
+                      pumpkin
+
+    if (this == Blocks.wheat)          return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.carrots)        return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.potatoes)       return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.melon_stem)     return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.pumpkin_stem)   return net.minecraftforge.common.EnumPlantType.Crop;
+    if (this == Blocks.deadbush)       return net.minecraftforge.common.EnumPlantType.Desert;
+    if (this == Blocks.waterlily)      return net.minecraftforge.common.EnumPlantType.Water;
+    if (this == Blocks.red_mushroom)   return net.minecraftforge.common.EnumPlantType.Cave;
+    if (this == Blocks.brown_mushroom) return net.minecraftforge.common.EnumPlantType.Cave;
+    if (this == Blocks.nether_wart)    return net.minecraftforge.common.EnumPlantType.Nether;
+    if (this == Blocks.sapling)        return net.minecraftforge.common.EnumPlantType.Plains;
+    if (this == Blocks.tallgrass)      return net.minecraftforge.common.EnumPlantType.Plains;
+    if (this == Blocks.double_plant)   return net.minecraftforge.common.EnumPlantType.Plains;
+    if (this == Blocks.red_flower)     return net.minecraftforge.common.EnumPlantType.Plains;
+    if (this == Blocks.yellow_flower)  return net.minecraftforge.common.EnumPlantType.Plains;
+
+  }
+
+
+
 
 }
