@@ -1,5 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import net.minecraft.block.BlockFlower;
 import net.minecraft.block.BlockVine;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -26,7 +27,7 @@ public interface NewPlantSpawner {
   boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random);
 
   // copied from WorldGenCactus
-  public class CactusSpawner implements NewPlantSpawner
+  public static class CactusSpawner implements NewPlantSpawner
   {
     @Override
     public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random)
@@ -47,7 +48,7 @@ public interface NewPlantSpawner {
   }
 
   // copied from WorldGenReed
-  public class ReedSpawner implements NewPlantSpawner
+  public static class ReedSpawner implements NewPlantSpawner
   {
     @Override
     public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random)
@@ -72,7 +73,7 @@ public interface NewPlantSpawner {
     }
 
     // copied from WorldGenVines
-    public class VinesSpawner implements NewPlantSpawner {
+    public static class VinesSpawner implements NewPlantSpawner {
       @Override
       public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random) {
         boolean success = false;
@@ -108,6 +109,56 @@ public interface NewPlantSpawner {
         }
         return success;
       }
+    }
+  }
+
+  // copied from WorldGenWaterLily
+  public static class WaterLilySpawner implements NewPlantSpawner
+  {
+    @Override
+    public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random)
+    {
+      boolean success = false;
+      if (world.isAirBlock(blockPos) && Blocks.waterlily.canPlaceBlockAt(world, blockPos)) {
+        world.setBlockState(blockPos, Blocks.waterlily.getDefaultState(), SET_BLOCKSTATE_FLAG);
+        success = true;
+      }
+      return success;
+    }
+  }
+
+  // copied from WorldGenFlowers
+  public static class FlowersSpawner implements NewPlantSpawner
+  {
+    public FlowersSpawner(BlockFlower.EnumFlowerType enumFlowerType)
+    {
+      flowerBlock = enumFlowerType.getBlockType().getBlock();
+      flowerToSpawn = flowerBlock.getDefaultState().withProperty(flowerBlock.getTypeProperty(), enumFlowerType);
+    }
+
+    @Override
+    public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random)
+    {
+      boolean success = false;
+      if (world.isAirBlock(blockPos) && flowerBlock.canBlockStay(world, blockPos, flowerToSpawn)) {
+        world.setBlockState(blockPos, flowerToSpawn, SET_BLOCKSTATE_FLAG);
+        success = true;
+      }
+      return success;
+    }
+
+    private FlowersSpawner() {}
+    private BlockFlower flowerBlock;
+    private IBlockState flowerToSpawn;
+  }
+
+  public static class NothingSpawner implements NewPlantSpawner
+  {
+    @Override
+    public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random)
+    {
+      boolean success = true;
+      return success;
     }
   }
 
