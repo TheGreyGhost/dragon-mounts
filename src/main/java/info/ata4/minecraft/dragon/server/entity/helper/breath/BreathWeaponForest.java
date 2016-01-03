@@ -1,5 +1,7 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
@@ -213,7 +215,8 @@ public class BreathWeaponForest extends BreathWeapon
 //  }
 
   private static Map<Material, Integer> materialGrowthTime = Maps.newHashMap();  // lazy initialisation
-
+  private static ImmutableMap<Material, WeightedRandom> spawnersByGroundMaterial;
+  private static ImmutableMap<Block, NewPlantSpawner> spawnersByBlock;
   private void initialiseStatics()
   {
     if (!materialGrowthTime.isEmpty()) return;
@@ -226,6 +229,8 @@ public class BreathWeaponForest extends BreathWeapon
     materialGrowthTime.put(Material.web, INSTANT);
     materialGrowthTime.put(Material.gourd, INSTANT); //melon, pumpkin
     materialGrowthTime.put(Material.cactus, MODERATE);
+
+
 
     canPlaceBlockAt
 
