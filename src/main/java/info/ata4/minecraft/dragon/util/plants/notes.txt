@@ -1,0 +1,4 @@
+The plants package is used to treat the different vanilla plants in a unified way;
+- copying, placing, growing.
+
+It is based around the Plant base class.  See Plant for more usage information.

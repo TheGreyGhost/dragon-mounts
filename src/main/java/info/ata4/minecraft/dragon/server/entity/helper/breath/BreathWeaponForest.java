@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
-import info.ata4.minecraft.dragon.server.entity.helper.breath.plantspawners.NewPlantSpawner;
+import info.ata4.minecraft.dragon.util.plants.NewPlantSpawner;
 import info.ata4.minecraft.dragon.server.util.ItemUtils;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.block.*;
@@ -16,8 +16,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.gen.feature.*;
 
 import java.util.Map;
 import java.util.Random;
@@ -28,6 +26,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Created by TGG on 7/12/2015.
  * effect on blocks:
  * - dirt turns to grass
+ * - living plants spawn on suitable blocks (dirt, grass, water, sand, etc)
  * - any living blocks - plants, leaves, etc, spread to adjacent empty blocks at a random rate
  * - crops (eg wheat) grow to max
  * - saplings to grow to full
