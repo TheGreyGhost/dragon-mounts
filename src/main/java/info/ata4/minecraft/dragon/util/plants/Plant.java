@@ -14,14 +14,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by TGG on 3/01/2016.
- * The Plant superclass consolidates all the various vanilla plants to allow two operations:
+ * The Plant superclass consolidates all the various vanilla plants to allow three operations:
  * 1) create the plant at a target location without having to switch() based on the type of plant
  * 2) take a copy of an existing plant at a given location (so it can be planted elsewhere)
+ * 3) grow a plant  at a target location without having to switch() based on the type of plant
  *
  * Typical usage:
  * 1) create a plant, either using the subclass' constructor (eg new CactusPlant()), or alternatively
  *   getPlantFromBlockState()
  * 2) trySpawnNewPlant() to spawn the plant at the desired location
+ * 3) grow() to grow the plant at the specified location
  *
  * To extend for new Plants:
  * 1) Add a new MyPlant extends Plant

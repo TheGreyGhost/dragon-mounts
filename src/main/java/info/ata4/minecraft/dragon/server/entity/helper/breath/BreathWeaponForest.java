@@ -4,11 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.util.plants.*;
 import info.ata4.minecraft.dragon.util.plants.NewPlantSpawner;
 import info.ata4.minecraft.dragon.server.util.ItemUtils;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.block.*;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.material.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -17,6 +18,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -62,8 +64,8 @@ public class BreathWeaponForest extends BreathWeapon {
 
     if (material == null) return currentHitDensity;
 
-    if (materialGrowthTime.containsKey(material)) {
-      Integer disintegrationTime = materialGrowthTime.get(material);
+    if (materialEffectTimeTransmute.containsKey(material)) {
+      Integer disintegrationTime = materialEffectTimeTransmute.get(material);
       if (disintegrationTime != null
               && currentHitDensity.getMaxHitDensity() > disintegrationTime) {
         final boolean DROP_BLOCK = true;
@@ -209,22 +211,82 @@ public class BreathWeaponForest extends BreathWeapon {
 //    }
 //  }
 
-  private static Map<Material, Integer> materialGrowthTime = Maps.newHashMap();  // lazy initialisation
-  private static ImmutableMap<Material, WeightedRandom> spawnersByGroundMaterial;
-  private static ImmutableMap<Block, NewPlantSpawner> spawnersByBlock;
+  private static Map<Material, Integer> materialEffectTimeGrow = Maps.newHashMap();  // lazy initialisation
+  private static Map<Material, Integer> materialEffectTimeSpawnNew = Maps.newHashMap();  // lazy initialisation
+  private static Map<Material, Integer> materialEffectTimeTransmute = Maps.newHashMap();  // lazy initialisation
+  private static Map<Material, Integer> materialEffectTimeFlammable = Maps.newHashMap();   // lazy initialisation
+
+  private static List<WeightedPlant> weightedSpawners;
 
   private void initialiseStatics() {
-    if (!materialGrowthTime.isEmpty()) return;
+    if (!materialEffectTimeGrow.isEmpty()) return;
     final int INSTANT = 0;
     final int MODERATE = 10;
     final int SLOW = 50;
-    materialGrowthTime.put(Material.leaves, INSTANT);
-    materialGrowthTime.put(Material.plants, INSTANT);  // cocoa, flower, reed, bush
-    materialGrowthTime.put(Material.vine, INSTANT);  // vine, deadbush, double plant, tallgrass
-    materialGrowthTime.put(Material.web, INSTANT);
-    materialGrowthTime.put(Material.gourd, INSTANT); //melon, pumpkin
-    materialGrowthTime.put(Material.cactus, MODERATE);
+    materialEffectTimeGrow.put(Material.leaves, MODERATE);
+    materialEffectTimeGrow.put(Material.plants, INSTANT);  // cocoa, flower, reed, bush
+    materialEffectTimeGrow.put(Material.vine, INSTANT);  // vine, deadbush, double plant, tallgrass
+    materialEffectTimeGrow.put(Material.web, INSTANT);
+    materialEffectTimeGrow.put(Material.gourd, INSTANT); //melon, pumpkin
+    materialEffectTimeGrow.put(Material.cactus, MODERATE);
+    materialEffectTimeGrow.put(Material.ground, INSTANT);
+
+    materialEffectTimeSpawnNew.put(Material.grass, MODERATE);
+    materialEffectTimeSpawnNew.put(Material.ground, MODERATE);
+    materialEffectTimeSpawnNew.put(Material.water, MODERATE);
+    materialEffectTimeSpawnNew.put(Material.air, MODERATE);
+    materialEffectTimeSpawnNew.put(Material.clay, MODERATE);
+    materialEffectTimeSpawnNew.put(Material.sand, MODERATE);
+
+    materialEffectTimeTransmute.put(Material.grass, INSTANT);
+    materialEffectTimeTransmute.put(Material.rock, MODERATE);
+
+    materialEffectTimeFlammable.put(Material.lava, INSTANT);
+    materialEffectTimeFlammable.put(Material.fire, MODERATE);
+
+    final int WATER_WEIGHT = 1000;
+    weightedSpawners.add(new WeightedPlant(new WaterLilyPlant(), WATER_WEIGHT));
+
+    final int CROPS_WEIGHT_PART = 100;
+    weightedSpawners.add(new WeightedPlant(new CropsPlant(CropsPlant.CropType.CARROT), CROPS_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new CropsPlant(CropsPlant.CropType.POTATO), CROPS_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new CropsPlant(CropsPlant.CropType.WHEAT), CROPS_WEIGHT_PART * 8));
+
+    final int SAND_WEIGHT_PART = 500;
+    weightedSpawners.add(new WeightedPlant(new CactusPlant(), SAND_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new ReedsPlant(), SAND_WEIGHT_PART));
+
+    final int DIRT_WEIGHT_PART = 50;
+    for (BlockFlower.EnumFlowerType flowerType : BlockFlower.EnumFlowerType.values()) {
+      weightedSpawners.add(new WeightedPlant(new FlowersPlant(flowerType), DIRT_WEIGHT_PART));
+    }
+
+    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.GRASS), 5 * DIRT_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.FERN), 2 * DIRT_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.SUNFLOWER), DIRT_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.SYRINGA), DIRT_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.ROSE), DIRT_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.PAEONIA), DIRT_WEIGHT_PART));
+
+    weightedSpawners.add(new WeightedPlant(new TallGrassPlant(BlockTallGrass.EnumType.FERN), DIRT_WEIGHT_PART));
+    weightedSpawners.add(new WeightedPlant(new TallGrassPlant(BlockTallGrass.EnumType.GRASS), DIRT_WEIGHT_PART));
+
+    final int STONE_WEIGHT_PART = 1000;
+    weightedSpawners.add(new WeightedPlant(new VinesPlant(), STONE_WEIGHT_PART));
   }
+
+  static class WeightedPlant extends WeightedRandom.Item
+  {
+    public WeightedPlant(Plant i_plant, int i_weight)
+    {
+      super(i_weight);
+      plant = i_plant;
+    }
+    public Plant getPlant() {return plant;}
+    private Plant plant;
+  }
+
+
 }
 //
 //
