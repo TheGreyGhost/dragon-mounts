@@ -9,6 +9,7 @@ entity.DragonMounts.DragonMount.water.name=Water Dragon
 entity.DragonMounts.DragonMount.forest.name=Forest Dragon
 
 item.dragonorb.name=Dragon Orb
+item.test_runner.name=Run an Ingame Test
 
 commands.dragon.nodragons=There are no dragons nearby
 commands.dragon.canttame=You cannot tame dragons

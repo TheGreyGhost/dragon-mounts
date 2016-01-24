@@ -50,7 +50,7 @@ public abstract class BreathWeapon
    * @param currentHitDensity
    * @return the updated block hit density
    */
-  abstract BreathAffectedBlock affectBlock(World world, Vec3i blockPosition,
+  abstract public BreathAffectedBlock affectBlock(World world, Vec3i blockPosition,
                                            BreathAffectedBlock currentHitDensity);
 
 
@@ -62,7 +62,7 @@ public abstract class BreathWeapon
    * @param currentHitDensity the hit density
    * @return the updated hit density; null if entity dead, doesn't exist, or otherwise not affected
    */
-  abstract BreathAffectedEntity affectEntity(World world, Integer entityID, BreathAffectedEntity currentHitDensity);
+  abstract public BreathAffectedEntity affectEntity(World world, Integer entityID, BreathAffectedEntity currentHitDensity);
 
   protected EntityTameableDragon dragon;
 }

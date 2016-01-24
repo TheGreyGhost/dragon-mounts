@@ -17,6 +17,7 @@ import info.ata4.minecraft.dragon.server.network.DragonControlMessage;
 import info.ata4.minecraft.dragon.server.network.DragonControlMessageHandler;
 import info.ata4.minecraft.dragon.server.network.DragonTargetMessage;
 import info.ata4.minecraft.dragon.server.network.DragonTargetMessageHandlerServer;
+import info.ata4.minecraft.dragon.test.StartupCommon;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
@@ -56,6 +57,7 @@ public class CommonProxy {
         itemDragonOrb = (ItemDragonOrb) (new ItemDragonOrb().setUnlocalizedName("dragonorb"));
         GameRegistry.registerItem(itemDragonOrb, "dragonorb");
 //    MinecraftForge.EVENT_BUS.register(new EntitySpawnSuppressor());
+      StartupCommon.preInitCommon();
     }
 
     public void onInit(FMLInitializationEvent evt) {
@@ -71,6 +73,8 @@ public class CommonProxy {
                 DCM_DISCRIMINATOR_ID, Side.SERVER);
         network.registerMessage(DragonTargetMessageHandlerServer.class, DragonTargetMessage.class,
                 DOT_DISCRIMINATOR_ID, Side.SERVER);
+      StartupCommon.initCommon();
+
     }
 
     public void onPostInit(FMLPostInitializationEvent event) {
@@ -82,7 +86,7 @@ public class CommonProxy {
             'E', Items.ender_eye,
             'B', Items.blaze_rod
         });
-
+      StartupCommon.postInitCommon();
     }
 
     public void onServerStarted(FMLServerStartedEvent evt) {

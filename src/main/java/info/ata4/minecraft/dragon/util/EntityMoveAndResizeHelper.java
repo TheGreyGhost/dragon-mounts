@@ -36,7 +36,7 @@ public class EntityMoveAndResizeHelper {
    *          x = 3, but got pushed back to x=3.5
    */
   public Collection<Pair<EnumFacing, AxisAlignedBB>> moveAndResizeEntity(double dx, double dy, double dz, float newWidth, float newHeight) {
-    entity.worldObj.theProfiler.startSection("moveflame");
+    entity.worldObj.theProfiler.startSection("moveAndResizeEntity");
     AxisAlignedBB entityAABB = entity.getEntityBoundingBox().offset(0, 0, 0);  // get a copy
 
     double wDXplus = (newWidth - entity.width) / 2.0;

@@ -56,7 +56,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class BreathWeaponForest extends BreathWeapon {
   public BreathWeaponForest(EntityTameableDragon i_dragon) {
     super(i_dragon);
-    initialiseStatics();
   }
 
   @Override
@@ -65,6 +64,7 @@ public class BreathWeaponForest extends BreathWeapon {
     checkNotNull(world);
     checkNotNull(blockPosition);
     checkNotNull(currentHitDensity);
+    initialiseStaticsLazily();
 
     BlockPos blockPos = new BlockPos(blockPosition);
     IBlockState iBlockState = world.getBlockState(blockPos);
@@ -136,6 +136,7 @@ public class BreathWeaponForest extends BreathWeapon {
     checkNotNull(world);
     checkNotNull(entityID);
     checkNotNull(currentHitDensity);
+    initialiseStaticsLazily();
 
     if (entityID == dragon.getEntityId()) return null;
 
@@ -251,7 +252,7 @@ public class BreathWeaponForest extends BreathWeapon {
 
   private static Map<Material, WeightedRandomChoices<Plant>> weightedSpawners = Maps.newHashMap();
 
-  private void initialiseStatics() {
+  private void initialiseStaticsLazily() {
     if (!materialEffectTimeGrow.isEmpty()) return;
     final int INSTANT = 0;
     final int MODERATE = 10;

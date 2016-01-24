@@ -15,6 +15,8 @@ import info.ata4.minecraft.dragon.client.handler.*;
 import info.ata4.minecraft.dragon.client.render.DragonRenderer;
 import info.ata4.minecraft.dragon.server.CommonProxy;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.test.StartupClientOnly;
+import info.ata4.minecraft.dragon.test.StartupCommon;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -41,6 +43,7 @@ public class ClientProxy extends CommonProxy {
         super.onPreInit(evt);
         DragonMounts.instance.getConfig().clientInit();
         MinecraftForge.EVENT_BUS.register(new TextureStitcherBreathFX());
+      StartupClientOnly.preInitClientOnly();
     }
 
     @Override
@@ -51,6 +54,7 @@ public class ClientProxy extends CommonProxy {
 
         Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
                 .register(itemDragonOrb, DEFAULT_ITEM_SUBTYPE, itemModelResourceLocation);
+      StartupClientOnly.initClientOnly();
     }
 
     @Override
@@ -70,6 +74,8 @@ public class ClientProxy extends CommonProxy {
         FMLCommonHandler.instance().bus().register(DragonOrbControl.getInstance());
         MinecraftForge.EVENT_BUS.register(new TargetHighlighter());
         FMLCommonHandler.instance().bus().register(new DragonEntityWatcher());
+      StartupClientOnly.postInitClientOnly();
+
     }
 
     /**

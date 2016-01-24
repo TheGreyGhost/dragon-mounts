@@ -51,6 +51,12 @@ public class BreathNodeForest extends BreathNode {
   @Override
   protected float calculateNewAge(Entity parentEntity, float currentAge)
   {
+    if (parentEntity.isBurning()) {  // disappear immediately when in contact with fire
+      ageTicks = getMaxLifeTime() + 1;
+      return ageTicks;
+    }
+
+
     if (ageTicks++ > getMaxLifeTime()) {
       return ageTicks;
     }
