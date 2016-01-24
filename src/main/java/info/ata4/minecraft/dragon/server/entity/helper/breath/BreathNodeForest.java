@@ -73,19 +73,30 @@ public class BreathNodeForest extends BreathNode {
 
     double speed = getStartingSpeed();
 
-    if (ageTicks < RAPID_MOVE_TICKS) {
+    if (startedExpansion) {
       return;
-    } else if (ageTicks < RAPID_MOVE_TICKS + SLOW_DOWN_TICKS) {
-      double slowDownFraction = (ageTicks - RAPID_MOVE_TICKS) / SLOW_DOWN_TICKS;
-//      speed *= Math.cos(Math.PI / 2.0 * slowDownFraction);
-      speed *= (1.0 - slowDownFraction);
-      entityVelocity = MathX.multiply(entityVelocity.normalize(), speed);
+    }
+
+    boolean shouldStartExpansion = false;
+    if (entity.isCollided) {
+      shouldStartExpansion = true;
     } else {
-      if (!startedExpansion) {
-        startedExpansion = true;
-        Random random = new Random();
-        entityVelocity = MathX.getRandomPointOnSphere(random, EXPANSION_SPEED);
+      if (ageTicks < RAPID_MOVE_TICKS) {
+        // don't change speed
+      } else if (ageTicks < RAPID_MOVE_TICKS + SLOW_DOWN_TICKS) {
+        double slowDownFraction = (ageTicks - RAPID_MOVE_TICKS) / SLOW_DOWN_TICKS;
+  //      speed *= Math.cos(Math.PI / 2.0 * slowDownFraction);
+        speed *= (1.0 - slowDownFraction);
+        entityVelocity = MathX.multiply(entityVelocity.normalize(), speed);
+      } else {
+        shouldStartExpansion = true;
       }
+    }
+
+    if (shouldStartExpansion) {
+      startedExpansion = true;
+      Random random = new Random();
+      entityVelocity = MathX.getRandomPointOnSphere(random, EXPANSION_SPEED);
     }
 
     entity.motionX = entityVelocity.xCoord;

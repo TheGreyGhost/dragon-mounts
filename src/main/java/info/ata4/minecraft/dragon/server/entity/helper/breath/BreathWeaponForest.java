@@ -1,13 +1,11 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.util.WeightedRandomChoices;
 import info.ata4.minecraft.dragon.util.plants.*;
-import info.ata4.minecraft.dragon.util.plants.NewPlantSpawner;
 import info.ata4.minecraft.dragon.server.util.ItemUtils;
-import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.block.*;
 import net.minecraft.block.material.*;
 import net.minecraft.block.state.IBlockState;
@@ -15,10 +13,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -26,17 +25,31 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by TGG on 7/12/2015.
- * effect on blocks:
- * - dirt turns to grass
- * - living plants spawn on suitable blocks (dirt, grass, water, sand, etc)
- * - any living blocks - plants, leaves, etc, spread to adjacent empty blocks at a random rate
+ * effect on blocks: there are four kinds of effects:
+ * 1) Grow: the block itself is a plant and will have a grow effect applied to it (eg crops)
+ * 2) Transmute: the block is not a plant but will be modified by the breath (eg turn to mossy cobblestone)
+ * 3) SpawnNew: the block is air or snow layer or flowing water, and the block underneath supports a plant -> spawn a plant here
+ * 4) Flammable: the block sets fire to the breath
+ *
+ * Grow:
  * - crops (eg wheat) grow to max
  * - saplings to grow to full
+ *
+ * Transmute:
+ * - dirt turns to grass
+ * - cobblestone becomes mossy cobblestone
+ *
+ * SpawnNew:
  * - ploughed soil sprouts random crops
+ * - living plants spawn on suitable blocks (dirt, grass, water, sand, etc)
+ *
+ * Flammable:
+ * - torch, lava, or fire causes a small explosion
+ *
+ * Ideas not implemented:
  * - turns coal to wood
  * - wood objects grow leaves
- * - torch or fire causes a small explosion
- * - cobblestone becomes mossy cobblestone
+ *
  * effect on entities:
  * - poison plus minor damage armor not protecting
  */
@@ -64,48 +77,50 @@ public class BreathWeaponForest extends BreathWeapon {
 
     if (material == null) return currentHitDensity;
 
-    if (materialEffectTimeTransmute.containsKey(material)) {
-      Integer disintegrationTime = materialEffectTimeTransmute.get(material);
-      if (disintegrationTime != null
-              && currentHitDensity.getMaxHitDensity() > disintegrationTime) {
-        final boolean DROP_BLOCK = true;
-        world.destroyBlock(blockPos, DROP_BLOCK);
-        return new BreathAffectedBlock();
-      }
-      return currentHitDensity;
-    }
-
-    if (material == Material.fire) {
-      final float THRESHOLD_FIRE_SPREAD = 1;
-      final float MAX_FIRE_DENSITY = 10;
-      final int MAX_PATH_LENGTH = 4;
-      double density = currentHitDensity.getMaxHitDensity();
-      if (density > THRESHOLD_FIRE_SPREAD) {
-        int pathLength = MathHelper.floor_double(MAX_PATH_LENGTH / MAX_FIRE_DENSITY * density);
-        if (pathLength > MAX_PATH_LENGTH) {
-          pathLength = MAX_PATH_LENGTH;
+    // spawnNew
+    if (material == Material.air ||
+        block == Blocks.snow_layer ||
+        block == Blocks.flowing_water) {
+      BlockPos oneDown = blockPos.down();
+      IBlockState groundBelow = world.getBlockState(oneDown);
+      Material materialBelow = groundBelow.getBlock().getMaterial();
+      if (materialEffectTimeSpawnNew.containsKey(materialBelow)) {
+        Integer spawnTime = materialEffectTimeSpawnNew.get(material);
+        if (spawnTime != null
+                && currentHitDensity.getMaxHitDensity() > spawnTime) {
+          return spawnNew(currentHitDensity, world, blockPos, groundBelow, rand);
         }
-//        System.out.println("Spread fire pathlength:" + pathLength); //todo remove
-//        spreadFire(world, blockPos, pathLength);
+        return currentHitDensity;
+      }
+    }
+
+    // transmute
+    if (materialEffectTimeTransmute.containsKey(material)) {
+      Integer transmutationTime = materialEffectTimeTransmute.get(material);
+      if (transmutationTime != null
+              && currentHitDensity.getMaxHitDensity() > transmutationTime) {
+        return transmute(currentHitDensity, world, blockPos, iBlockState);
       }
       return currentHitDensity;
     }
 
-    if (block == Blocks.torch) {
-      final float THRESHOLD_FIRE_EXTINGUISH = 1;
-      if (currentHitDensity.getMaxHitDensity() > THRESHOLD_FIRE_EXTINGUISH) {
-        final boolean DROP_BLOCK = true;
-        world.destroyBlock(blockPos, DROP_BLOCK);
-        return new BreathAffectedBlock();
+    // grow
+    if (materialEffectTimeGrow.containsKey(material)) {
+      Integer growTime = materialEffectTimeGrow.get(material);
+      if (growTime != null
+              && currentHitDensity.getMaxHitDensity() > growTime) {
+        return grow(currentHitDensity, world, blockPos, iBlockState);
       }
       return currentHitDensity;
     }
 
-    if (block == Blocks.glass_pane || block == Blocks.stained_glass_pane) {
-      final float THRESHOLD_SMASH_PANE = 1;
-      if (currentHitDensity.getMaxHitDensity() > THRESHOLD_SMASH_PANE) {
-        final boolean DROP_BLOCK = true;
-        world.destroyBlock(blockPos, DROP_BLOCK);
+    // ignite (flammable)
+
+    if (materialEffectTimeFlammable.containsKey(material) || block == Blocks.torch) {
+      Integer igniteTime = materialEffectTimeFlammable.get(material);
+      if (igniteTime != null
+              && currentHitDensity.getMaxHitDensity() > igniteTime) {
+        ignite(world, blockPos);
         return new BreathAffectedBlock();
       }
       return currentHitDensity;
@@ -116,8 +131,8 @@ public class BreathWeaponForest extends BreathWeapon {
 
   @Override
   public BreathAffectedEntity affectEntity(World world, Integer entityID, BreathAffectedEntity currentHitDensity) {
-    // 1) extinguish fire on entity
-    // 2) pushes entity in the direction of the air, with upward thrust added
+    // 1) if entity is burning, create explosion
+    // 2) poison entity
     checkNotNull(world);
     checkNotNull(entityID);
     checkNotNull(currentHitDensity);
@@ -137,34 +152,21 @@ public class BreathWeaponForest extends BreathWeapon {
       }
     }
 
-    if (entity.isBurning()) {
-      entity.extinguish();
+    boolean applyDamageThisTick = currentHitDensity.applyDamageThisTick();
+    if (applyDamageThisTick && entity.isBurning()) {
+      ignite(world, entity.getPosition());
     }
 
-//    System.out.format("Old entity motion:[%.2f, %.2f, %.2f]\n", entity.motionX, entity.motionY, entity.motionZ);
-    // push in the direction of the wind, but add a vertical upthrust as well
-    final double FORCE_MULTIPLIER = 0.05;
-    final double VERTICAL_FORCE_MULTIPLIER = 0.05;
-    float airForce = currentHitDensity.getHitDensity();
-    Vec3 airForceDirection = currentHitDensity.getHitDensityDirection();
-    Vec3 airMotion = MathX.multiply(airForceDirection, FORCE_MULTIPLIER);
+    final float POISON_THRESHOLD = 2.0F;
+    final int POISON_DURATION_TICKS = 20;
+    final int POISON_AMPLIFIER = 0;  // not sure of what this means but seems to be common
 
-    final double WT_ENTITY = 0.5;
-    final double WT_AIR = 1 - WT_ENTITY;
-    entity.motionX = WT_ENTITY * entity.motionX + WT_AIR * airMotion.xCoord;
-    entity.motionZ = WT_ENTITY * entity.motionZ + WT_AIR * airMotion.zCoord;
-
-    final double UPFORCE_THRESHOLD = 1.0;
-    if (airForce > UPFORCE_THRESHOLD) {
-      final double GRAVITY_OFFSET = -0.08;
-      Vec3 up = new Vec3(0, 1, 0);
-      Vec3 upMotion = MathX.multiply(up, VERTICAL_FORCE_MULTIPLIER * airForce);
-//      System.out.format("upMotion:%s\n", upMotion);
-      entity.motionY = WT_ENTITY * (entity.motionY - GRAVITY_OFFSET) + WT_AIR * upMotion.yCoord;
+    float hitDensity = currentHitDensity.getHitDensity();
+    if (entity instanceof EntityLivingBase && applyDamageThisTick && hitDensity > POISON_THRESHOLD) {
+      EntityLivingBase entityLivingBase = (EntityLivingBase)entity;
+      entityLivingBase.addPotionEffect(new PotionEffect(Potion.poison.id, POISON_DURATION_TICKS, POISON_AMPLIFIER));
+      currentHitDensity.resetHitDensity();
     }
-
-//    System.out.format("airMotion:%s\n", airMotion);
-//    System.out.format("New entity motion:[%.2f, %.2f, %.2f]\n", entity.motionX, entity.motionY, entity.motionZ);
 
     final int DELAY_UNTIL_DECAY = 5;
     final float DECAY_PERCENTAGE_PER_TICK = 10.0F;
@@ -173,50 +175,81 @@ public class BreathWeaponForest extends BreathWeapon {
     return currentHitDensity;
   }
 
-//  /** flood fill from the starting block for the indicated number of blocks, setting fire to blocks
-//   * @param world
-//   * @param blockPos
-//   * @param maxPathLength maximum path length to flood fill to [0 - 10]
-//   */
-//  private void spreadFire(World world, BlockPos blockPos, int maxPathLength)
-//  {
-//    checkArgument(maxPathLength >= 0 && maxPathLength <= 10);
-//    HashSet<BlockPos> blocksToSearchFrom = new HashSet<BlockPos>();
-//    HashSet<BlockPos> blocksSearched = new HashSet<BlockPos>();
-//    HashSet<BlockPos> blocksToIgnite = new HashSet<BlockPos>();
-//
-//    blocksToSearchFrom.add(blockPos);
-//    for (int pathLength = 0; pathLength < maxPathLength; ++pathLength) {
-//      HashSet<BlockPos> blocksToSearchFromNext = new HashSet<BlockPos>();
-//
-//      for (BlockPos whichBlock : blocksToSearchFrom) {
-//        for (EnumFacing whichDirection : EnumFacing.VALUES) {
-//          BlockPos adjacent = whichBlock.offset(whichDirection);
-//          if (!blocksSearched.contains(adjacent)) {
-//            blocksSearched.add(adjacent);
-//
-//            IBlockState adjacentBlockState = world.getBlockState(adjacent);
-//            Material material = adjacentBlockState.getBlock().getMaterial();
-//            if (material == Material.air) {
-//              blocksToSearchFromNext.add(adjacent);
-//              blocksToIgnite.add(adjacent);
-//            }
-//          }
-//        }
-//      }
-//    }
-//
-//    for (BlockPos blockPosIgnite : blocksToIgnite) {
-//      world.setBlockState(blockPosIgnite, Blocks.fire.getDefaultState());
-//    }
-//  }
+  private BreathAffectedBlock transmute(BreathAffectedBlock currentHitDensity, World world,
+                                       BlockPos blockPos, IBlockState iBlockState)
+  {
+    Material material = iBlockState.getBlock().getMaterial();
+
+    final int SET_BLOCKSTATE_FLAG = 3;  // update flag setting to use for setBlockState
+
+    if (material == Material.ground) {
+      world.setBlockState(blockPos, Blocks.grass.getDefaultState(), SET_BLOCKSTATE_FLAG);
+      return new BreathAffectedBlock();
+    } else if (material == Material.rock) {
+      Block block = iBlockState.getBlock();
+      if (block == Blocks.cobblestone) {
+        world.setBlockState(blockPos, Blocks.mossy_cobblestone.getDefaultState(), SET_BLOCKSTATE_FLAG);
+        return new BreathAffectedBlock();
+      } else if (block == Blocks.cobblestone_wall) {
+        world.setBlockState(blockPos,
+                            iBlockState.withProperty(BlockWall.VARIANT, BlockWall.EnumType.MOSSY),
+                            SET_BLOCKSTATE_FLAG);
+        return new BreathAffectedBlock();
+      }
+    } else if (material == Material.air) {
+      VinesPlant vinesPlant = new VinesPlant();
+      Random random = new Random();
+      boolean successfulSpawn = vinesPlant.trySpawnNewPlant(world, blockPos, random);
+      if (successfulSpawn) {
+        return new BreathAffectedBlock();
+      }
+    } else {
+      throw new IllegalArgumentException("transmute called with Block:" + iBlockState);
+    }
+
+    return currentHitDensity;
+  }
+
+  private BreathAffectedBlock spawnNew(BreathAffectedBlock currentHitDensity,
+                                       World world, BlockPos blockPos, IBlockState groundBlockState,
+                                       Random rand)
+  {
+    WeightedRandomChoices<Plant> plantChoices = weightedSpawners.get(groundBlockState.getBlock().getMaterial());
+    Plant plant = plantChoices.pickRandom(rand);
+
+    boolean spawnsuccess = plant.trySpawnNewPlant(world, blockPos, rand);
+    return spawnsuccess ? new BreathAffectedBlock() : currentHitDensity;
+  }
+
+  private BreathAffectedBlock grow(BreathAffectedBlock currentHitDensity, World world,
+                                   BlockPos blockPos, IBlockState iBlockState)
+  {
+    Plant plant = Plant.getPlantFromBlockState(iBlockState);
+
+    if (plant == null) {
+      return currentHitDensity;
+    }
+
+    final float GROWTH_PERCENTAGE_PER_DENSITY = 1;
+    float growthPercentage = currentHitDensity.getMaxHitDensity() * GROWTH_PERCENTAGE_PER_DENSITY;
+    plant.grow(world, blockPos, growthPercentage);
+    return new BreathAffectedBlock();
+  }
+
+  private void ignite(World world, BlockPos blockPos)
+  {
+    final float EXPLOSION_SIZE = 1.0F;  // not sure of the units.  TNT is 4
+    final boolean SET_FIRE_TO_BLOCKS = true;
+    world.createExplosion(null, blockPos.getX(), blockPos.getY(), blockPos.getZ(),
+                          EXPLOSION_SIZE, SET_FIRE_TO_BLOCKS);
+  }
 
   private static Map<Material, Integer> materialEffectTimeGrow = Maps.newHashMap();  // lazy initialisation
   private static Map<Material, Integer> materialEffectTimeSpawnNew = Maps.newHashMap();  // lazy initialisation
   private static Map<Material, Integer> materialEffectTimeTransmute = Maps.newHashMap();  // lazy initialisation
   private static Map<Material, Integer> materialEffectTimeFlammable = Maps.newHashMap();   // lazy initialisation
 
-  private static List<WeightedPlant> weightedSpawners;
+  private static Map<Material, WeightedRandomChoices<Plant>> weightedSpawners = Maps.newHashMap();
 
   private void initialiseStatics() {
     if (!materialEffectTimeGrow.isEmpty()) return;
@@ -229,273 +262,63 @@ public class BreathWeaponForest extends BreathWeapon {
     materialEffectTimeGrow.put(Material.web, INSTANT);
     materialEffectTimeGrow.put(Material.gourd, INSTANT); //melon, pumpkin
     materialEffectTimeGrow.put(Material.cactus, MODERATE);
-    materialEffectTimeGrow.put(Material.ground, INSTANT);
 
-    materialEffectTimeSpawnNew.put(Material.grass, MODERATE);
-    materialEffectTimeSpawnNew.put(Material.ground, MODERATE);
-    materialEffectTimeSpawnNew.put(Material.water, MODERATE);
-    materialEffectTimeSpawnNew.put(Material.air, MODERATE);
-    materialEffectTimeSpawnNew.put(Material.clay, MODERATE);
-    materialEffectTimeSpawnNew.put(Material.sand, MODERATE);
-
-    materialEffectTimeTransmute.put(Material.grass, INSTANT);
+    materialEffectTimeTransmute.put(Material.ground, INSTANT);
     materialEffectTimeTransmute.put(Material.rock, MODERATE);
+    materialEffectTimeTransmute.put(Material.air, MODERATE);  // for vines
 
     materialEffectTimeFlammable.put(Material.lava, INSTANT);
     materialEffectTimeFlammable.put(Material.fire, MODERATE);
 
-    final int WATER_WEIGHT = 1000;
-    weightedSpawners.add(new WeightedPlant(new WaterLilyPlant(), WATER_WEIGHT));
+    materialEffectTimeSpawnNew.put(Material.grass, INSTANT);
+    materialEffectTimeSpawnNew.put(Material.water, MODERATE);
+    materialEffectTimeSpawnNew.put(Material.sand, MODERATE);
+
+    //------------
+    weightedSpawners.put(Material.water, WeightedRandomChoices.ofEqualWeights(new WaterLilyPlant()));
 
     final int CROPS_WEIGHT_PART = 100;
-    weightedSpawners.add(new WeightedPlant(new CropsPlant(CropsPlant.CropType.CARROT), CROPS_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new CropsPlant(CropsPlant.CropType.POTATO), CROPS_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new CropsPlant(CropsPlant.CropType.WHEAT), CROPS_WEIGHT_PART * 8));
+    WeightedRandomChoices<Plant> ground = new WeightedRandomChoices<Plant>();
+    ground.add(new CropsPlant(CropsPlant.CropType.CARROT), CROPS_WEIGHT_PART);
+    ground.add(new CropsPlant(CropsPlant.CropType.POTATO), CROPS_WEIGHT_PART);
+    ground.add(new CropsPlant(CropsPlant.CropType.WHEAT), CROPS_WEIGHT_PART * 8);
+    weightedSpawners.put(Material.ground, ground);
 
-    final int SAND_WEIGHT_PART = 500;
-    weightedSpawners.add(new WeightedPlant(new CactusPlant(), SAND_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new ReedsPlant(), SAND_WEIGHT_PART));
+    final int SAND_WEIGHT_PART = 100;
+    WeightedRandomChoices<Plant> sand = new WeightedRandomChoices<Plant>();
+    sand.add(new CactusPlant(), SAND_WEIGHT_PART);
+    sand.add(new ReedsPlant(), 9 * SAND_WEIGHT_PART);
+    weightedSpawners.put(Material.sand, sand);
 
-    final int DIRT_WEIGHT_PART = 50;
+
+    WeightedRandomChoices<Plant> grass = new WeightedRandomChoices<Plant>();
+    final int SHORT_GRASS_WEIGHT = 1000;
+    final int SMALL_FLOWERS_WEIGHT = 50;
+    final int LARGE_FLOWERS_WEIGHT = 10;
+    final int SAPLING_WEIGHT = 10;
+    grass.add(new TallGrassPlant(BlockTallGrass.EnumType.GRASS), SHORT_GRASS_WEIGHT);
+
     for (BlockFlower.EnumFlowerType flowerType : BlockFlower.EnumFlowerType.values()) {
-      weightedSpawners.add(new WeightedPlant(new FlowersPlant(flowerType), DIRT_WEIGHT_PART));
+      grass.add(new FlowersPlant(flowerType), SMALL_FLOWERS_WEIGHT);
     }
+    grass.add(new TallGrassPlant(BlockTallGrass.EnumType.FERN), SMALL_FLOWERS_WEIGHT);
 
-    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.GRASS), 5 * DIRT_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.FERN), 2 * DIRT_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.SUNFLOWER), DIRT_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.SYRINGA), DIRT_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.ROSE), DIRT_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.PAEONIA), DIRT_WEIGHT_PART));
+    grass.add(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.GRASS), LARGE_FLOWERS_WEIGHT);
+    grass.add(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.FERN), LARGE_FLOWERS_WEIGHT);
+    grass.add(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.SUNFLOWER), LARGE_FLOWERS_WEIGHT);
+    grass.add(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.SYRINGA), LARGE_FLOWERS_WEIGHT);
+    grass.add(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.ROSE), LARGE_FLOWERS_WEIGHT);
+    grass.add(new PlantDoublePlant(BlockDoublePlant.EnumPlantType.PAEONIA), LARGE_FLOWERS_WEIGHT);
 
-    weightedSpawners.add(new WeightedPlant(new TallGrassPlant(BlockTallGrass.EnumType.FERN), DIRT_WEIGHT_PART));
-    weightedSpawners.add(new WeightedPlant(new TallGrassPlant(BlockTallGrass.EnumType.GRASS), DIRT_WEIGHT_PART));
+    grass.add(new SaplingPlant(BlockPlanks.EnumType.ACACIA), SAPLING_WEIGHT);
+    grass.add(new SaplingPlant(BlockPlanks.EnumType.OAK), SAPLING_WEIGHT);
+    grass.add(new SaplingPlant(BlockPlanks.EnumType.SPRUCE), SAPLING_WEIGHT);
+    grass.add(new SaplingPlant(BlockPlanks.EnumType.BIRCH), SAPLING_WEIGHT);
+    grass.add(new SaplingPlant(BlockPlanks.EnumType.JUNGLE), SAPLING_WEIGHT);
+    grass.add(new SaplingPlant(BlockPlanks.EnumType.DARK_OAK), SAPLING_WEIGHT);
 
-    final int STONE_WEIGHT_PART = 1000;
-    weightedSpawners.add(new WeightedPlant(new VinesPlant(), STONE_WEIGHT_PART));
+    weightedSpawners.put(Material.grass, grass);
   }
-
-  static class WeightedPlant extends WeightedRandom.Item
-  {
-    public WeightedPlant(Plant i_plant, int i_weight)
-    {
-      super(i_weight);
-      plant = i_plant;
-    }
-    public Plant getPlant() {return plant;}
-    private Plant plant;
-  }
-
-
 }
-//
-//
-//
-//    canPlaceBlockAt
-//
-//    IPlantable
-//    BlockBush
-//
-//    if (this == Blocks.wheat)          return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.carrots)        return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.potatoes)       return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.melon_stem)     return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.pumpkin_stem)   return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.deadbush)       return net.minecraftforge.common.EnumPlantType.Desert;
-//    if (this == Blocks.waterlily)      return net.minecraftforge.common.EnumPlantType.Water;
-//    if (this == Blocks.red_mushroom)   return net.minecraftforge.common.EnumPlantType.Cave;
-//    if (this == Blocks.brown_mushroom) return net.minecraftforge.common.EnumPlantType.Cave;
-//    if (this == Blocks.nether_wart)    return net.minecraftforge.common.EnumPlantType.Nether;
-//    if (this == Blocks.sapling)        return net.minecraftforge.common.EnumPlantType.Plains;
-//    if (this == Blocks.tallgrass)      return net.minecraftforge.common.EnumPlantType.Plains;
-//    if (this == Blocks.double_plant)   return net.minecraftforge.common.EnumPlantType.Plains;
-//    if (this == Blocks.red_flower)     return net.minecraftforge.common.EnumPlantType.Plains;
-//    if (this == Blocks.yellow_flower)  return net.minecraftforge.common.EnumPlantType.Plains;
-//
-//
-//
-//  }
-//
-//  private static class
-//
-//
-//  private void checkForPlantSpread()
-//  {
-//
-//  }
-//
-//
-//  // turn dirt to grass
-//  // turn
-//  private void checkForSuitableGround(World world, BlockPos blockPos) {
-//
-//    // WorldGenCactus
-//    if (worldIn.isAirBlock(blockpos1))
-//    {
-//      int j = 1 + p_180709_2_.nextInt(p_180709_2_.nextInt(3) + 1);
-//
-//      for (int k = 0; k < j; ++k)
-//      {
-//        if (Blocks.cactus.canBlockStay(worldIn, blockpos1))
-//        {
-//          worldIn.setBlockState(blockpos1.up(k), Blocks.cactus.getDefaultState(), 2);
-//        }
-//      }
-//    }
-//
-//    //WorldGenReed
-//    BlockPos blockpos2 = blockpos1.down();
-//
-//    if (worldIn.getBlockState(blockpos2.west()).getBlock().getMaterial() == Material.water || worldIn.getBlockState(blockpos2.east()).getBlock().getMaterial() == Material.water || worldIn.getBlockState(blockpos2.north()).getBlock().getMaterial() == Material.water || worldIn.getBlockState(blockpos2.south()).getBlock().getMaterial() == Material.water)
-//    {
-//      int j = 2 + p_180709_2_.nextInt(p_180709_2_.nextInt(3) + 1);
-//
-//      for (int k = 0; k < j; ++k)
-//      {
-//        if (Blocks.reeds.canBlockStay(worldIn, blockpos1))
-//        {
-//          worldIn.setBlockState(blockpos1.up(k), Blocks.reeds.getDefaultState(), 2);
-//        }
-//      }
-//    }
-//
-//    //WorldGenVines
-//    EnumFacing[] aenumfacing = EnumFacing.Plane.HORIZONTAL.facings();
-//    int i = aenumfacing.length;
-//
-//    for (int j = 0; j < i; ++j)
-//    {
-//      EnumFacing enumfacing = aenumfacing[j];
-//
-//      if (Blocks.vine.canPlaceBlockOnSide(worldIn, p_180709_3_, enumfacing))
-//      {
-//        IBlockState iblockstate = Blocks.vine.getDefaultState().withProperty(BlockVine.NORTH, Boolean.valueOf(enumfacing == EnumFacing.NORTH)).withProperty(BlockVine.EAST, Boolean.valueOf(enumfacing == EnumFacing.EAST)).withProperty(BlockVine.SOUTH, Boolean.valueOf(enumfacing == EnumFacing.SOUTH)).withProperty(BlockVine.WEST, Boolean.valueOf(enumfacing == EnumFacing.WEST));
-//        worldIn.setBlockState(p_180709_3_, iblockstate, 2);
-//        break;
-//      }
-//    }
-//
-//    //WorldGenTallGrass
-//    GRASS(1, "tall_grass"),
-//            FERN(2, "fern");
-//
-//    this.field_175907_a = Blocks.tallgrass.getDefaultState().withProperty(BlockTallGrass.TYPE, p_i45629_1_);
-//
-//    if (worldIn.isAirBlock(blockpos1) && Blocks.tallgrass.canBlockStay(worldIn, blockpos1, this.field_175907_a))
-//    {
-//      worldIn.setBlockState(blockpos1, this.field_175907_a, 2);
-//    }
-//
-//    //WorldGenWaterLily
-//    if (worldIn.isAirBlock(new BlockPos(j, k, l)) && Blocks.waterlily.canPlaceBlockAt(worldIn, new BlockPos(j, k, l)))
-//    {
-//      worldIn.setBlockState(new BlockPos(j, k, l), Blocks.waterlily.getDefaultState(), 2);
-//    }
-//
-//    tests:
-//        canPlaceBlockAt
-//
-//
-//
-//    //WorldGenFlowers
-//    new WorldGenFlowers(Blocks.yellow_flower, BlockFlower.EnumFlowerType.DANDELION);
-//    BiomeGenBase p_150513_1_;
-//    BlockFlower.EnumFlowerType enumflowertype = p_150513_1_.pickRandomFlower(this.randomGenerator, blockpos);
-//    BlockFlower blockflower = enumflowertype.getBlockType().getBlock();
-//
-//    if (worldIn.isAirBlock(blockpos1) && (!worldIn.provider.getHasNoSky() || blockpos1.getY() < 255) && this.flower.canBlockStay(worldIn, blockpos1, this.field_175915_b))
-//    {
-//      worldIn.setBlockState(blockpos1, this.field_175915_b, 2);
-//    }
-//
-//    // WorldGenDoublePlant -
-//    BlockDoublePlant.EnumPlantType.SYRINGA;
-//    BlockDoublePlant.EnumPlantType.ROSE;
-//    BlockDoublePlant.EnumPlantType.PAEONIA;
-//    BlockDoublePlant.EnumPlantType.GRASS;
-//    BlockDoublePlant.EnumPlantType.SUNFLOWER;
-//    BlockDoublePlant.EnumPlantType.FERN;
-//    if (worldIn.isAirBlock(blockpos1) && (!worldIn.provider.getHasNoSky() || blockpos1.getY() < 254) && Blocks.double_plant.canPlaceBlockAt(worldIn, blockpos1))
-//    {
-//      Blocks.double_plant.placeAt(worldIn, blockpos1, this.field_150549_a, 2);
-//      flag = true;
-//    }
-//
-//    BlockPos blockPosOneDown = blockPos.down();
-//    IBlockState blockOneDown = world.getBlockState(blockPosOneDown);
-//
-//    if (blockOneDown.getBlock() == Blocks.dirt
-//            && blockOneDown.getValue(BlockDirt.VARIANT) == BlockDirt.DirtType.DIRT
-//        ) {
-//      world.setBlockState(blockPosOneDown, Blocks.grass.getDefaultState());
-//    }
-//
-//    if (blockOneDown.getBlock() == Blocks.grass && Blocks.tallgrass.canPlaceBlockAt(world, blockPos)) {
-//
-//
-//
-//
-//
-//      world.setBlockState(blockPos,
-//                          Blocks.tallgrass.getDefaultState()
-//                                          .withProperty(BlockTallGrass.TYPE, BlockTallGrass.EnumType.GRASS));
-//    }
-//
-//    Blocks.farmland
-//
-//  }
-//
-//  private IBlockState getRandomSpawnPlant(IBlockState blockToGrowOn)
-//  {
-//    if (blockToGrowOn.getBlock() == Blocks.grass) {
-//
-//    } else if (blockToGrowOn.getBlock() == Blocks.farmland) {
-//
-//    } else if (blockToGrowOn.getBlock() == Blocks.sand) {
-//
-//    } else if (blockToGrowOn.getBlock() == Blocks.water) {
-//      Blocks.waterlily
-//    }
-//
-//
-//      waterlily
-//
-//double_plant
-//
-//              melon
-//                      pumpkin
-//    Blocks.farmland
-//
-//    if (this == Blocks.wheat)          return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.carrots)        return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.potatoes)       return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.melon_stem)     return net.minecraftforge.common.EnumPlantType.Crop;
-//    if (this == Blocks.pumpkin_stem)   return net.minecraftforge.common.EnumPlantType.Crop;
-//
-//    switch (p_151559_1_.nextInt(5))
-//    {
-//      case 0:
-//        return Blocks.carrots;
-//      case 1:
-//        return Blocks.potatoes;
-//      default:
-//        return Blocks.wheat;
-//    }
-//
-//
-//    if (this == Blocks.deadbush)       return net.minecraftforge.common.EnumPlantType.Desert;
-//    if (this == Blocks.waterlily)      return net.minecraftforge.common.EnumPlantType.Water;
-//    if (this == Blocks.red_mushroom)   return net.minecraftforge.common.EnumPlantType.Cave;
-//    if (this == Blocks.brown_mushroom) return net.minecraftforge.common.EnumPlantType.Cave;
-//    if (this == Blocks.nether_wart)    return net.minecraftforge.common.EnumPlantType.Nether;
-//    if (this == Blocks.sapling)        return net.minecraftforge.common.EnumPlantType.Plains;
-//    if (this == Blocks.tallgrass)      return net.minecraftforge.common.EnumPlantType.Plains;
-//    if (this == Blocks.double_plant)   return net.minecraftforge.common.EnumPlantType.Plains;
-//    if (this == Blocks.red_flower)     return net.minecraftforge.common.EnumPlantType.Plains;
-//    if (this == Blocks.yellow_flower)  return net.minecraftforge.common.EnumPlantType.Plains;
-//
-//  }
-//
-//
-//
+
 

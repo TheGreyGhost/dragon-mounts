@@ -19,7 +19,7 @@ public class WeightedRandomChoices <E> {
    * @param element object to add
    * @param weight the weight of this object (1 - MAX_WEIGHT)
    */
-  public void addObject(E element, int weight)
+  public void add(E element, int weight)
   {
     checkArgument(weight > 0);
     checkArgument(weight <= MAX_WEIGHT);
@@ -43,6 +43,15 @@ public class WeightedRandomChoices <E> {
     }
     assert index < runningSum;
     return objects.get(index);
+  }
+
+  public static <E> WeightedRandomChoices ofEqualWeights(E... allElements)
+  {
+    WeightedRandomChoices<E> retval = new WeightedRandomChoices<E>();
+    for (E element : allElements) {
+      retval.add(element, 1);
+    }
+    return retval;
   }
 
   public final int MAX_WEIGHT = 1000;
