@@ -67,7 +67,8 @@ public class EntityTameableDragon extends EntityFlyingTameable {
     private static final int INDEX_BREED = 22;
     private static final int INDEX_REPRO_COUNT = 23;
     private static final int INDEX_TICKS_SINCE_CREATION = 24;
-    private static final int INDEX_BREATH_WEAPON = 25;
+    private static final int INDEX_BREATH_WEAPON_TARGET = 25;
+    private static final int INDEX_BREATH_MODE = 26;  // used by some dragons for the current mode of the breath
 
     // data NBT IDs
     private static final String NBT_SADDLED = "Saddle";
@@ -727,7 +728,7 @@ public class EntityTameableDragon extends EntityFlyingTameable {
 
       DragonBreathHelper dragonHelper = getHelper(DragonBreathHelper.class);
       if (dragonHelper == null) { // lazy initialisation
-          dragonHelper = new DragonBreathHelper(this, INDEX_BREATH_WEAPON);
+          dragonHelper = new DragonBreathHelper(this, INDEX_BREATH_WEAPON_TARGET);
         addHelper(dragonHelper);
       }
 

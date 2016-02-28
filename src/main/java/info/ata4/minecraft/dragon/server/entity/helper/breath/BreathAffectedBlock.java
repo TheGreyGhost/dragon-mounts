@@ -47,6 +47,21 @@ public class BreathAffectedBlock
     return maxDensity;
   }
 
+  /** which face has the highest hit density?
+   * @return the face with the highest hit density
+   */
+  public EnumFacing getMaxHitDensityFace() {
+    float maxDensity = 0;
+    EnumFacing maxFace = EnumFacing.UP;
+    for (EnumFacing facing : EnumFacing.values()) {
+      if (maxDensity < hitDensity[facing.getIndex()]) {
+        maxDensity = hitDensity[facing.getIndex()];
+        maxFace = facing;
+      }
+    }
+    return maxFace;
+  }
+
   /**
    * What was the last value that getMaxHitDensity() returned?
    * @return the last value returned from getMaxHitDensity(), or 0 if never called.

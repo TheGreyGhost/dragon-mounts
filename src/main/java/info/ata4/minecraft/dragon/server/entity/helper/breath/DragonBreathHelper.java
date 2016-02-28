@@ -44,11 +44,14 @@ import org.apache.logging.log4j.Logger;
  */
 public class DragonBreathHelper extends DragonHelper
 {
-  public DragonBreathHelper(EntityTameableDragon dragon, int dataWatcherIndexBreathTarget)
+  public DragonBreathHelper(EntityTameableDragon dragon, int dataWatcherIndexBreathTarget, int dataWatcherIndexBreathMode)
   {
     super(dragon);
     DATA_WATCHER_BREATH_TARGET = dataWatcherIndexBreathTarget;
+    DATA_WATCHER_BREATH_MODE = dataWatcherIndexBreathMode;
     dataWatcher.addObject(DATA_WATCHER_BREATH_TARGET, "");
+    dataWatcher.addObject(DATA_WATCHER_BREATH_MODE, new Integer(0));
+
     refreshBreed(dragon);
   }
 
@@ -144,6 +147,38 @@ public class DragonBreathHelper extends DragonHelper
    * @return true if the dragon has a movement target
    */
   public boolean hasBreathTargetForMoving() { return breathWeaponTarget != null;}
+
+  /**
+   * Get the current mode of the breath weapon (only relevant for some breath weapon types)
+   * 1) On the client, from the datawatcher
+   * 2) On the server- previously set by others
+   * @return the current breath weapon mode
+   */
+  public int getBreathMode()
+  {
+    if (dragon.isClient()) {
+      Integer mode = dataWatcher.getWatchableObjectInt(DATA_WATCHER_BREATH_MODE;
+      return (mode == null) ? 0 : mode;
+    } else {
+      return breathWeaponMode;
+    }
+  }
+
+
+  /** set the breath weapon mode (only relevant for some breath weapon types)
+   * server only.
+   * @param newMode - new breath weapon mode (meaning depends on breath weapon type)
+   */
+
+  public void setBreathMode(int newMode)
+  {
+    if (dragon.isServer()) {
+      breathWeaponMode = newMode;
+      dataWatcher.updateObject(DATA_WATCHER_BREATH_TARGET, new Integer(breathWeaponMode));
+    } else {
+      L.warn("setBreathMode is only valid on server");
+    }
+  }
 
   /**
    * For tamed dragons, returns the target that their controlling player has selected using the DragonOrb.
@@ -319,7 +354,9 @@ public class DragonBreathHelper extends DragonHelper
       return targetBeingBreathedAt;
     }
   }
+
   private final int DATA_WATCHER_BREATH_TARGET;
+  private final int DATA_WATCHER_BREATH_MODE;
   private final int BREATH_START_DURATION = 5; // ticks
   private final int BREATH_STOP_DURATION = 5; // ticks
   private BreathWeaponTarget targetBeingBreathedAt = null;  // server: the target currently being breathed at
@@ -332,4 +369,6 @@ public class DragonBreathHelper extends DragonHelper
 
   private BreathAffectedArea breathAffectedArea;
   private DragonBreed currentBreed = null;
+
+  private int breathWeaponMode;
 }

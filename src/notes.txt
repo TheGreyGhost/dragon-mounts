@@ -321,10 +321,18 @@ looking is handled by movement AI.
         setBlockState - tallgrass (grass, fern), waterlily, flowers
         placeAt - doubleplant
 
+When one of the blocks is ignited, change all nodes to burning and make dragon breathe fire until stopped.
+client: burning dissipates rapidly once stopped.  use fire gfx
+server: tell when dragon burn stops.  explosion centred on fire
 
+How to implement?
+BreathNodeForest - including factory
+BreathWeaponForest
+How does client know that dragon is breathing fire or breathing gas?
+BreathWeaponFXEmitterForest
+BreathFXForest
 
-
-
+Use an EntityWatcher for breath mode
 
 
 

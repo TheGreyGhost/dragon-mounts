@@ -128,5 +128,6 @@ public class BreathNodeForest extends BreathNode {
   }
 
   private boolean startedExpansion = false;
+  private boolean isBurning = false;
 
 }

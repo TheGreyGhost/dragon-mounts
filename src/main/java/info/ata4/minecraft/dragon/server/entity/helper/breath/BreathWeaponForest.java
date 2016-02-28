@@ -116,10 +116,22 @@ public class BreathWeaponForest extends BreathWeapon {
 
     // ignite (flammable)
 
+    if (block == Blocks.torch) {
+      if (currentHitDensity.getMaxHitDensity() > 0) {
+//        EnumFacing whichFaceTouched = currentHitDensity.getMaxHitDensityFace();
+//        BlockPos adjacentFace = blockPos.offset(whichFaceTouched);
+        ignite(world, blockPos);
+        return new BreathAffectedBlock();
+      }
+      return currentHitDensity;
+    }
+
     if (materialEffectTimeFlammable.containsKey(material) || block == Blocks.torch) {
       Integer igniteTime = materialEffectTimeFlammable.get(material);
       if (igniteTime != null
               && currentHitDensity.getMaxHitDensity() > igniteTime) {
+//        EnumFacing whichFaceTouched = currentHitDensity.getMaxHitDensityFace();
+//        BlockPos adjacentFace = blockPos.offset(whichFaceTouched);
         ignite(world, blockPos);
         return new BreathAffectedBlock();
       }
@@ -241,6 +253,7 @@ public class BreathWeaponForest extends BreathWeapon {
   {
     final float EXPLOSION_SIZE = 1.0F;  // not sure of the units.  TNT is 4
     final boolean SET_FIRE_TO_BLOCKS = true;
+    world.setBlockToAir(blockPos);
     world.createExplosion(null, blockPos.getX(), blockPos.getY(), blockPos.getZ(),
                           EXPLOSION_SIZE, SET_FIRE_TO_BLOCKS);
   }
