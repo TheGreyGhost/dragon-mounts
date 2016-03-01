@@ -12,19 +12,33 @@ import java.util.Random;
  * BreathNodeForest
  */
 public class BreathNodeForest extends BreathNode {
-  public BreathNodeForest(Power i_power)
+  public BreathNodeForest(Power i_power, NodeState i_nodeState)
   {
     super(i_power, FOREST_INITIAL_SPEED, INITIAL_NODE_DIAMETER, FOREST_LIFETIME_IN_TICKS);
+    isBurning = (i_nodeState == NodeState.BURNING);
+    burnStartAge = ageTicks;
   }
+
+  public enum NodeState {BURNING, NOT_BURNING}
 
   public static class BreathNodeForestFactory implements BreathNodeFactory
   {
     @Override
     public BreathNode createBreathNode(Power i_power)
     {
-      return new BreathNodeForest(i_power);
+      return new BreathNodeForest(i_power, NodeState.NOT_BURNING);
     }
   }
+
+  public static class BreathNodeForestFactoryBurning implements BreathNodeFactory
+  {
+    @Override
+    public BreathNode createBreathNode(Power i_power)
+    {
+      return new BreathNodeForest(i_power, NodeState.BURNING);
+    }
+  }
+
 
   private static final float FOREST_INITIAL_SPEED = 1.2F;                // blocks per tick at full speed
   private static final double SPEED_VARIATION_ABS = 0.05;          // plus or minus this amount (3 std deviations)
@@ -36,6 +50,8 @@ public class BreathNodeForest extends BreathNode {
   private static final int SLOW_DOWN_TICKS = 15;
   private static final int EXPANSION_TICKS = 40;
   private static final int FOREST_LIFETIME_IN_TICKS = RAPID_MOVE_TICKS + SLOW_DOWN_TICKS + EXPANSION_TICKS;
+
+  private static final int BURN_LIFETIME_TICKS = 10;  // lifetime once ignited
 
   private static final float INITIAL_NODE_DIAMETER = 0.5F;  // in blocks
   private static final float FINAL_NODE_DIAMETER = 4.0F;
@@ -51,8 +67,15 @@ public class BreathNodeForest extends BreathNode {
   @Override
   protected float calculateNewAge(Entity parentEntity, float currentAge)
   {
-    if (parentEntity.isBurning()) {  // disappear immediately when in contact with fire
-      ageTicks = getMaxLifeTime() + 1;
+    if (parentEntity.isBurning()) {
+      if (!isBurning) {  // catch fire
+        isBurning = true;
+        burnStartAge = ageTicks;
+      }
+
+      if (ageTicks++ > burnStartAge + BURN_LIFETIME_TICKS) {  // after a short burn, die.
+        return getMaxLifeTime() + 1;
+      }
       return ageTicks;
     }
 
@@ -129,5 +152,5 @@ public class BreathNodeForest extends BreathNode {
 
   private boolean startedExpansion = false;
   private boolean isBurning = false;
-
+  private float burnStartAge = 0;
 }

@@ -24,13 +24,16 @@ public class BreathWeaponFXEmitterForest extends BreathWeaponFXEmitter
   protected  EntityFX createSingleParticle(World world, Vec3 spawnOrigin, Vec3 spawnDirection, BreathNode.Power power,
                                            int tickCount, float partialTickHeadStart)
   {
-    BreathFXForest breathFXForest = BreathFXForest.createBreathFXForest(world,
-                                                            spawnOrigin.xCoord, spawnOrigin.yCoord, spawnOrigin.zCoord,
-                                                            spawnDirection.xCoord, spawnDirection.yCoord,
-                                                            spawnDirection.zCoord,
-                                                            power,
-                                                            tickCount,
-                                                            partialTickHeadStart);
+    BreathFXForest breathFXForest = BreathFXForest.createBreathFXForestNotBurning(world,
+                                                                                  spawnOrigin.xCoord,
+                                                                                  spawnOrigin.yCoord,
+                                                                                  spawnOrigin.zCoord,
+                                                                                  spawnDirection.xCoord,
+                                                                                  spawnDirection.yCoord,
+                                                                                  spawnDirection.zCoord,
+                                                                                  power,
+                                                                                  tickCount,
+                                                                                  partialTickHeadStart);
     return breathFXForest;
   }
 

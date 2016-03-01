@@ -728,7 +728,7 @@ public class EntityTameableDragon extends EntityFlyingTameable {
 
       DragonBreathHelper dragonHelper = getHelper(DragonBreathHelper.class);
       if (dragonHelper == null) { // lazy initialisation
-          dragonHelper = new DragonBreathHelper(this, INDEX_BREATH_WEAPON_TARGET);
+          dragonHelper = new DragonBreathHelper(this, INDEX_BREATH_WEAPON_TARGET, INDEX_BREATH_MODE);
         addHelper(dragonHelper);
       }
 

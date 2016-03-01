@@ -164,7 +164,7 @@ public abstract class DragonBreed {
         throw new UnsupportedOperationException();
     }
 
-    public BreathNodeFactory getBreathNodeFactory()
+    public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
     {
         throw new UnsupportedOperationException();
     }

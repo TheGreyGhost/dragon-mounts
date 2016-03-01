@@ -157,7 +157,7 @@ public class DragonBreathHelper extends DragonHelper
   public int getBreathMode()
   {
     if (dragon.isClient()) {
-      Integer mode = dataWatcher.getWatchableObjectInt(DATA_WATCHER_BREATH_MODE;
+      Integer mode = dataWatcher.getWatchableObjectInt(DATA_WATCHER_BREATH_MODE);
       return (mode == null) ? 0 : mode;
     } else {
       return breathWeaponMode;
@@ -276,7 +276,7 @@ public class DragonBreathHelper extends DragonHelper
       Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
       if (destination != null && currentBreathState == BreathState.SUSTAIN) {
         BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
-        BreathNodeFactory breathNodeFactory = dragon.getBreed().getBreathNodeFactory();
+        BreathNodeFactory breathNodeFactory = dragon.getBreed().getBreathNodeFactory(dragon);
         breathAffectedArea.continueBreathing(dragon.getEntityWorld(), origin, destination, breathNodeFactory, power);
       }
     }

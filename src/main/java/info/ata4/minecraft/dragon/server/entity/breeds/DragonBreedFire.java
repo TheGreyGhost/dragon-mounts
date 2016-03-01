@@ -71,7 +71,7 @@ public class DragonBreedFire extends DragonBreed {
     }
 
     @Override
-    public BreathNodeFactory getBreathNodeFactory()
+    public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
     {
       return new BreathNodeFire.BreathNodeFireFactory();
     }

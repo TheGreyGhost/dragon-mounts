@@ -51,15 +51,37 @@ public class BreathFXForest extends EntityFX {
    *                              location in the direction
    * @return the new BreathFXForest
    */
-  public static BreathFXForest createBreathFXForest(World world, double x, double y, double z,
-                                              double directionX, double directionY, double directionZ,
-                                              BreathNode.Power power,
-                                              int tickCount, float partialTicksHeadStart)
+  public static BreathFXForest createBreathFXForestNotBurning(World world, double x, double y, double z,
+                                                              double directionX, double directionY, double directionZ,
+                                                              BreathNode.Power power,
+                                                              int tickCount, float partialTicksHeadStart)
+  {
+    BreathFXForest breathFXForest = createBreathFXForest(world, x, y, z, directionX, directionY, directionZ,
+                                                         power, tickCount, partialTicksHeadStart);
+    return breathFXForest;
+  }
+
+
+  public static BreathFXForest createBreathFXForestBurning(World world, double x, double y, double z,
+                                                              double directionX, double directionY, double directionZ,
+                                                              BreathNode.Power power,
+                                                              int tickCount, float partialTicksHeadStart)
+  {
+    BreathFXForest breathFXForest = createBreathFXForest(world, x, y, z, directionX, directionY, directionZ,
+                                                         power, tickCount, partialTicksHeadStart);
+    return breathFXForest;
+  }
+
+
+  private static BreathFXForest createBreathFXForest(World world, double x, double y, double z,
+                                                              double directionX, double directionY, double directionZ,
+                                                              BreathNode.Power power,
+                                                              int tickCount, float partialTicksHeadStart)
   {
     Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
-    BreathNode breathNode = new BreathNodeForest(power);
+    BreathNode breathNode = new BreathNodeForest(power, BreathNodeForest.NodeState.NOT_BURNING);
     breathNode.randomiseProperties(rand);
     Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 
@@ -71,7 +93,7 @@ public class BreathFXForest extends EntityFX {
     double tickCountInFlight = partialTicksHeadStart / 20.0;
 
     BreathFXForest breathFXForest = new BreathFXForest(world, x, y, z, actualMotion, breathNode,
-                                                    spawnTickCount, tickCountInFlight);
+                                                       spawnTickCount, tickCountInFlight);
     return breathFXForest;
   }
 

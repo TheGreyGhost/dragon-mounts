@@ -10,7 +10,6 @@
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
-import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterAir;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterForest;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
@@ -102,10 +101,14 @@ public class DragonBreedForest extends DragonBreed {
     return new BreathWeaponForest(dragon);
   }
 
+  // breathmode != 0 --> the breath has been ignited
+
   @Override
-  public BreathNodeFactory getBreathNodeFactory()
+  public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
   {
-    return new BreathNodeForest.BreathNodeForestFactory();
+    int breathMode = dragon.getBreathHelper().getBreathMode();
+    return (breathMode != 0) ? new BreathNodeForest.BreathNodeForestFactoryBurning()
+                             : new BreathNodeForest.BreathNodeForestFactory();
   }
 
 }
