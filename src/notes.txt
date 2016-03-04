@@ -334,6 +334,53 @@ BreathFXForest
 
 Use an EntityWatcher for breath mode
 
+Explode all at once?
+On server -
+(1) when flammable is detected:
+  a) set breath mode of parent dragon
+  b) flip the mode of all spawned nodes?
+  c) reset breath mode when breathing stopped?
+
+  EntityBreathNode:
+    - creates breathnode from factory
+    - breathnode.updateage
+
+    - need to track the parent dragon? no; updateage
+
+
+
+
+
+(2) client side:
+  a) when breath mode detected - flip mode of all spawned nodes
+  b)
+
+  burning affects:
+    lifetime; appearance
+
+  factory could keep track of
+
+  BreathFXForest can easily track nodes created in a given breath
+
+  client side: detect change in breath mode and search for adjacents?
+
+  server side:
+  BreathAffectedArea contains all the nodes
+  implement a breathmode change method on all the nodes?
+  BreathAffectedArea.updateTick could be provided with breathmode
+
+  client side:
+  DragonBreathHelper BreathWeaponFXEmitter spawnBreathParticles
+
+  The BreathWeaponFXEmitter could track them all
+    change mode method
+    add a getBreathNode method to each BreathFX
+    the emitter uses it to track.
+    Cull dead ones periodically.
+
+
+
+
 
 
 
