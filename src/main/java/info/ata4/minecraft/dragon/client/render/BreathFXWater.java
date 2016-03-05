@@ -27,7 +27,7 @@ import java.util.Random;
  * (2) spawn it as per normal
  *
  */
-public class BreathFXWater extends EntityFX {
+public class BreathFXWater extends BreathFX {
   private final ResourceLocation waterSquirtCloudRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_water");
 
   // breath_water is four textures in a 2x2 grid
@@ -43,8 +43,6 @@ public class BreathFXWater extends EntityFX {
   private final float LARGE_SPLASH_CHANCE = 0.3f;
 
   private static final float MAX_ALPHA = 0.75F;
-
-  private BreathNode breathNode;
 
   /**
    * creates a single EntityFX from the given parameters.  Applies some random spread to direction.

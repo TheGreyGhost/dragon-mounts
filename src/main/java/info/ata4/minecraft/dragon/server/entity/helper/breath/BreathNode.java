@@ -190,6 +190,15 @@ public abstract class BreathNode
     return lifetimeFraction;
   }
 
+  /**
+   * Change the mode of this node - for most types does nothing
+   * @param newMode
+   */
+  public void changeBreathMode(DragonBreathMode newMode)
+  {
+    dragonBreathMode = newMode;
+  }
+
   private final float INITIAL_SPEED; // blocks per tick at full speed
   private final float NODE_DIAMETER_IN_BLOCKS;
   private final int DEFAULT_AGE_IN_TICKS;
@@ -198,6 +207,7 @@ public abstract class BreathNode
   private final float OLD_AGE = 0.75F;
 
   private Power power;
+  protected DragonBreathMode dragonBreathMode;
   private float speedPowerFactor = 1.0F;
   private float lifetimePowerFactor = 1.0F;
   private float sizePowerFactor = 1.0F;

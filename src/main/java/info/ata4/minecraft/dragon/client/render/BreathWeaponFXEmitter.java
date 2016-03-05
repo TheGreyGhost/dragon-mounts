@@ -1,11 +1,18 @@
 package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.NodeLineSegment;
+import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EntityFX;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Random;
 
 /**
@@ -47,6 +54,13 @@ public abstract class BreathWeaponFXEmitter
    */
   abstract public void spawnBreathParticles(World world, BreathNode.Power power, int tickCount);
 
+  public void changeBreathMode(DragonBreathMode dragonBreathMode)
+  {
+    for (BreathFX breathFX : spawnedBreathFX) {
+      breathFX.updateBreathMode(dragonBreathMode);
+    }
+  }
+
 
   /**
    * Spawn a number of EntityFX, interpolating between the direction at the previous tick and the direction of the current tick
@@ -58,6 +72,22 @@ public abstract class BreathWeaponFXEmitter
    */
   protected void spawnMultipleWithSmoothedDirection(World world, BreathNode.Power power, int particlesPerTick, int tickCount)
   {
+    // create a list of NodeLineSegments from the motion path of the BreathNodes
+    Iterator<BreathFX> it = spawnedBreathFX.iterator();
+    boolean foundLive = false;
+    while (it.hasNext() && !foundLive) {
+      BreathFX entity = it.next();
+      if (entity.isDead) {
+        it.remove();
+      } else {
+        foundLive = true;
+      }
+    }
+    final int MAX_SPAWNED_SIZE = 1000;
+    if (spawnedBreathFX.size() > MAX_SPAWNED_SIZE) {  // prevent leak in case EntityFX is never set to dead for some reason
+      spawnedBreathFX.clear();
+    }
+
     Random random = new Random();
     if (tickCount != previousTickCount + 1) {
       previousDirection = direction;
@@ -70,8 +100,9 @@ public abstract class BreathWeaponFXEmitter
       float partialTickHeadStart = (i + random.nextFloat()) / (float)particlesPerTick;   // random is for jitter to prevent aliasing
       Vec3 interpDirection = interpolateVec(previousDirection, direction, partialTickHeadStart);
       Vec3 interpOrigin = interpolateVec(previousOrigin, origin, partialTickHeadStart);
-      EntityFX entityFX = createSingleParticle(world, interpOrigin, interpDirection, power, tickCount, partialTickHeadStart);
-      Minecraft.getMinecraft().effectRenderer.addEffect(entityFX);
+      BreathFX breathFX = createSingleParticle(world, interpOrigin, interpDirection, power, tickCount, partialTickHeadStart);
+      Minecraft.getMinecraft().effectRenderer.addEffect(breathFX);
+      spawnedBreathFX.add(breathFX);
     }
     previousDirection = direction;
     previousOrigin = origin;
@@ -79,7 +110,7 @@ public abstract class BreathWeaponFXEmitter
   }
 
 
-  protected abstract EntityFX createSingleParticle(World world, Vec3 origin, Vec3 direction, BreathNode.Power power,
+  protected abstract BreathFX createSingleParticle(World world, Vec3 origin, Vec3 direction, BreathNode.Power power,
                                                    int tickCount, float partialTickHeadStart);
 
   /**
@@ -96,4 +127,7 @@ public abstract class BreathWeaponFXEmitter
                     vector1.zCoord * (1-fraction) + vector2.zCoord * fraction
                     );
   }
+
+  private ArrayList<BreathFX> spawnedBreathFX = new ArrayList<BreathFX>();
+
 }

@@ -42,7 +42,7 @@ public class BreathAffectedArea
    * @param power
    */
   public void continueBreathing(World world, Vec3 origin, Vec3 destination,
-                                BreathNodeFactory breathNodeFactory,  BreathNode.Power power)
+                                BreathNodeFactory breathNodeFactory,  BreathNode.Power power, DragonBreathMode breathMode)
   {
     Vec3 direction = destination.subtract(origin).normalize();
 
@@ -55,7 +55,7 @@ public class BreathAffectedArea
 
   /** updates the BreathAffectedArea, called once per tick
    */
-  public void updateTick(World world) {
+  public void updateTick(World world, DragonBreathMode dragonBreathMode) {
     ArrayList<NodeLineSegment> segments = new ArrayList<NodeLineSegment>();
 
     // create a list of NodeLineSegments from the motion path of the BreathNodes
@@ -67,6 +67,7 @@ public class BreathAffectedArea
       } else {
         float radius = entity.getCurrentRadius();
         Vec3 initialPosition = entity.getPositionVector();
+        entity.updateBreathMode(dragonBreathMode);
         entity.onUpdate();
         Collection<Pair<EnumFacing, AxisAlignedBB>> recentCollisions = entity.getRecentCollisions();
         Vec3 finalPosition = entity.getPositionVector();

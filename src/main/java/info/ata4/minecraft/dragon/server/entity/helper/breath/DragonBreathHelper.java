@@ -154,11 +154,10 @@ public class DragonBreathHelper extends DragonHelper
    * 2) On the server- previously set by others
    * @return the current breath weapon mode
    */
-  public int getBreathMode()
+  public DragonBreathMode getBreathMode()
   {
     if (dragon.isClient()) {
-      Integer mode = dataWatcher.getWatchableObjectInt(DATA_WATCHER_BREATH_MODE);
-      return (mode == null) ? 0 : mode;
+      return DragonBreathMode.createFromDataWatcher(dataWatcher, DATA_WATCHER_BREATH_MODE);
     } else {
       return breathWeaponMode;
     }
@@ -170,11 +169,11 @@ public class DragonBreathHelper extends DragonHelper
    * @param newMode - new breath weapon mode (meaning depends on breath weapon type)
    */
 
-  public void setBreathMode(int newMode)
+  public void setBreathMode(DragonBreathMode newMode)
   {
     if (dragon.isServer()) {
       breathWeaponMode = newMode;
-      dataWatcher.updateObject(DATA_WATCHER_BREATH_TARGET, new Integer(breathWeaponMode));
+      breathWeaponMode.writeToDataWatcher(dataWatcher, DATA_WATCHER_BREATH_TARGET);
     } else {
       L.warn("setBreathMode is only valid on server");
     }
@@ -270,17 +269,17 @@ public class DragonBreathHelper extends DragonHelper
     refreshBreed(dragon);
     BreathWeaponTarget target = getTarget();
     updateBreathState(target);
-
+    DragonBreathMode dragonBreathMode = dragon.getBreathHelper().getBreathMode();
     if (target != null) {
       Vec3 origin = dragon.getAnimator().getThroatPosition();
       Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
       if (destination != null && currentBreathState == BreathState.SUSTAIN) {
         BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
         BreathNodeFactory breathNodeFactory = dragon.getBreed().getBreathNodeFactory(dragon);
-        breathAffectedArea.continueBreathing(dragon.getEntityWorld(), origin, destination, breathNodeFactory, power);
+        breathAffectedArea.continueBreathing(dragon.getEntityWorld(), origin, destination, breathNodeFactory, power, dragonBreathMode);
       }
     }
-    breathAffectedArea.updateTick(dragon.worldObj);
+    breathAffectedArea.updateTick(dragon.worldObj, dragonBreathMode);
   }
 
   private void onLivingUpdateClient()
@@ -370,5 +369,5 @@ public class DragonBreathHelper extends DragonHelper
   private BreathAffectedArea breathAffectedArea;
   private DragonBreed currentBreed = null;
 
-  private int breathWeaponMode;
+  private DragonBreathMode breathWeaponMode;
 }

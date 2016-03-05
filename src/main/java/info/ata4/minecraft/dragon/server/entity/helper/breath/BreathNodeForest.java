@@ -57,6 +57,8 @@ public class BreathNodeForest extends BreathNode {
   private static final float FINAL_NODE_DIAMETER = 4.0F;
   private static final float EXPANSION_SPEED = 0.1F; // in blocks
 
+
+
   /**
    * Update the age of the node based on what is happening (collisions) to the associated entity
    * Should be called once per tick
@@ -67,18 +69,19 @@ public class BreathNodeForest extends BreathNode {
   @Override
   protected float calculateNewAge(Entity parentEntity, float currentAge)
   {
-    if (parentEntity.isBurning()) {
+    if (dragonBreathMode.getIntValue() != 0) {
       if (!isBurning) {  // catch fire
         isBurning = true;
         burnStartAge = ageTicks;
       }
+    }
 
+    if (isBurning) {
       if (ageTicks++ > burnStartAge + BURN_LIFETIME_TICKS) {  // after a short burn, die.
         return getMaxLifeTime() + 1;
       }
       return ageTicks;
     }
-
 
     if (ageTicks++ > getMaxLifeTime()) {
       return ageTicks;

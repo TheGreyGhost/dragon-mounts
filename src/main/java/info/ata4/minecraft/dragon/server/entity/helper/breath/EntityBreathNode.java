@@ -58,6 +58,11 @@ class EntityBreathNode extends Entity
     entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
   }
 
+  public void updateBreathMode(DragonBreathMode dragonBreathMode)
+  {
+    breathNode.changeBreathMode(dragonBreathMode);
+  }
+
   @Override
   public void onUpdate() {
 

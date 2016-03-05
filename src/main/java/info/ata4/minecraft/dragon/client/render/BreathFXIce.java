@@ -26,15 +26,13 @@ import java.util.Random;
  * (2) spawn it as per normal
  *
  */
-public class BreathFXIce extends EntityFX {
+public class BreathFXIce extends BreathFX {
   private final ResourceLocation iceCrystalCloudRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_ice");
 
   private final float ICE_PUFF_CHANCE = 0.5f;
   private final float LARGE_ICE_PUFF_CHANCE = 0.3f;
 
   private static final float MAX_ALPHA = 1.00F;
-
-  private BreathNode breathNode;
 
   /**
    * creates a single EntityFX from the given parameters.  Applies some random spread to direction.

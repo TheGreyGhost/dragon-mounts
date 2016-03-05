@@ -26,15 +26,13 @@ import java.util.Random;
  * (2) spawn it as per normal
  *
  */
-public class BreathFXFire extends EntityFX {
+public class BreathFXFire extends BreathFX {
   private final ResourceLocation fireballRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_fire");
 
   private final float SMOKE_CHANCE = 0.1f;
   private final float LARGE_SMOKE_CHANCE = 0.3f;
 
   private static final float MAX_ALPHA = 0.99F;
-
-  private BreathNode breathNode;
 
   /**
    * creates a single EntityFX from the given parameters.  Applies some random spread to direction.
