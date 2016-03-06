@@ -369,5 +369,5 @@ public class DragonBreathHelper extends DragonHelper
   private BreathAffectedArea breathAffectedArea;
   private DragonBreed currentBreed = null;
 
-  private DragonBreathMode breathWeaponMode;
+  private DragonBreathMode breathWeaponMode = DragonBreathMode.DEFAULT;
 }

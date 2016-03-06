@@ -17,7 +17,7 @@ import java.util.Random;
 
 /**
  * Created by TGG on 21/06/2015.
- * Used to spawn breath particles on the client side (in future: will be different for different breath weapons)
+ * Used to spawn breath particles on the client side
  * Usage:
  * Each tick:
  * (1) setBeamEndpoints() to set the current beam origin and destination
@@ -54,8 +54,9 @@ public abstract class BreathWeaponFXEmitter
    */
   abstract public void spawnBreathParticles(World world, BreathNode.Power power, int tickCount);
 
-  public void changeBreathMode(DragonBreathMode dragonBreathMode)
+  public void changeBreathMode(DragonBreathMode newDragonBreathMode)
   {
+    dragonBreathMode = newDragonBreathMode;
     for (BreathFX breathFX : spawnedBreathFX) {
       breathFX.updateBreathMode(dragonBreathMode);
     }
@@ -127,6 +128,9 @@ public abstract class BreathWeaponFXEmitter
                     vector1.zCoord * (1-fraction) + vector2.zCoord * fraction
                     );
   }
+
+  protected DragonBreathMode dragonBreathMode = DragonBreathMode.DEFAULT;
+
 
   private ArrayList<BreathFX> spawnedBreathFX = new ArrayList<BreathFX>();
 

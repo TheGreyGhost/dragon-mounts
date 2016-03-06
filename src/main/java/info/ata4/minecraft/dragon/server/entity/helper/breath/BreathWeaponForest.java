@@ -21,6 +21,7 @@ import net.minecraft.world.World;
 import java.util.Map;
 import java.util.Random;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -44,7 +45,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * - living plants spawn on suitable blocks (dirt, grass, water, sand, etc)
  *
  * Flammable:
- * - torch, lava, or fire causes a small explosion
+ * - torch, lava, or fire causes an explosion and causes the breath to catch fire
  *
  * Ideas not implemented:
  * - turns coal to wood
@@ -65,6 +66,10 @@ public class BreathWeaponForest extends BreathWeapon {
     checkNotNull(blockPosition);
     checkNotNull(currentHitDensity);
     initialiseStaticsLazily();
+
+    if (dragon.getBreathHelper().getBreathMode().equals(DragonBreathMode.FOREST_BURNING)) {
+      return burnBlock(world, blockPosition, currentHitDensity);
+    }
 
     BlockPos blockPos = new BlockPos(blockPosition);
     IBlockState iBlockState = world.getBlockState(blockPos);
@@ -141,6 +146,64 @@ public class BreathWeaponForest extends BreathWeapon {
     return currentHitDensity;
   }
 
+  /** if the gas has been ignited, set fire to flammable blocks
+   *
+   * @param world
+   * @param blockPosition
+   * @param currentHitDensity
+   * @return
+   */
+  private BreathAffectedBlock burnBlock(World world, Vec3i blockPosition,
+                                        BreathAffectedBlock currentHitDensity)
+  {
+    BlockPos blockPos = new BlockPos(blockPosition);
+    IBlockState iBlockState = world.getBlockState(blockPos);
+    Block block = iBlockState.getBlock();
+    Random rand = new Random();
+
+    // copied from BreathWeaponFire
+    for (EnumFacing facing : EnumFacing.values()) {
+      BlockPos sideToIgnite = blockPos.offset(facing);
+      if (block.isFlammable(world, sideToIgnite, facing)) {
+        int flammability = block.getFlammability(world, sideToIgnite, facing);
+        float thresholdForIgnition = convertFlammabilityToHitDensityThreshold(flammability);
+        float thresholdForDestruction = thresholdForIgnition * 10;
+        float densityOfThisFace = currentHitDensity.getHitDensity(facing);
+        if (densityOfThisFace >= thresholdForIgnition && world.isAirBlock(sideToIgnite)) {
+          final float MIN_PITCH = 0.8F;
+          final float MAX_PITCH = 1.2F;
+          final float VOLUME = 1.0F;
+          world.playSoundEffect(sideToIgnite.getX() + 0.5, sideToIgnite.getY() + 0.5, sideToIgnite.getZ() + 0.5,
+                                "fire.ignite", VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH));
+          world.setBlockState(sideToIgnite, Blocks.fire.getDefaultState());
+        }
+        if (densityOfThisFace >= thresholdForDestruction) {
+          world.setBlockToAir(blockPos);
+        }
+      }
+    }
+    return currentHitDensity;
+  }
+
+  /**
+   * returns the hitDensity threshold for the given block flammability (0 - 300 as per Block.getFlammability)
+   * Copied from BreathWeaponFire
+   * @param flammability
+   * @return the hit density threshold above which the block catches fire
+   */
+  private float convertFlammabilityToHitDensityThreshold(int flammability)
+  {
+    checkArgument(flammability >= 0 && flammability <= 300);
+    if (flammability == 0) return Float.MAX_VALUE;
+    // typical values for items are 5 (coal, logs), 20 (gates etc), 60 - 100 for leaves & flowers & grass
+    // want: leaves & flowers to burn instantly; gates to take ~1 second at full power, coal / logs to take ~3 seconds
+    // hitDensity of 1 is approximately 1-2 ticks of full exposure from a single beam, so 3 seconds is ~30
+
+    float threshold = 50.0F / flammability;
+    return threshold;
+  }
+
+
   @Override
   public BreathAffectedEntity affectEntity(World world, Integer entityID, BreathAffectedEntity currentHitDensity) {
     // 1) if entity is burning, create explosion
@@ -186,6 +249,17 @@ public class BreathWeaponForest extends BreathWeapon {
     currentHitDensity.setDecayParameters(DECAY_PERCENTAGE_PER_TICK, DELAY_UNTIL_DECAY);
 
     return currentHitDensity;
+  }
+
+  @Override
+  public void updateBreathWeaponMode()
+  {
+    // when the dragon stops breathing, reset mode to non-burning.
+    // otherwise, leave the state unchanged.  burning is triggered in ignite().
+
+    if (dragon.getBreathHelper().getCurrentBreathState() != DragonBreathHelper.BreathState.SUSTAIN) {
+      dragon.getBreathHelper().setBreathMode(DragonBreathMode.FOREST_NOT_BURNING);
+    }
   }
 
   private BreathAffectedBlock transmute(BreathAffectedBlock currentHitDensity, World world,
@@ -251,7 +325,9 @@ public class BreathWeaponForest extends BreathWeapon {
 
   private void ignite(World world, BlockPos blockPos)
   {
-    final float EXPLOSION_SIZE = 1.0F;  // not sure of the units.  TNT is 4
+    dragon.getBreathHelper().setBreathMode(DragonBreathMode.FOREST_BURNING);
+
+    final float EXPLOSION_SIZE = 6.0F;  // not sure of the units.  TNT is 4
     final boolean SET_FIRE_TO_BLOCKS = true;
     world.setBlockToAir(blockPos);
     world.createExplosion(null, blockPos.getX(), blockPos.getY(), blockPos.getZ(),

@@ -64,5 +64,13 @@ public abstract class BreathWeapon
    */
   abstract public BreathAffectedEntity affectEntity(World world, Integer entityID, BreathAffectedEntity currentHitDensity);
 
+  /**
+   * Update the breath weapon's mode depending on what the dragon is doing.
+   */
+  public void updateBreathWeaponMode()
+  {
+    dragon.getBreathHelper().setBreathMode(DragonBreathMode.DEFAULT);
+  }
+
   protected EntityTameableDragon dragon;
 }

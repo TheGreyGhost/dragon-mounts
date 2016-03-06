@@ -7,6 +7,9 @@ import net.minecraft.entity.DataWatcher;
  */
 public class DragonBreathMode {
 
+  public static DragonBreathMode FOREST_NOT_BURNING = new DragonBreathMode(0);
+  public static DragonBreathMode FOREST_BURNING = new DragonBreathMode(1);
+  public static DragonBreathMode DEFAULT = new DragonBreathMode(0);
 
   public static DragonBreathMode createFromDataWatcher(DataWatcher dataWatcher, int dataWatcherIndex)
   {
@@ -19,8 +22,21 @@ public class DragonBreathMode {
     dataWatcher.updateObject(dataWatcherIndex, breathMode);
   }
 
+  @Override
+  public boolean equals(Object comparison)
+  {
+    if (!(comparison instanceof DragonBreathMode)) return false;
+    DragonBreathMode comparisonDBM = (DragonBreathMode)comparison;
+    return this.breathMode == comparisonDBM.breathMode;
+  }
 
-  public int getIntValue() {return breathMode;}
+  @Override
+  public int hashCode()
+  {
+    return breathMode;
+  }
+
+//  public int getIntValue() {return breathMode;}
 
   private DragonBreathMode(int i_breathModeInt)
   {

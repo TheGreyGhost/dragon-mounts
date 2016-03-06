@@ -10,9 +10,9 @@ import java.util.Random;
  * BreathNodeWater
  */
 public class BreathNodeWater extends BreathNode {
-  public BreathNodeWater(Power i_power)
+  public BreathNodeWater(Power i_power, DragonBreathMode i_dragonBreathMode)
   {
-    super(i_power, WATER_INITIAL_SPEED, WATER_NODE_DIAMETER_IN_BLOCKS, WATER_DEFAULT_AGE_IN_TICKS);
+    super(i_power, i_dragonBreathMode, WATER_INITIAL_SPEED, WATER_NODE_DIAMETER_IN_BLOCKS, WATER_DEFAULT_AGE_IN_TICKS);
   }
 
   public static class BreathNodeWaterFactory implements BreathNodeFactory
@@ -20,7 +20,7 @@ public class BreathNodeWater extends BreathNode {
     @Override
     public BreathNode createBreathNode(Power i_power)
     {
-      return new BreathNodeWater(i_power);
+      return new BreathNodeWater(i_power, DragonBreathMode.DEFAULT);
     }
   }
 

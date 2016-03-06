@@ -24,12 +24,13 @@ import java.util.Random;
  */
 public abstract class BreathNode
 {
-  public BreathNode(Power i_power, float i_initialSpeed, float i_nodeDiameterInBlocks, int i_defaultAgeInTicks)
+  public BreathNode(Power i_power, DragonBreathMode i_dragonBreathMode, float i_initialSpeed, float i_nodeDiameterInBlocks, int i_defaultAgeInTicks)
   {
     INITIAL_SPEED = i_initialSpeed;
     NODE_DIAMETER_IN_BLOCKS = i_nodeDiameterInBlocks;
     DEFAULT_AGE_IN_TICKS = i_defaultAgeInTicks;
     setPower(i_power);
+    dragonBreathMode = i_dragonBreathMode;
   }
 
   public enum Power {SMALL, MEDIUM, LARGE} // how powerful is this node?

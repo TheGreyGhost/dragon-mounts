@@ -12,21 +12,19 @@ import java.util.Random;
  * BreathNodeForest
  */
 public class BreathNodeForest extends BreathNode {
-  public BreathNodeForest(Power i_power, NodeState i_nodeState)
+  public BreathNodeForest(Power i_power, DragonBreathMode i_dragonBreathMode)
   {
-    super(i_power, FOREST_INITIAL_SPEED, INITIAL_NODE_DIAMETER, FOREST_LIFETIME_IN_TICKS);
-    isBurning = (i_nodeState == NodeState.BURNING);
+    super(i_power, i_dragonBreathMode, FOREST_INITIAL_SPEED, INITIAL_NODE_DIAMETER, FOREST_LIFETIME_IN_TICKS);
+    isBurning = (i_dragonBreathMode.equals(DragonBreathMode.FOREST_BURNING));
     burnStartAge = ageTicks;
   }
-
-  public enum NodeState {BURNING, NOT_BURNING}
 
   public static class BreathNodeForestFactory implements BreathNodeFactory
   {
     @Override
     public BreathNode createBreathNode(Power i_power)
     {
-      return new BreathNodeForest(i_power, NodeState.NOT_BURNING);
+      return new BreathNodeForest(i_power, DragonBreathMode.FOREST_NOT_BURNING);
     }
   }
 
@@ -35,7 +33,7 @@ public class BreathNodeForest extends BreathNode {
     @Override
     public BreathNode createBreathNode(Power i_power)
     {
-      return new BreathNodeForest(i_power, NodeState.BURNING);
+      return new BreathNodeForest(i_power, DragonBreathMode.FOREST_BURNING);
     }
   }
 
@@ -69,7 +67,7 @@ public class BreathNodeForest extends BreathNode {
   @Override
   protected float calculateNewAge(Entity parentEntity, float currentAge)
   {
-    if (dragonBreathMode.getIntValue() != 0) {
+    if (dragonBreathMode.equals(DragonBreathMode.FOREST_BURNING)) {
       if (!isBurning) {  // catch fire
         isBurning = true;
         burnStartAge = ageTicks;

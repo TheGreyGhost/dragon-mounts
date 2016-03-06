@@ -2,6 +2,7 @@ package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeForest;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
@@ -50,37 +51,16 @@ public class BreathFXForest extends BreathFX {
    *                              location in the direction
    * @return the new BreathFXForest
    */
-  public static BreathFXForest createBreathFXForestNotBurning(World world, double x, double y, double z,
+
+  public static BreathFXForest createBreathFXForest(World world, double x, double y, double z,
                                                               double directionX, double directionY, double directionZ,
-                                                              BreathNode.Power power,
-                                                              int tickCount, float partialTicksHeadStart)
-  {
-    BreathFXForest breathFXForest = createBreathFXForest(world, x, y, z, directionX, directionY, directionZ,
-                                                         power, tickCount, partialTicksHeadStart);
-    return breathFXForest;
-  }
-
-
-  public static BreathFXForest createBreathFXForestBurning(World world, double x, double y, double z,
-                                                              double directionX, double directionY, double directionZ,
-                                                              BreathNode.Power power,
-                                                              int tickCount, float partialTicksHeadStart)
-  {
-    BreathFXForest breathFXForest = createBreathFXForest(world, x, y, z, directionX, directionY, directionZ,
-                                                         power, tickCount, partialTicksHeadStart);
-    return breathFXForest;
-  }
-
-
-  private static BreathFXForest createBreathFXForest(World world, double x, double y, double z,
-                                                              double directionX, double directionY, double directionZ,
-                                                              BreathNode.Power power,
+                                                              BreathNode.Power power, DragonBreathMode dragonBreathMode,
                                                               int tickCount, float partialTicksHeadStart)
   {
     Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
-    BreathNode breathNode = new BreathNodeForest(power, BreathNodeForest.NodeState.NOT_BURNING);
+    BreathNode breathNode = new BreathNodeForest(power, DragonBreathMode.FOREST_NOT_BURNING);
     breathNode.randomiseProperties(rand);
     Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 

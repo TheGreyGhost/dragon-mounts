@@ -13,9 +13,9 @@ import java.util.Random;
  */
 public class BreathNodeFire extends BreathNode
 {
-  public BreathNodeFire(Power i_power)
+  public BreathNodeFire(Power i_power, DragonBreathMode i_dragonBreathMode)
   {
-    super(i_power, FIRE_INITIAL_SPEED, FIRE_NODE_DIAMETER_IN_BLOCKS, FIRE_DEFAULT_AGE_IN_TICKS );
+    super(i_power, i_dragonBreathMode, FIRE_INITIAL_SPEED, FIRE_NODE_DIAMETER_IN_BLOCKS, FIRE_DEFAULT_AGE_IN_TICKS );
   }
 
   public static class BreathNodeFireFactory implements BreathNodeFactory
@@ -23,7 +23,7 @@ public class BreathNodeFire extends BreathNode
     @Override
     public BreathNode createBreathNode(Power i_power)
     {
-      return new BreathNodeFire(i_power);
+      return new BreathNodeFire(i_power, DragonBreathMode.DEFAULT);
     }
   }
 

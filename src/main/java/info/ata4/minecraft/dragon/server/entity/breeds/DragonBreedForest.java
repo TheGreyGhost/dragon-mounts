@@ -106,9 +106,9 @@ public class DragonBreedForest extends DragonBreed {
   @Override
   public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
   {
-    int breathMode = dragon.getBreathHelper().getBreathMode();
-    return (breathMode != 0) ? new BreathNodeForest.BreathNodeForestFactoryBurning()
-                             : new BreathNodeForest.BreathNodeForestFactory();
+    DragonBreathMode breathMode = dragon.getBreathHelper().getBreathMode();
+    return (breathMode.equals(DragonBreathMode.FOREST_BURNING)) ? new BreathNodeForest.BreathNodeForestFactoryBurning()
+                                                                : new BreathNodeForest.BreathNodeForestFactory();
   }
 
 }
