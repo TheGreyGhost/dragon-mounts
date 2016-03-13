@@ -70,7 +70,8 @@ public class BreathNodeForest extends BreathNode {
     if (dragonBreathMode.equals(DragonBreathMode.FOREST_BURNING)) {
       if (!isBurning) {  // catch fire
         isBurning = true;
-        burnStartAge = ageTicks;
+        burnStartAge = Math.max(ageTicks, RAPID_MOVE_TICKS + SLOW_DOWN_TICKS);
+        // will burn for BURN_LIFETIME_TICKS, once the cloud expansion has begun
       }
     }
 

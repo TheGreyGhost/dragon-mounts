@@ -146,6 +146,14 @@ public class BreathWeaponForest extends BreathWeapon {
     return currentHitDensity;
   }
 
+
+  @Override
+  // return true ("wipe breath affected blocks & entities") if we're changing back to not burning.
+  public boolean shouldResetOnBreathModeChange(DragonBreathMode newDragonBreathMode)
+  {
+    return (newDragonBreathMode.equals(DragonBreathMode.FOREST_NOT_BURNING));
+  }
+
   /** if the gas has been ignited, set fire to flammable blocks
    *
    * @param world
@@ -234,7 +242,7 @@ public class BreathWeaponForest extends BreathWeapon {
     }
 
     final float POISON_THRESHOLD = 2.0F;
-    final int POISON_DURATION_TICKS = 20;
+    final int POISON_DURATION_TICKS = 60;
     final int POISON_AMPLIFIER = 0;  // not sure of what this means but seems to be common
 
     float hitDensity = currentHitDensity.getHitDensity();

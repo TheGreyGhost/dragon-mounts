@@ -55,7 +55,16 @@ public class BreathAffectedArea
 
   /** updates the BreathAffectedArea, called once per tick
    */
-  public void updateTick(World world, DragonBreathMode dragonBreathMode) {
+  public void updateTick(World world, DragonBreathMode new_dragonBreathMode) {
+    if (!new_dragonBreathMode.equals(dragonBreathMode)) {
+      dragonBreathMode = new_dragonBreathMode;
+      if (breathWeapon.shouldResetOnBreathModeChange(dragonBreathMode)) {
+        entityBreathNodes.clear();
+        blocksAffectedByBeam.clear();
+        entitiesAffectedByBeam.clear();
+      }
+    }
+
     ArrayList<NodeLineSegment> segments = new ArrayList<NodeLineSegment>();
 
     // create a list of NodeLineSegments from the motion path of the BreathNodes
@@ -234,5 +243,6 @@ public class BreathAffectedArea
   private HashMap<Integer, BreathAffectedEntity> entitiesAffectedByBeam = new HashMap<Integer, BreathAffectedEntity>();
 
   private BreathWeapon breathWeapon;
+  private DragonBreathMode dragonBreathMode;
 
 }

@@ -173,7 +173,7 @@ public class DragonBreathHelper extends DragonHelper
   {
     if (dragon.isServer()) {
       breathWeaponMode = newMode;
-      breathWeaponMode.writeToDataWatcher(dataWatcher, DATA_WATCHER_BREATH_TARGET);
+      breathWeaponMode.writeToDataWatcher(dataWatcher, DATA_WATCHER_BREATH_MODE);
     } else {
       L.warn("setBreathMode is only valid on server");
     }
@@ -269,6 +269,7 @@ public class DragonBreathHelper extends DragonHelper
     refreshBreed(dragon);
     BreathWeaponTarget target = getTarget();
     updateBreathState(target);
+    dragon.getBreed().getBreathWeapon(dragon).updateBreathWeaponMode();
     DragonBreathMode dragonBreathMode = dragon.getBreathHelper().getBreathMode();
     if (target != null) {
       Vec3 origin = dragon.getAnimator().getThroatPosition();
@@ -287,6 +288,8 @@ public class DragonBreathHelper extends DragonHelper
     refreshBreed(dragon);
     BreathWeaponTarget target = getTarget();
     updateBreathState(target);
+    DragonBreathMode dragonBreathMode = getBreathMode();
+    breathWeaponFXEmitter.changeBreathMode(dragonBreathMode);
 
     if (target != null) {
       Vec3 origin = dragon.getAnimator().getThroatPosition();

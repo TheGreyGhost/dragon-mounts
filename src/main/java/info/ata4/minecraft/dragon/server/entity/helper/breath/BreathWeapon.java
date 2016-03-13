@@ -72,5 +72,11 @@ public abstract class BreathWeapon
     dragon.getBreathHelper().setBreathMode(DragonBreathMode.DEFAULT);
   }
 
+  // return true if the breath affected area should be reset (wipe) when the dragon breath mode changes
+  public boolean shouldResetOnBreathModeChange(DragonBreathMode newDragonBreathMode)
+  {
+    return false;
+  }
+
   protected EntityTameableDragon dragon;
 }

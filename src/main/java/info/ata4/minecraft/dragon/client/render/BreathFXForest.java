@@ -30,12 +30,9 @@ import java.util.Random;
  */
 public class BreathFXForest extends BreathFX {
   private final ResourceLocation forestGasCloudRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_forest");
-
-  private final float SPLASH_CHANCE = 0.1f;
-  private final float LARGE_SPLASH_CHANCE = 0.3f;
+  private final ResourceLocation fireballRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_fire");
 
   private static final float MAX_ALPHA = 0.80F;
-
 
   /**
    * creates a single EntityFX from the given parameters.  Applies some random spread to direction.
@@ -97,22 +94,22 @@ public class BreathFXForest extends BreathFX {
     entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
 
     textureUV = setRandomTexture(this.particleIcon);
-    clockwiseRotation = rand.nextBoolean();
-    final float MIN_ROTATION_SPEED = 2.0F; // revolutions per second
-    final float MAX_ROTATION_SPEED = 6.0F; // revolutions per second
-    rotationSpeedQuadrantsPerTick = MIN_ROTATION_SPEED + rand.nextFloat() * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
-    rotationSpeedQuadrantsPerTick *= 4.0 / 20.0F; // convert to quadrants per tick
+
+    // set the texture to the flame texture, which we have previously added using TextureStitchEvent
+    textureUVburning = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(
+            fireballRL.toString());
+
+//    clockwiseRotation = rand.nextBoolean();
+//    final float MIN_ROTATION_SPEED = 2.0F; // revolutions per second
+//    final float MAX_ROTATION_SPEED = 6.0F; // revolutions per second
+//    rotationSpeedQuadrantsPerTick = MIN_ROTATION_SPEED + rand.nextFloat() * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
+//    rotationSpeedQuadrantsPerTick *= 4.0 / 20.0F; // convert to quadrants per tick
 
     spawnTimeTicks = i_spawnTimeTicks;
     ticksSinceSpawn = timeInFlightTicks;
     glowCycleTickLength = GLOW_CYCLE_TICKS_MIN + rand.nextInt(GLOW_CYCLE_TICKS_MAX + 1 - GLOW_CYCLE_TICKS_MIN);
   }
 
-  // the texture for water is made of four alternative textures, stacked 2x2
-  // top left = white sphere ("spray")
-  // top right = large droplet sphere
-  // bottom left = cluster of small droplet spheres
-  // bottom right = large droplet teardrop (points down)
   private RotatingQuad setRandomTexture(TextureAtlasSprite textureAtlasSprite)
   {
     Random random = new Random();
@@ -136,14 +133,10 @@ public class BreathFXForest extends BreathFX {
     }
 
     RotatingQuad tex = new RotatingQuad(minU, minV, maxU, maxV);
-//    if (whichImage == WhichImage.SPRAY) {
-      if (random.nextBoolean()) {
-        tex.mirrorLR();
-      }
-      tex.rotate90(random.nextInt(4));
-//    } else {
-//      renderScaleFactor = random.nextFloat() * 0.5F + 0.5F;
-//    }
+    if (random.nextBoolean()) {
+      tex.mirrorLR();
+    }
+    tex.rotate90(random.nextInt(4));
     return tex;
   }
 
@@ -223,7 +216,12 @@ public class BreathFXForest extends BreathFX {
                             float edgeLRdirectionX, float edgeUDdirectionY, float edgeLRdirectionZ,
                             float edgeUDdirectionX, float edgeUDdirectionZ)
   {
-
+    if (hasBeenIgnited) {
+      renderBurningBall(worldRenderer, entity, partialTick,
+                        edgeLRdirectionX, edgeUDdirectionY, edgeLRdirectionZ,
+                        edgeUDdirectionX, edgeUDdirectionZ);
+      return;
+    }
     double scale = 0.1F * this.particleScale * renderScaleFactor;
     final double scaleLR = scale;
     final double scaleUD = scale;
@@ -231,14 +229,6 @@ public class BreathFXForest extends BreathFX {
     double y = this.prevPosY + (this.posY - this.prevPosY) * partialTick - interpPosY + this.height / 2.0F;
     // centre of rendering is now y midpt not ymin
     double z = this.prevPosZ + (this.posZ - this.prevPosZ) * partialTick - interpPosZ;
-
-//    final double WIGGLE_MAGNITUDE = 0.6 * scale;
-//    double wiggleCycleCount = calculateWiggleCycle(spawnTimeTicks, ticksSinceSpawn + partialTick);
-//    double wiggle = WIGGLE_MAGNITUDE * sinusGenerator(wiggleCycleCount);
-//
-//    x += wiggle;
-//    y += wiggle;
-//    z += wiggle;
 
     float alphaValue = this.particleAlpha;
     worldRenderer.setColorRGBA_F(this.particleRed, this.particleGreen, this.particleBlue, alphaValue);
@@ -260,33 +250,48 @@ public class BreathFXForest extends BreathFX {
                                   textureUV.getU(3), textureUV.getV(3));
   }
 
-//  private static double calculateWiggleCycle(double initialSpawnTicks, double elapsedTicksInFlight)
-//  {
-//    double wiggleCycleCount = initialSpawnTicks / WIGGLE_CYCLE_IN_TICKS;
-//    wiggleCycleCount += elapsedTicksInFlight / WIGGLE_CYCLE_IN_TICKS  * (WIGGLE_RELATIVE_FORWARD_SPEED - 1.0);
-//    return wiggleCycleCount;
-//  }
+  private void renderBurningBall(WorldRenderer worldRenderer, Entity entity, float partialTick,
+                                  float edgeLRdirectionX, float edgeUDdirectionY, float edgeLRdirectionZ,
+                                  float edgeUDdirectionX, float edgeUDdirectionZ)
+  {
+    double minU = this.textureUVburning.getMinU();
+    double maxU = this.textureUVburning.getMaxU();
+    double minV = this.textureUVburning.getMinV();
+    double maxV = this.textureUVburning.getMaxV();
+    RotatingQuad tex = new RotatingQuad(minU, minV, maxU, maxV);
+    Random random = new Random();
+    if (random.nextBoolean()) {
+      tex.mirrorLR();
+    }
+    tex.rotate90(random.nextInt(4));
 
-//  /** generates a sum-of-sines pattern - wiggles between +/- 1.0 in a smooth way that doesn't repeat (at least,
-//   *   not that the viewer can tell).
-//   *   The wiggle has a period of approximately 1.0, i.e. it reaches maximum approximately at 1.0, 2.0, 3.0, 4.0 etc
-//   * @param cycles animation parameter.  The wiggle reaches maximum approximately every 1.0
-//   * @return -1.0 -> 1.0
-//   */
-//  private double sinusGenerator(double cycles)
-//  {
-//    final double AMPLITUDES[] = {0.2F, 0.75F, 1.0F};   // amplitudes and frequencies just picked by trial and error
-//    final double FREQUENCIES[] = {37.0F, 13.0F, 11.0F};
-//    final double PERIOD_FACTOR = 2 * Math.PI / 11.0F;
-//    double amplitudesSum = 0;
-//    double sumOfSines = 0;
-//    for (int i = 0; i < AMPLITUDES.length; ++i) {
-//      amplitudesSum += AMPLITUDES[i];
-//      sumOfSines += AMPLITUDES[i] * Math.sin(cycles * PERIOD_FACTOR * FREQUENCIES[i]);
-//    }
-//    sumOfSines /= amplitudesSum;
-//    return sumOfSines;
-//  }
+    double scale = 0.1F * this.particleScale;
+    final double scaleLR = scale;
+    final double scaleUD = scale;
+    double x = this.prevPosX + (this.posX - this.prevPosX) * partialTick - interpPosX;
+    double y = this.prevPosY + (this.posY - this.prevPosY) * partialTick - interpPosY + this.height / 2.0F;
+    // centre of rendering is now y midpt not ymin
+    double z = this.prevPosZ + (this.posZ - this.prevPosZ) * partialTick - interpPosZ;
+
+    worldRenderer.setColorRGBA_F(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
+    worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
+                                  y - edgeUDdirectionY * scaleUD,
+                                  z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
+                                  tex.getU(0),  tex.getV(0));
+    worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
+                                  y + edgeUDdirectionY * scaleUD,
+                                  z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
+                                  tex.getU(1),  tex.getV(1));
+    worldRenderer.addVertexWithUV(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
+                                  y + edgeUDdirectionY * scaleUD,
+                                  z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
+                                  tex.getU(2),  tex.getV(2));
+    worldRenderer.addVertexWithUV(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
+                                  y - edgeUDdirectionY * scaleUD,
+                                  z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
+                                  tex.getU(3),  tex.getV(3));
+  }
+
 
   /** call once per tick to update the EntityFX size, position, collisions, etc
    */
@@ -304,10 +309,6 @@ public class BreathFXForest extends BreathFX {
 //      particleAlpha = MAX_ALPHA * (1 - lifetimeFraction);
 //    }
 
-//    rotationResidual += rotationSpeedQuadrantsPerTick;
-//    int quadrantsRotated = MathHelper.floor_float(rotationResidual);
-//    textureUV.rotate90(clockwiseRotation ? -quadrantsRotated: quadrantsRotated);
-//    rotationResidual %= 1.0F;
     ++ticksSinceSpawn;
     ++glowCycleTickCount;
 
@@ -333,6 +334,15 @@ public class BreathFXForest extends BreathFX {
     }
   }
 
+  @Override
+  public void updateBreathMode(DragonBreathMode dragonBreathMode)
+  {
+    super.updateBreathMode(dragonBreathMode);
+    if (dragonBreathMode.equals(DragonBreathMode.FOREST_BURNING)) {
+      hasBeenIgnited = true;
+    }
+  }
+
 //  protected EnumParticleTypes getSmokeParticleID() {
 //    if (LARGE_SPLASH_CHANCE != 0 && rand.nextFloat() <= LARGE_SPLASH_CHANCE) {
 //      return EnumParticleTypes.WATER_BUBBLE;
@@ -354,24 +364,15 @@ public class BreathFXForest extends BreathFX {
 
   private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
   private RotatingQuad textureUV;
-  private boolean clockwiseRotation;
-  private float rotationSpeedQuadrantsPerTick;
-  private float rotationResidual = 0;
+  private TextureAtlasSprite textureUVburning;
+  private boolean hasBeenIgnited = false;
 
   private float renderScaleFactor;
-//  private enum WhichImage {SPRAY, SPHERE, TEARDROP, DROPLETS}
-//  private WhichImage whichImage;
 
 //  private double ticksInFlight = 0;
   private double spawnTimeTicks = 0;
   private double ticksSinceSpawn = 0;
   private int glowCycleTickCount = 0;
   private int glowCycleTickLength = 0;
-
-//  // the wiggle at the dragon's mouth performs a cycle every WIGGLE_CYCLE_IN_TICKS ticks.
-//  // the forward movement of this shape, compared to the movement speed of the breathnodes themselves, is
-//  //  WIGGLE_RELATIVE_FORWARD_SPEED
-//  private static final double WIGGLE_CYCLE_IN_TICKS = 4.0;
-//  private static final double WIGGLE_RELATIVE_FORWARD_SPEED = 0.4;
 
 }
