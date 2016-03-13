@@ -90,7 +90,7 @@ public class BreathWeaponForest extends BreathWeapon {
       IBlockState groundBelow = world.getBlockState(oneDown);
       Material materialBelow = groundBelow.getBlock().getMaterial();
       if (materialEffectTimeSpawnNew.containsKey(materialBelow)) {
-        Integer spawnTime = materialEffectTimeSpawnNew.get(material);
+        Integer spawnTime = materialEffectTimeSpawnNew.get(materialBelow);
         if (spawnTime != null
                 && currentHitDensity.getMaxHitDensity() > spawnTime) {
           return spawnNew(currentHitDensity, world, blockPos, groundBelow, rand);
@@ -393,7 +393,7 @@ public class BreathWeaponForest extends BreathWeapon {
     final int SHORT_GRASS_WEIGHT = 1000;
     final int SMALL_FLOWERS_WEIGHT = 50;
     final int LARGE_FLOWERS_WEIGHT = 10;
-    final int SAPLING_WEIGHT = 10;
+    final int SAPLING_WEIGHT = 1;
     grass.add(new TallGrassPlant(BlockTallGrass.EnumType.GRASS), SHORT_GRASS_WEIGHT);
 
     for (BlockFlower.EnumFlowerType flowerType : BlockFlower.EnumFlowerType.values()) {
