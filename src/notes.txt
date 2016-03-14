@@ -68,25 +68,25 @@ OK bug fix: dragon disappears when still inside field of view
 
 ---------------
 BreathWeapon types:
-Air-
+#Air-
 Gusts of strong wind to buffet mobs and shred scenery (make it fly away?). blow away items the player is holding
 
 Ender-
 Purple fireball as per Xbox version?
 
-Fire-
+#Fire-
 Already done
 
-Forest-
+#Forest-
 Acidic gas cloud green
 
 Ghost-
 Electricity
 
-Ice-
+#Ice-
 Ice shards / similar to sleet in game
 
-Water
+#Water
 Generates water - washes player with; generates water
 
 Nether
@@ -378,6 +378,7 @@ On server -
     the emitter uses it to track.
     Cull dead ones periodically.
 
+Dragons which fire projectiles
 
 
 

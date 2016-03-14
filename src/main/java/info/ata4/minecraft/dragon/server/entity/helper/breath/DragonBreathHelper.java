@@ -281,6 +281,7 @@ public class DragonBreathHelper extends DragonHelper
       }
     }
     breathAffectedArea.updateTick(dragon.worldObj, dragonBreathMode);
+    ++ticksSinceLastBreath;
   }
 
   private void onLivingUpdateClient()
@@ -373,4 +374,5 @@ public class DragonBreathHelper extends DragonHelper
   private DragonBreed currentBreed = null;
 
   private DragonBreathMode breathWeaponMode = DragonBreathMode.DEFAULT;
+  private int ticksSinceLastBreath = 0;
 }

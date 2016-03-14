@@ -148,6 +148,15 @@ public abstract class DragonBreed {
 
     public int getNumberOfWingFingers() {return 4;}
 
+    enum BreathWeaponSpawnType {PROJECTILE, NODES}
+    // PROJECTILE = spawn a single Entity, similar to EntityFIreball for ghast
+    // NODES = continuous stream of small nodes
+
+    public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon) // todo later: abstract
+    {
+      throw new UnsupportedOperationException();
+    }
+
     /** return a new Breath Weapon FX Emitter based on breed
      * @return
      */
@@ -167,6 +176,11 @@ public abstract class DragonBreed {
     public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
     {
         throw new UnsupportedOperationException();
+    }
+
+    public BreathProjectileFactory getBreathProjectileFactory(EntityTameableDragon dragon)               // todo later: abstract
+    {
+      throw new UnsupportedOperationException();
     }
 
 }

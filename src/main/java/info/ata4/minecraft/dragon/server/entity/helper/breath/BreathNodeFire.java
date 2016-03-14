@@ -32,7 +32,6 @@ public class BreathNodeFire extends BreathNode
   private static final int FIRE_DEFAULT_AGE_IN_TICKS = 40;
   private static final double SPEED_VARIATION_ABS = 0.1;  // plus or minus this amount (3 std deviations)
 
-
   /**
    * Update the age of the node based on what is happening (collisions) to the associated entity
    * Should be called once per tick

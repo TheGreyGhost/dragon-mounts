@@ -9,7 +9,13 @@
  */
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterFire;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFactory;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFire;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeaponFire;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -48,4 +54,17 @@ public class DragonBreedNether extends DragonBreed {
     public void onDisable(EntityTameableDragon dragon) {
         dragon.setDragonAvoidWater(false);
     }
+
+
+  @Override
+  public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon)
+  {
+    return BreathWeaponSpawnType.PROJECTILE;
+  }
+
+  public BreathProjectileFactory getBreathProjectileFactory(EntityTameableDragon dragon)
+  {
+    throw new UnsupportedOperationException();
+  }
+
 }

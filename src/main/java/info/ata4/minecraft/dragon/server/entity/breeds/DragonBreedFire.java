@@ -61,7 +61,13 @@ public class DragonBreedFire extends DragonBreed {
         return new BreathWeaponFXEmitterFire();
     }
 
-    /** return a new BreathWeapon based on breed
+  @Override
+  public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon)
+  {
+    return BreathWeaponSpawnType.NODES;
+  }
+
+  /** return a new BreathWeapon based on breed
      * @return
      */
     @Override
