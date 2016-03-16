@@ -261,4 +261,22 @@ public class MathX {
       return (numerator % divisor + divisor) % divisor;
   }
 
+  // calculate the yaw from the given direction
+  // returns from -180 to +180
+  public static double calculateYaw(Vec3 direction)
+  {
+    double yaw = (Math.atan2(direction.zCoord, direction.xCoord) * 180.0D / Math.PI) - 90.0F;
+    yaw = MathX.normDeg(yaw);
+      return yaw;
+  }
+
+    // calculate the pitch from the given direction
+    // returns from -90 to +90
+    public static double calculatePitch(Vec3 direction)
+    {
+        double xz_norm = MathHelper.sqrt_double(direction.xCoord * direction.xCoord + direction.zCoord * direction.zCoord);
+        double pitch = -(Math.atan2(direction.yCoord, xz_norm) * 180.0D / Math.PI);
+        return pitch;
+    }
+
 }

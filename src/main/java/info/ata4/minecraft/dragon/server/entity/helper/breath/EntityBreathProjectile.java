@@ -1,5 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -67,19 +68,25 @@ public abstract class EntityBreathProjectile extends Entity {
     this.shootingEntity = shooter;
     power = i_power;
     this.setSizeFromPower(power);
+    Vec3 offset = destination.subtract(origin);
+    double yaw = MathX.calculateYaw(offset);
+    double pitch = MathX.calculatePitch(offset);
+
     this.setLocationAndAngles(origin.xCoord, origin.yCoord, origin.zCoord,
-                              shooter.rotationYaw, shooter.rotationPitch);
+                              (float)yaw, (float)pitch);
 //    this.setPosition(this.posX, this.posY, this.posZ);
     this.motionX = this.motionY = this.motionZ = 0.0D;
-    accelX += this.rand.nextGaussian() * 0.4D;
-    accelY += this.rand.nextGaussian() * 0.4D;
-    accelZ += this.rand.nextGaussian() * 0.4D;
-    double d3 = (double) MathHelper.sqrt_double(accelX * accelX + accelY * accelY + accelZ * accelZ);
-    this.accelerationX = accelX / d3 * 0.1D;
-    this.accelerationY = accelY / d3 * 0.1D;
-    this.accelerationZ = accelZ / d3 * 0.1D;
+
+    final double ACCELERATION_BLOCKS_PER_TICK_SQ = 0.1;
+
+    offset.normalize();
+    this.accelerationX = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.xCoord;
+    this.accelerationY = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.yCoord;
+    this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.zCoord;
   }
 
+  // used during initialisation to calculate the entity size based on the power.
+  //  must not access member variables!
   protected abstract void setSizeFromPower(BreathNode.Power power);
 
   public void onUpdate() {
