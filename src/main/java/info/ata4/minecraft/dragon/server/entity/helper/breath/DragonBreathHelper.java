@@ -62,11 +62,26 @@ public class DragonBreathHelper extends DragonHelper
     if (currentBreed == newBreed) return;
     currentBreed = newBreed;
 
-    if (dragon.isClient()) {
-      breathWeaponFXEmitter = dragon.getBreed().getBreathWeaponFXEmitter(dragon);
+    switch (currentBreed.getBreathWeaponSpawnType(dragon)) {
+      case NODES: {
+        BreathWeapon breathWeapon = currentBreed.getBreathWeapon(dragon);
+        breathAffectedArea = new BreathAffectedArea(breathWeapon);
+        breathNodeFactory = currentBreed.getBreathNodeFactory(dragon);
+        if (dragon.isClient()) {
+          breathWeaponFXEmitter = currentBreed.getBreathWeaponFXEmitter(dragon);
+        }
+        break;
+      }
+      case PROJECTILE: {
+        breathProjectileFactory = currentBreed.getBreathProjectileFactory(dragon);
+        break;
+      }
+      default: {
+        System.err.println("Unknown BreathWeaponSpawnType:" + dragon.getBreed().getBreathWeaponSpawnType(dragon));
+        return;
+      }
     }
-    BreathWeapon breathWeapon = dragon.getBreed().getBreathWeapon(dragon);
-    breathAffectedArea = new BreathAffectedArea(breathWeapon);
+
   }
 
   public enum  BreathState {
@@ -271,17 +286,38 @@ public class DragonBreathHelper extends DragonHelper
     updateBreathState(target);
     dragon.getBreed().getBreathWeapon(dragon).updateBreathWeaponMode();
     DragonBreathMode dragonBreathMode = dragon.getBreathHelper().getBreathMode();
-    if (target != null) {
-      Vec3 origin = dragon.getAnimator().getThroatPosition();
-      Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
-      if (destination != null && currentBreathState == BreathState.SUSTAIN) {
-        BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
-        BreathNodeFactory breathNodeFactory = dragon.getBreed().getBreathNodeFactory(dragon);
-        breathAffectedArea.continueBreathing(dragon.getEntityWorld(), origin, destination, breathNodeFactory, power, dragonBreathMode);
+
+    switch (dragon.getBreed().getBreathWeaponSpawnType(dragon)) {
+      case NODES: {
+        if (target != null) {
+          Vec3 origin = dragon.getAnimator().getThroatPosition();
+          Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
+          if (destination != null && currentBreathState == BreathState.SUSTAIN) {
+            BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
+            breathAffectedArea.continueBreathing(dragon.getEntityWorld(), origin, destination, breathNodeFactory, power, dragonBreathMode);
+          }
+        }
+        breathAffectedArea.updateTick(dragon.worldObj, dragonBreathMode);
+        break;
+      }
+      case PROJECTILE: {
+        if (target != null) {
+          Vec3 origin = dragon.getAnimator().getThroatPosition();
+          Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
+          if (destination != null && currentBreathState == BreathState.SUSTAIN) {
+            BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
+            breathProjectileFactory.spawnProjectile(dragon.getEntityWorld(),
+                                                    origin, destination, power);
+          }
+        }
+        breathProjectileFactory.updateTick(currentBreathState);
+        break;
+      }
+      default: {
+        System.err.println("Unknown BreathWeaponSpawnType:" + dragon.getBreed().getBreathWeaponSpawnType(dragon));
+        return;
       }
     }
-    breathAffectedArea.updateTick(dragon.worldObj, dragonBreathMode);
-    ++ticksSinceLastBreath;
   }
 
   private void onLivingUpdateClient()
@@ -289,16 +325,30 @@ public class DragonBreathHelper extends DragonHelper
     refreshBreed(dragon);
     BreathWeaponTarget target = getTarget();
     updateBreathState(target);
-    DragonBreathMode dragonBreathMode = getBreathMode();
-    breathWeaponFXEmitter.changeBreathMode(dragonBreathMode);
 
-    if (target != null) {
-      Vec3 origin = dragon.getAnimator().getThroatPosition();
-      Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
-      if (destination != null && currentBreathState == BreathState.SUSTAIN) {
-        breathWeaponFXEmitter.setBeamEndpoints(origin, destination);
-        BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
-        breathWeaponFXEmitter.spawnBreathParticles(dragon.getEntityWorld(), power, tickCounter);
+    switch (dragon.getBreed().getBreathWeaponSpawnType(dragon)) {
+      case NODES: {
+        DragonBreathMode dragonBreathMode = getBreathMode();
+        breathWeaponFXEmitter.changeBreathMode(dragonBreathMode);
+
+        if (target != null) {
+          Vec3 origin = dragon.getAnimator().getThroatPosition();
+          Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
+          if (destination != null && currentBreathState == BreathState.SUSTAIN) {
+            breathWeaponFXEmitter.setBeamEndpoints(origin, destination);
+            BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
+            breathWeaponFXEmitter.spawnBreathParticles(dragon.getEntityWorld(), power, tickCounter);
+          }
+        }
+        break;
+      }
+      case PROJECTILE: {
+        //nothing to do client side for projectiles; they are normal entities
+        break;
+      }
+      default: {
+        System.err.println("Unknown BreathWeaponSpawnType:" + dragon.getBreed().getBreathWeaponSpawnType(dragon));
+        return;
       }
     }
 
@@ -372,7 +422,7 @@ public class DragonBreathHelper extends DragonHelper
 
   private BreathAffectedArea breathAffectedArea;
   private DragonBreed currentBreed = null;
-
+  private BreathProjectileFactory breathProjectileFactory = null;
+  private BreathNodeFactory breathNodeFactory = null;
   private DragonBreathMode breathWeaponMode = DragonBreathMode.DEFAULT;
-  private int ticksSinceLastBreath = 0;
 }

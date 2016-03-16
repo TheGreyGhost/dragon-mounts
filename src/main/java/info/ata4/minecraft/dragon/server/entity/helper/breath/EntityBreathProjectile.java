@@ -48,24 +48,28 @@ public abstract class EntityBreathProjectile extends Entity {
     return distance < d1 * d1;
   }
 
-  public EntityBreathProjectile(World worldIn, double x, double y, double z, double accelX, double accelY,
-                                double accelZ) {
-    super(worldIn);
-    this.setSize(1.0F, 1.0F);
-    this.setLocationAndAngles(x, y, z, this.rotationYaw, this.rotationPitch);
-    this.setPosition(x, y, z);
-    double d6 = (double) MathHelper.sqrt_double(accelX * accelX + accelY * accelY + accelZ * accelZ);
-    this.accelerationX = accelX / d6 * 0.1D;
-    this.accelerationY = accelY / d6 * 0.1D;
-    this.accelerationZ = accelZ / d6 * 0.1D;
-  }
+//  public EntityBreathProjectile(World worldIn, double x, double y, double z, double accelX, double accelY,
+//                                double accelZ) {
+//    super(worldIn);
+//    this.setSize(1.0F, 1.0F);
+//    this.setLocationAndAngles(x, y, z, this.rotationYaw, this.rotationPitch);
+//    this.setPosition(x, y, z);
+//    double d6 = (double) MathHelper.sqrt_double(accelX * accelX + accelY * accelY + accelZ * accelZ);
+//    this.accelerationX = accelX / d6 * 0.1D;
+//    this.accelerationY = accelY / d6 * 0.1D;
+//    this.accelerationZ = accelZ / d6 * 0.1D;
+//  }
 
-  public EntityBreathProjectile(World worldIn, EntityLivingBase shooter, double accelX, double accelY, double accelZ) {
+  public EntityBreathProjectile(World worldIn, EntityLivingBase shooter,
+                                Vec3 origin, Vec3 destination, BreathNode.Power i_power) {
+//                                double accelX, double accelY, double accelZ) {
     super(worldIn);
     this.shootingEntity = shooter;
-    this.setSize(1.0F, 1.0F);
-    this.setLocationAndAngles(shooter.posX, shooter.posY, shooter.posZ, shooter.rotationYaw, shooter.rotationPitch);
-    this.setPosition(this.posX, this.posY, this.posZ);
+    power = i_power;
+    this.setSizeFromPower(power);
+    this.setLocationAndAngles(origin.xCoord, origin.yCoord, origin.zCoord,
+                              shooter.rotationYaw, shooter.rotationPitch);
+//    this.setPosition(this.posX, this.posY, this.posZ);
     this.motionX = this.motionY = this.motionZ = 0.0D;
     accelX += this.rand.nextGaussian() * 0.4D;
     accelY += this.rand.nextGaussian() * 0.4D;
@@ -76,9 +80,8 @@ public abstract class EntityBreathProjectile extends Entity {
     this.accelerationZ = accelZ / d3 * 0.1D;
   }
 
-  /**
-   * Called to update the entity's position/logic.
-   */
+  protected abstract void setSizeFromPower(BreathNode.Power power);
+
   public void onUpdate() {
     if (!this.worldObj.isRemote && (this.shootingEntity != null && this.shootingEntity.isDead || !this.worldObj
             .isBlockLoaded(new BlockPos(this)))) {
@@ -227,6 +230,7 @@ public abstract class EntityBreathProjectile extends Entity {
     tagCompound.setString("inTile", resourcelocation == null ? "" : resourcelocation.toString());
     tagCompound.setByte("inGround", (byte) (this.inGround ? 1 : 0));
     tagCompound.setTag("direction", this.newDoubleNBTList(new double[]{this.motionX, this.motionY, this.motionZ}));
+    tagCompound.setInteger("ExplosionPower", this.power.ordinal());
   }
 
   /**
@@ -252,6 +256,13 @@ public abstract class EntityBreathProjectile extends Entity {
       this.motionZ = nbttaglist.getDouble(2);
     } else {
       this.setDead();
+    }
+    power = BreathNode.Power.SMALL;  // default
+    if (tagCompund.hasKey("ExplosionPower", 99)) {
+      int powerIndex = tagCompund.getInteger("ExplosionPower");
+      if (powerIndex >= 0 && powerIndex < BreathNode.Power.values().length) {
+        this.power = BreathNode.Power.values()[powerIndex];
+      }
     }
   }
 
@@ -318,5 +329,7 @@ public abstract class EntityBreathProjectile extends Entity {
   public int getBrightnessForRender(float p_70070_1_) {
     return 15728880;
   }
+
+  protected BreathNode.Power power;
 
 }

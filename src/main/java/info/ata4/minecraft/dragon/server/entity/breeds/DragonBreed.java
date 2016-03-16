@@ -13,6 +13,7 @@ import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFactory;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathProjectileFactory;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureAttribute;
@@ -148,7 +149,7 @@ public abstract class DragonBreed {
 
     public int getNumberOfWingFingers() {return 4;}
 
-    enum BreathWeaponSpawnType {PROJECTILE, NODES}
+    public enum BreathWeaponSpawnType {PROJECTILE, NODES}
     // PROJECTILE = spawn a single Entity, similar to EntityFIreball for ghast
     // NODES = continuous stream of small nodes
 
