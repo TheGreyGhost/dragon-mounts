@@ -2,7 +2,6 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 
 import java.util.Random;
@@ -22,21 +21,11 @@ public class BreathNodeForest extends BreathNode {
   public static class BreathNodeForestFactory implements BreathNodeFactory
   {
     @Override
-    public BreathNode createBreathNode(Power i_power)
+    public BreathNode createBreathNode(Power i_power, DragonBreathMode dragonBreathMode)
     {
-      return new BreathNodeForest(i_power, DragonBreathMode.FOREST_NOT_BURNING);
+      return new BreathNodeForest(i_power, dragonBreathMode);
     }
   }
-
-  public static class BreathNodeForestFactoryBurning implements BreathNodeFactory
-  {
-    @Override
-    public BreathNode createBreathNode(Power i_power)
-    {
-      return new BreathNodeForest(i_power, DragonBreathMode.FOREST_BURNING);
-    }
-  }
-
 
   private static final float FOREST_INITIAL_SPEED = 1.2F;                // blocks per tick at full speed
   private static final double SPEED_VARIATION_ABS = 0.05;          // plus or minus this amount (3 std deviations)
@@ -54,8 +43,6 @@ public class BreathNodeForest extends BreathNode {
   private static final float INITIAL_NODE_DIAMETER = 0.5F;  // in blocks
   private static final float FINAL_NODE_DIAMETER = 4.0F;
   private static final float EXPANSION_SPEED = 0.1F; // in blocks
-
-
 
   /**
    * Update the age of the node based on what is happening (collisions) to the associated entity

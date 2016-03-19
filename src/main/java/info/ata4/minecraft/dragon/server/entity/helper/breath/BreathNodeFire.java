@@ -1,8 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
-import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 
 import java.util.Random;
@@ -21,7 +19,7 @@ public class BreathNodeFire extends BreathNode
   public static class BreathNodeFireFactory implements BreathNodeFactory
   {
     @Override
-    public BreathNode createBreathNode(Power i_power)
+    public BreathNode createBreathNode(Power i_power, DragonBreathMode dragonBreathMode)
     {
       return new BreathNodeFire(i_power, DragonBreathMode.DEFAULT);
     }

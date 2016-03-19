@@ -63,7 +63,6 @@ public abstract class EntityBreathProjectile extends Entity {
 
   public EntityBreathProjectile(World worldIn, EntityLivingBase shooter,
                                 Vec3 origin, Vec3 destination, BreathNode.Power i_power) {
-//                                double accelX, double accelY, double accelZ) {
     super(worldIn);
     this.shootingEntity = shooter;
     power = i_power;
@@ -90,8 +89,9 @@ public abstract class EntityBreathProjectile extends Entity {
   protected abstract void setSizeFromPower(BreathNode.Power power);
 
   public void onUpdate() {
-    if (!this.worldObj.isRemote && (this.shootingEntity != null && this.shootingEntity.isDead || !this.worldObj
-            .isBlockLoaded(new BlockPos(this)))) {
+    BlockPos entityTilePos = new BlockPos(this);
+
+    if (!this.worldObj.isRemote && !this.worldObj.isBlockLoaded(entityTilePos)) {
       this.setDead();
     } else {
       super.onUpdate();
@@ -118,45 +118,44 @@ public abstract class EntityBreathProjectile extends Entity {
         ++this.ticksInAir;
       }
 
-      Vec3 vec3 = new Vec3(this.posX, this.posY, this.posZ);
-      Vec3 vec31 = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-      MovingObjectPosition movingobjectposition = this.worldObj.rayTraceBlocks(vec3, vec31);
-      vec3 = new Vec3(this.posX, this.posY, this.posZ);
-      vec31 = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+      Vec3 startPos = new Vec3(this.posX, this.posY, this.posZ);
+      Vec3 endPos = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+      MovingObjectPosition movingobjectposition = this.worldObj.rayTraceBlocks(startPos, endPos);
+//      startPos = new Vec3(this.posX, this.posY, this.posZ);
+//      endPos = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
       if (movingobjectposition != null) {
-        vec31 = new Vec3(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord,
+        endPos = new Vec3(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord,
                          movingobjectposition.hitVec.zCoord);
       }
 
-      Entity entity = null;
-      List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()
+      Entity firstEntityStruck = null;
+      double smallestCollisionDistance = Double.MAX_VALUE;
+      List collidingEntities = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()
                                                                                .addCoord(this.motionX, this.motionY,
                                                                                          this.motionZ)
                                                                                .expand(1.0D, 1.0D, 1.0D));
-      double d0 = 0.0D;
-
-      for (int i = 0; i < list.size(); ++i) {
-        Entity entity1 = (Entity) list.get(i);
-
-        if (entity1.canBeCollidedWith() && (!entity1.isEntityEqual(this.shootingEntity) || this.ticksInAir >= 25)) {
-          float f = 0.3F;
-          AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().expand((double) f, (double) f, (double) f);
-          MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(vec3, vec31);
+      for (Object entry : collidingEntities) {
+        Entity collidingEntity = (Entity)entry;
+        if (collidingEntity.canBeCollidedWith() &&
+             (!collidingEntity.isEntityEqual(this.shootingEntity) || this.ticksInAir >= 25)) {
+          final double f = 0.3F;
+          AxisAlignedBB axisalignedbb = collidingEntity.getEntityBoundingBox().expand(f, f, f);
+          MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(startPos, endPos);
 
           if (movingobjectposition1 != null) {
-            double d1 = vec3.distanceTo(movingobjectposition1.hitVec);
+            double d1 = startPos.distanceTo(movingobjectposition1.hitVec);
 
-            if (d1 < d0 || d0 == 0.0D) {
-              entity = entity1;
-              d0 = d1;
+            if (d1 < smallestCollisionDistance) {
+              firstEntityStruck = collidingEntity;
+              smallestCollisionDistance = d1;
             }
           }
         }
       }
 
-      if (entity != null) {
-        movingobjectposition = new MovingObjectPosition(entity);
+      if (firstEntityStruck != null) {
+        movingobjectposition = new MovingObjectPosition(firstEntityStruck);
       }
 
       if (movingobjectposition != null) {
@@ -166,10 +165,10 @@ public abstract class EntityBreathProjectile extends Entity {
       this.posX += this.motionX;
       this.posY += this.motionY;
       this.posZ += this.motionZ;
-      float f1 = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
+      float motionLength = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
       this.rotationYaw = (float) (Math.atan2(this.motionZ, this.motionX) * 180.0D / Math.PI) + 90.0F;
 
-      for (this.rotationPitch = (float) (Math.atan2((double) f1, this.motionY) * 180.0D / Math.PI) - 90.0F;
+      for (this.rotationPitch = (float) (Math.atan2((double) motionLength, this.motionY) * 180.0D / Math.PI) - 90.0F;
            this.rotationPitch - this.prevRotationPitch < -180.0F; this.prevRotationPitch -= 360.0F) {
         ;
       }
@@ -188,7 +187,7 @@ public abstract class EntityBreathProjectile extends Entity {
 
       this.rotationPitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * 0.2F;
       this.rotationYaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * 0.2F;
-      float f2 = this.getMotionFactor();
+      float motionFactor = this.getMotionFactor();
 
       if (this.isInWater()) {
         for (int j = 0; j < 4; ++j) {
@@ -198,15 +197,15 @@ public abstract class EntityBreathProjectile extends Entity {
                                       this.motionX, this.motionY, this.motionZ, new int[0]);
         }
 
-        f2 = 0.8F;
+        motionFactor = 0.8F;
       }
 
       this.motionX += this.accelerationX;
       this.motionY += this.accelerationY;
       this.motionZ += this.accelerationZ;
-      this.motionX *= (double) f2;
-      this.motionY *= (double) f2;
-      this.motionZ *= (double) f2;
+      this.motionX *= (double) motionFactor;
+      this.motionY *= (double) motionFactor;
+      this.motionZ *= (double) motionFactor;
       this.worldObj
               .spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY + 0.5D, this.posZ, 0.0D, 0.0D, 0.0D,
                              new int[0]);
@@ -216,6 +215,7 @@ public abstract class EntityBreathProjectile extends Entity {
 
   /**
    * Return the motion factor for this projectile. The factor is multiplied by the original motion.
+   * effectively a 'drag' on the projectile motion
    */
   protected float getMotionFactor() {
     return 0.95F;

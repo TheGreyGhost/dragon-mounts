@@ -18,7 +18,7 @@ public class BreathNodeIce extends BreathNode {
   public static class BreathNodeIceFactory implements BreathNodeFactory
   {
     @Override
-    public BreathNode createBreathNode(Power i_power)
+    public BreathNode createBreathNode(Power i_power, DragonBreathMode dragonBreathMode)
     {
       return new BreathNodeIce(i_power, DragonBreathMode.DEFAULT);
     }

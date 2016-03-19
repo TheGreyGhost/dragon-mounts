@@ -48,7 +48,7 @@ public class BreathAffectedArea
 
     EntityBreathNode newNode = EntityBreathNode.createEntityBreathNodeServer(
             world, origin.xCoord, origin.yCoord, origin.zCoord, direction.xCoord, direction.yCoord, direction.zCoord,
-            breathNodeFactory, power);
+            breathNodeFactory, power, breathMode);
 
     entityBreathNodes.add(newNode);
   }

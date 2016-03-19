@@ -5,6 +5,6 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
  */
 public interface BreathNodeFactory
 {
-  public BreathNode createBreathNode(BreathNode.Power i_power);
+  public BreathNode createBreathNode(BreathNode.Power i_power, DragonBreathMode dragonBreathMode);
 
 }

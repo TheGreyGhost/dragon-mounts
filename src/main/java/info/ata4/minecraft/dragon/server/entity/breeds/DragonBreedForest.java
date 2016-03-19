@@ -104,11 +104,19 @@ public class DragonBreedForest extends DragonBreed {
   // breathmode != 0 --> the breath has been ignited
 
   @Override
+  public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon)
+  {
+    return BreathWeaponSpawnType.NODES;
+  }
+
+
+  @Override
   public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
   {
-    DragonBreathMode breathMode = dragon.getBreathHelper().getBreathMode();
-    return (breathMode.equals(DragonBreathMode.FOREST_BURNING)) ? new BreathNodeForest.BreathNodeForestFactoryBurning()
-                                                                : new BreathNodeForest.BreathNodeForestFactory();
+//    DragonBreathMode breathMode = dragon.getBreathHelper().getBreathMode();
+//    return (breathMode.equals(DragonBreathMode.FOREST_BURNING)) ? new BreathNodeForest.BreathNodeForestFactoryBurning()
+//                                                                : new BreathNodeForest.BreathNodeForestFactory();
+    return new BreathNodeForest.BreathNodeForestFactory();
   }
 
 }

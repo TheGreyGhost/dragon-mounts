@@ -18,7 +18,7 @@ public class BreathNodeWater extends BreathNode {
   public static class BreathNodeWaterFactory implements BreathNodeFactory
   {
     @Override
-    public BreathNode createBreathNode(Power i_power)
+    public BreathNode createBreathNode(Power i_power, DragonBreathMode dragonBreathMode)
     {
       return new BreathNodeWater(i_power, DragonBreathMode.DEFAULT);
     }

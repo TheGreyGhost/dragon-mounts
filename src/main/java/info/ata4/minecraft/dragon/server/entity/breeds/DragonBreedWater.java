@@ -49,7 +49,13 @@ public class DragonBreedWater extends DragonBreed {
         return new BreathWeaponWater(dragon);
     }
 
-    @Override
+  @Override
+  public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon)
+  {
+    return BreathWeaponSpawnType.NODES;
+  }
+
+  @Override
     public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
     {
         return new BreathNodeWater.BreathNodeWaterFactory();

@@ -306,7 +306,7 @@ public class DragonBreathHelper extends DragonHelper
           Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
           if (destination != null && currentBreathState == BreathState.SUSTAIN) {
             BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
-            breathProjectileFactory.spawnProjectile(dragon.getEntityWorld(),
+            breathProjectileFactory.spawnProjectile(dragon.getEntityWorld(), dragon,
                                                     origin, destination, power);
           }
         }

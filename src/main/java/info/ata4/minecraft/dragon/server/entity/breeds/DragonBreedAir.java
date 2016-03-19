@@ -71,4 +71,10 @@ public class DragonBreedAir extends DragonBreed {
     return new BreathNodeAir.BreathNodeAirFactory();
   }
 
+  @Override
+  public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon)
+  {
+    return BreathWeaponSpawnType.NODES;
+  }
+
 }
