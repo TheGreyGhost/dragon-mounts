@@ -88,6 +88,7 @@ public abstract class EntityBreathProjectile extends Entity {
   //  must not access member variables!
   protected abstract void setSizeFromPower(BreathNode.Power power);
 
+  @Override
   public void onUpdate() {
     BlockPos entityTilePos = new BlockPos(this);
 

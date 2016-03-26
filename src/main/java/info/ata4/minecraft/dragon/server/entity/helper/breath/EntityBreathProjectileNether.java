@@ -22,6 +22,20 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
     super(worldIn, shooter, origin, destination, power);
   }
 
+  // used by some spawn code under circumstances I don't fully understand yet
+  public EntityBreathProjectileNether(World worldIn)
+  {
+    super(worldIn);
+  }
+
+  @Override
+  public void onUpdate()
+  {
+    final int BURN_DURATION_SECONDS = 1; // used to trigger rendering of fire
+    this.setFire(BURN_DURATION_SECONDS);
+    super.onUpdate();
+  }
+
   protected void setSizeFromPower(BreathNode.Power power)
   {
     switch (power) {

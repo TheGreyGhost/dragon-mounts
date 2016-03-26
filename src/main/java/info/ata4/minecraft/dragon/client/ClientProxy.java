@@ -12,9 +12,11 @@ package info.ata4.minecraft.dragon.client;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.gui.GuiDragonDebug;
 import info.ata4.minecraft.dragon.client.handler.*;
+import info.ata4.minecraft.dragon.client.render.BreathEntityRendererNether;
 import info.ata4.minecraft.dragon.client.render.DragonRenderer;
 import info.ata4.minecraft.dragon.server.CommonProxy;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileNether;
 import info.ata4.minecraft.dragon.test.StartupClientOnly;
 import info.ata4.minecraft.dragon.test.StartupCommon;
 import net.minecraft.client.Minecraft;
@@ -67,6 +69,8 @@ public class ClientProxy extends CommonProxy {
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
         RenderingRegistry.registerEntityRenderingHandler(EntityTameableDragon.class,
                 new DragonRenderer(renderManager));
+      RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileNether.class,
+                                                       new BreathEntityRendererNether(renderManager, 1.0F));
 
         FMLCommonHandler.instance().bus().register(new DragonControl(getNetwork()));
         DragonOrbControl.createSingleton(getNetwork());
