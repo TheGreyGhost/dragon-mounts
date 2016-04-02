@@ -167,6 +167,11 @@ public abstract class EntityBreathProjectile extends Entity {
       this.posY += this.motionY;
       this.posZ += this.motionZ;
       float motionLength = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
+//      final float THRESHOLD_SPEED = 0.01F; // minimum speed in blocks per tick - if less than this, die
+//      if (motionLength < THRESHOLD_SPEED) {
+//        float accelerationLength = MathHelper.sqrt_double(this.accelerationX * this.motionX + this.motionZ * this.motionZ);
+//        this.setDead();
+//      }
       this.rotationYaw = (float) (Math.atan2(this.motionZ, this.motionX) * 180.0D / Math.PI) + 90.0F;
 
       for (this.rotationPitch = (float) (Math.atan2((double) motionLength, this.motionY) * 180.0D / Math.PI) - 90.0F;
@@ -211,6 +216,10 @@ public abstract class EntityBreathProjectile extends Entity {
               .spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY + 0.5D, this.posZ, 0.0D, 0.0D, 0.0D,
                              new int[0]);
       this.setPosition(this.posX, this.posY, this.posZ);
+      if (!this.worldObj.isRemote) {
+        System.out.format("Pos: [%f, %f, %f] motion:[%f, %f, %f]\n", this.posX, this.posY, this.posZ,
+                          this.motionX, this.motionY, this.motionZ);  //todo remove
+      }
     }
   }
 

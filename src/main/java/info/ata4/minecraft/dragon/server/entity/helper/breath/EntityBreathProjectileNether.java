@@ -12,6 +12,7 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 /**
+ * Represents the Nether Breath weapon fireball (similar to ghast fireball)
  * Created by TGG on 14/03/2016.
  */
 public class EntityBreathProjectileNether extends EntityBreathProjectile {
