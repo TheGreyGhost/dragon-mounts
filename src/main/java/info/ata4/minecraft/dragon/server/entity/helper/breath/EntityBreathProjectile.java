@@ -61,6 +61,11 @@ public abstract class EntityBreathProjectile extends Entity {
 //    this.accelerationZ = accelZ / d6 * 0.1D;
 //  }
 
+
+  private static int projectilesFired = 0;  //todo remove
+  private int ticksTillFreeze; //todo remove
+  private int projectileNumber; //todo remove
+
   public EntityBreathProjectile(World worldIn, EntityLivingBase shooter,
                                 Vec3 origin, Vec3 destination, BreathNode.Power i_power) {
     super(worldIn);
@@ -82,6 +87,8 @@ public abstract class EntityBreathProjectile extends Entity {
     this.accelerationX = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.xCoord;
     this.accelerationY = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.yCoord;
     this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.zCoord;
+    projectileNumber =  ++projectilesFired;
+    ticksTillFreeze = 10 - projectilesFired;
   }
 
   // used during initialisation to calculate the entity size based on the power.
@@ -91,6 +98,13 @@ public abstract class EntityBreathProjectile extends Entity {
   @Override
   public void onUpdate() {
     BlockPos entityTilePos = new BlockPos(this);
+    if (--ticksTillFreeze == 0) {
+      motionX = 0; motionY = 0; motionZ = 0;
+      accelerationX = 0; accelerationY = 0; accelerationZ = 0;
+      if (!this.worldObj.isRemote) {
+        System.out.format("%d stop at [%f, %f, %f]\n", projectileNumber, posX, posY, posZ);
+      }
+    }
 
     if (!this.worldObj.isRemote && !this.worldObj.isBlockLoaded(entityTilePos)) {
       this.setDead();
@@ -216,10 +230,10 @@ public abstract class EntityBreathProjectile extends Entity {
               .spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY + 0.5D, this.posZ, 0.0D, 0.0D, 0.0D,
                              new int[0]);
       this.setPosition(this.posX, this.posY, this.posZ);
-      if (!this.worldObj.isRemote) {
-        System.out.format("Pos: [%f, %f, %f] motion:[%f, %f, %f]\n", this.posX, this.posY, this.posZ,
-                          this.motionX, this.motionY, this.motionZ);  //todo remove
-      }
+//      if (!this.worldObj.isRemote) {
+//        System.out.format("Pos: [%f, %f, %f] motion:[%f, %f, %f]\n", this.posX, this.posY, this.posZ,
+//                          this.motionX, this.motionY, this.motionZ);  //todo remove
+//      }
     }
   }
 
@@ -248,6 +262,9 @@ public abstract class EntityBreathProjectile extends Entity {
     tagCompound.setByte("inGround", (byte) (this.inGround ? 1 : 0));
     tagCompound.setTag("direction", this.newDoubleNBTList(new double[]{this.motionX, this.motionY, this.motionZ}));
     tagCompound.setInteger("ExplosionPower", this.power.ordinal());
+    tagCompound.setDouble("accelerationX", accelerationX);
+    tagCompound.setDouble("accelerationY", accelerationY);
+    tagCompound.setDouble("accelerationZ", accelerationZ);
   }
 
   /**
@@ -274,6 +291,11 @@ public abstract class EntityBreathProjectile extends Entity {
     } else {
       this.setDead();
     }
+
+    this.accelerationX = tagCompund.getDouble("accelerationX");
+    this.accelerationY = tagCompund.getDouble("accelerationY");
+    this.accelerationZ = tagCompund.getDouble("accelerationZ");
+
     power = BreathNode.Power.SMALL;  // default
     if (tagCompund.hasKey("ExplosionPower", 99)) {
       int powerIndex = tagCompund.getInteger("ExplosionPower");
