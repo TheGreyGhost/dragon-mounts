@@ -81,12 +81,12 @@ public abstract class EntityBreathProjectile extends Entity {
 //    this.setPosition(this.posX, this.posY, this.posZ);
     this.motionX = this.motionY = this.motionZ = 0.0D;
 
-    final double ACCELERATION_BLOCKS_PER_TICK_SQ = 0.1;
+    final double ACCELERATION_BLOCKS_PER_TICK_SQ = 0.2;
 
-    offset.normalize();
-    this.accelerationX = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.xCoord;
-    this.accelerationY = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.yCoord;
-    this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * offset.zCoord;
+    Vec3 normalisedOffset = offset.normalize();
+    this.accelerationX = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.xCoord;
+    this.accelerationY = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.yCoord;
+    this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.zCoord;
     projectileNumber =  ++projectilesFired;
     ticksTillFreeze = 10 - projectilesFired;
   }

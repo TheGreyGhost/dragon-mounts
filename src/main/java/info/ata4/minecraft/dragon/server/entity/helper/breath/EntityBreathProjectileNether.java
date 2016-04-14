@@ -33,7 +33,7 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
   public void onUpdate()
   {
     final int BURN_DURATION_SECONDS = 1; // used to trigger rendering of fire
-    this.setFire(BURN_DURATION_SECONDS);
+//    this.setFire(BURN_DURATION_SECONDS); //todo reinstate
     super.onUpdate();
   }
 
@@ -63,40 +63,44 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
    */
   protected void onImpact(MovingObjectPosition movingObject)
   {
-    if (!this.worldObj.isRemote) {
-      float explosionSize = 1.0F;
-      float damageAmount = 1.0F;
-      switch (power) {
-        case SMALL: {
-          explosionSize = 1.0F;
-          damageAmount = 1.0F;
-          break;
-        }
-        case MEDIUM: {
-          explosionSize = 2.0F;
-          damageAmount = 4.0F;
-          break;
-        }
-        case LARGE: {
-          explosionSize = 4.0F;
-          damageAmount = 10.0F;
-          break;
-        }
-        default: {
-          System.err.println("Invalid Power in onImpact:" + power);
-        }
-      }
+    //todo reinstate
+//    this.setDead();
 
-      if (movingObject.entityHit != null) {
-        DamageSource fireballDamage = new EntityDamageSourceIndirect("fireball", this, shootingEntity).setFireDamage().setProjectile();
-        movingObject.entityHit.attackEntityFrom(fireballDamage, damageAmount);
-        this.func_174815_a(this.shootingEntity, movingObject.entityHit);
-      }
-
-      boolean flag = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
-      this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, explosionSize, flag, flag);
-      this.setDead();
-    }
+    return;
+//    if (!this.worldObj.isRemote) {
+//      float explosionSize = 1.0F;
+//      float damageAmount = 1.0F;
+//      switch (power) {
+//        case SMALL: {
+//          explosionSize = 1.0F;
+//          damageAmount = 1.0F;
+//          break;
+//        }
+//        case MEDIUM: {
+//          explosionSize = 2.0F;
+//          damageAmount = 4.0F;
+//          break;
+//        }
+//        case LARGE: {
+//          explosionSize = 4.0F;
+//          damageAmount = 10.0F;
+//          break;
+//        }
+//        default: {
+//          System.err.println("Invalid Power in onImpact:" + power);
+//        }
+//      }
+//
+//      if (movingObject.entityHit != null) {
+//        DamageSource fireballDamage = new EntityDamageSourceIndirect("fireball", this, shootingEntity).setFireDamage().setProjectile();
+//        movingObject.entityHit.attackEntityFrom(fireballDamage, damageAmount);
+//        this.func_174815_a(this.shootingEntity, movingObject.entityHit);
+//      }
+//
+//      boolean flag = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
+//      this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, explosionSize, flag, flag);
+//      this.setDead();
+//    }
   }
 
   public static class BreathProjectileFactoryNether implements BreathProjectileFactory {
@@ -104,6 +108,9 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
     {
       if (coolDownTimerTicks > 0) return;
 
+      System.out.format("origin [%.1f, %.1f, %.1f] -> target [%.1f, %.1f, %.1f]\n",
+                        origin.xCoord, origin.yCoord, origin.zCoord,
+                        target.xCoord, target.yCoord, target.zCoord);  //todo remove
       final int COOLDOWN_TIME_TICKS = 40;
       EntityBreathProjectileNether entity = new EntityBreathProjectileNether(world, dragon, origin, target, power);
       world.spawnEntityInWorld(entity);
