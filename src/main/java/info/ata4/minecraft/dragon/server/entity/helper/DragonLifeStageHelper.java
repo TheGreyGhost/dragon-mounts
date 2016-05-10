@@ -18,6 +18,7 @@ import info.ata4.minecraft.dragon.server.entity.ai.targeting.EntityAIRangedBreat
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.util.ClientServerSynchronisedTickCount;
 import info.ata4.minecraft.dragon.server.util.EntityClassPredicate;
+import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.*;
@@ -417,31 +418,33 @@ public class DragonLifeStageHelper extends DragonHelper {
         tasks.addTask(11, new EntityAIWatchIdle(dragon)); // mutex 2
         tasks.addTask(11, new EntityAIWatchLiving(dragon, 16, 0.05f)); // mutex 2
 
-        float minAttackRange = 0;
-        float maxAttackRange = 0;
-        switch (getLifeStage()) {
-            case EGG:
-                break;
-            case HATCHLING: {
-                minAttackRange = 2.0F;
-                maxAttackRange = 4.0F;
-                break;
-            }
-            case JUVENILE: {
-                minAttackRange = 3.0F;
-                maxAttackRange = 8.0F;
-                break;
-            }
-            case ADULT: {
-                minAttackRange = 5.0F;
-                maxAttackRange = 25.0F;
-                break;
-            }
-            default: {
-                System.err.println("Unknown lifestage:" + getLifeStage());
-                break;
-            }
-        }
+
+        Pair<Float, Float> ranges = dragon.getBreed().getBreathWeaponRange(dragon.getLifeStageHelper().getLifeStage());
+        float minAttackRange = ranges.getFirst();
+        float maxAttackRange = ranges.getSecond();
+//        switch (getLifeStage()) {
+//            case EGG:
+//                break;
+//            case HATCHLING: {
+//                minAttackRange = 2.0F;
+//                maxAttackRange = 4.0F;
+//                break;
+//            }
+//            case JUVENILE: {
+//                minAttackRange = 3.0F;
+//                maxAttackRange = 8.0F;
+//                break;
+//            }
+//            case ADULT: {
+//                minAttackRange = 5.0F;
+//                maxAttackRange = 25.0F;
+//                break;
+//            }
+//            default: {
+//                System.err.println("Unknown lifestage:" + getLifeStage());
+//                break;
+//            }
+//        }
 
         EntityAIMoveToOptimalDistance movementAI = new EntityAIMoveToOptimalDistance(dragon, 1, minAttackRange, (minAttackRange + maxAttackRange) / 2, maxAttackRange);
         tasks.addTask(3, movementAI); // mutex 1 + 2

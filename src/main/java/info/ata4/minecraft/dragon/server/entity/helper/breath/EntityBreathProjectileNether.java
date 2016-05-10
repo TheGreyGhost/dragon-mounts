@@ -37,6 +37,29 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
     super.onUpdate();
   }
 
+  /**
+   * Return the motion factor for this projectile. The factor is multiplied by the original motion.
+   * effectively a 'drag' on the projectile motion
+   */
+  protected float getMotionFactor() {
+    switch (power) {
+      case SMALL: {
+        return 0.80F;
+      }
+      case MEDIUM: {
+        return 0.90F;
+      }
+      case LARGE: {
+        return  0.95F;
+      }
+      default: {
+        System.err.println("Invalid Power in setSizeFromPower:" + power);
+        return 0.95F;
+      }
+    }
+
+  }
+
   protected void setSizeFromPower(BreathNode.Power power)
   {
     switch (power) {
