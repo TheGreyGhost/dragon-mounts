@@ -1,6 +1,7 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import info.ata4.minecraft.dragon.util.math.MathX;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -8,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -17,7 +19,8 @@ import java.util.List;
  * Created by TGG on 14/03/2016.
  * Copied from EntityFireball and modified a bit
  */
-public abstract class EntityBreathProjectile extends Entity {
+public abstract class EntityBreathProjectile extends Entity implements IEntityAdditionalSpawnData
+{
   private int xTile = -1;
   private int yTile = -1;
   private int zTile = -1;
@@ -33,6 +36,7 @@ public abstract class EntityBreathProjectile extends Entity {
   public EntityBreathProjectile(World worldIn) {
     super(worldIn);
     this.setSize(1.0F, 1.0F);
+    power = BreathNode.Power.SMALL;  // default
   }
 
   protected void entityInit() {
@@ -62,9 +66,9 @@ public abstract class EntityBreathProjectile extends Entity {
 //  }
 
 
-  private static int projectilesFired = 0;  //todo remove
-  private int ticksTillFreeze; //todo remove
-  private int projectileNumber; //todo remove
+//  private static int projectilesFired = 0;  //todo remove
+//  private int ticksTillFreeze; //todo remove
+//  private int projectileNumber; //todo remove
 
   public EntityBreathProjectile(World worldIn, EntityLivingBase shooter,
                                 Vec3 origin, Vec3 destination, BreathNode.Power i_power) {
@@ -87,8 +91,8 @@ public abstract class EntityBreathProjectile extends Entity {
     this.accelerationX = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.xCoord;
     this.accelerationY = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.yCoord;
     this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.zCoord;
-    projectileNumber =  ++projectilesFired;
-    ticksTillFreeze = 10 - projectilesFired;
+//    projectileNumber =  ++projectilesFired;
+//    ticksTillFreeze = 10 - projectilesFired;
   }
 
   // used during initialisation to calculate the entity size based on the power.
@@ -98,19 +102,18 @@ public abstract class EntityBreathProjectile extends Entity {
   @Override
   public void onUpdate() {
     BlockPos entityTilePos = new BlockPos(this);
-    if (--ticksTillFreeze == 0) {
-      motionX = 0; motionY = 0; motionZ = 0;
-      accelerationX = 0; accelerationY = 0; accelerationZ = 0;
-      if (!this.worldObj.isRemote) {
-        System.out.format("%d stop at [%f, %f, %f]\n", projectileNumber, posX, posY, posZ);
-      }
-    }
+//    if (--ticksTillFreeze == 0) {
+//      motionX = 0; motionY = 0; motionZ = 0;
+//      accelerationX = 0; accelerationY = 0; accelerationZ = 0;
+//      if (!this.worldObj.isRemote) {
+//        System.out.format("%d stop at [%f, %f, %f]\n", projectileNumber, posX, posY, posZ);
+//      }
+//    }
 
     if (!this.worldObj.isRemote && !this.worldObj.isBlockLoaded(entityTilePos)) {
       this.setDead();
     } else {
       super.onUpdate();
-      this.setFire(1);
 
       if (this.inGround) {
         if (this.worldObj.getBlockState(new BlockPos(this.xTile, this.yTile, this.zTile)).getBlock() == this.inTile) {
@@ -135,7 +138,14 @@ public abstract class EntityBreathProjectile extends Entity {
 
       Vec3 startPos = new Vec3(this.posX, this.posY, this.posZ);
       Vec3 endPos = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-      MovingObjectPosition movingobjectposition = this.worldObj.rayTraceBlocks(startPos, endPos);
+
+      final boolean STOP_ON_LIQUID_FALSE = false;
+      final boolean IGNORE_BLOCK_WITHOUT_BOUNDING_BOX_TRUE = true;
+      final boolean RETURN_LAST_UNCOLLIDABLE_BLOCK_FALSE = false;
+      MovingObjectPosition movingobjectposition = this.worldObj.rayTraceBlocks(startPos, endPos,
+                                                    STOP_ON_LIQUID_FALSE, IGNORE_BLOCK_WITHOUT_BOUNDING_BOX_TRUE,
+                                                    RETURN_LAST_UNCOLLIDABLE_BLOCK_FALSE);
+
 //      startPos = new Vec3(this.posX, this.posY, this.posZ);
 //      endPos = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
@@ -210,6 +220,7 @@ public abstract class EntityBreathProjectile extends Entity {
       float motionFactor = this.getMotionFactor();
 
       if (this.isInWater()) {
+        inWaterUpdate();
         for (int j = 0; j < 4; ++j) {
           float f3 = 0.25F;
           this.worldObj.spawnParticle(EnumParticleTypes.WATER_BUBBLE, this.posX - this.motionX * (double) f3,
@@ -217,7 +228,7 @@ public abstract class EntityBreathProjectile extends Entity {
                                       this.motionX, this.motionY, this.motionZ, new int[0]);
         }
 
-        motionFactor = 0.8F;
+        motionFactor *= 0.8F;
       }
 
       this.motionX += this.accelerationX;
@@ -227,12 +238,14 @@ public abstract class EntityBreathProjectile extends Entity {
       this.motionY *= (double) motionFactor;
       this.motionZ *= (double) motionFactor;
       this.worldObj
-              .spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY + 0.5D, this.posZ, 0.0D, 0.0D, 0.0D,
+              .spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D,
                              new int[0]);
       this.setPosition(this.posX, this.posY, this.posZ);
 //      if (!this.worldObj.isRemote) {
-//        System.out.format("Pos: [%f, %f, %f] motion:[%f, %f, %f]\n", this.posX, this.posY, this.posZ,
-//                          this.motionX, this.motionY, this.motionZ);  //todo remove
+        System.out.format("%s Pos: [%f, %f, %f] motion:[%f, %f, %f]\n",
+                          this.worldObj.isRemote ? "client" : "server",
+                          this.posX, this.posY, this.posZ,
+                          this.motionX, this.motionY, this.motionZ);  //todo remove
 //      }
     }
   }
@@ -243,6 +256,11 @@ public abstract class EntityBreathProjectile extends Entity {
    */
   protected float getMotionFactor() {
     return 0.95F;
+  }
+
+  // Called every tick that the projectile is in water
+  protected void inWaterUpdate()
+  {
   }
 
   /**
@@ -296,13 +314,51 @@ public abstract class EntityBreathProjectile extends Entity {
     this.accelerationY = tagCompund.getDouble("accelerationY");
     this.accelerationZ = tagCompund.getDouble("accelerationZ");
 
+//    System.err.println("NBT read power:"+ power); // todo remove
     power = BreathNode.Power.SMALL;  // default
     if (tagCompund.hasKey("ExplosionPower", 99)) {
       int powerIndex = tagCompund.getInteger("ExplosionPower");
       if (powerIndex >= 0 && powerIndex < BreathNode.Power.values().length) {
         this.power = BreathNode.Power.values()[powerIndex];
+//        System.err.println("NBT power:"+ power); // todo remove
       }
     }
+  }
+
+  /**
+   * Called by the server when constructing the spawn packet.
+   * Data should be added to the provided stream.
+   *
+   * @param buffer The packet data stream
+   */
+  @Override
+  public void writeSpawnData(ByteBuf buffer)
+  {
+    buffer.writeInt(power.ordinal());
+    buffer.writeFloat((float)accelerationX);
+    buffer.writeFloat((float)accelerationY);
+    buffer.writeFloat((float)accelerationZ);
+  }
+
+  /**
+   * Called by the client when it receives a Entity spawn packet.
+   * Data should be read out of the stream in the same way as it was written.
+   *
+   * @param additionalData The packet data stream
+   */
+  @Override
+  public void readSpawnData(ByteBuf additionalData)
+  {
+    int powerOrdinal = additionalData.readInt();
+    accelerationX = additionalData.readFloat();
+    accelerationY = additionalData.readFloat();
+    accelerationZ = additionalData.readFloat();
+
+    if (powerOrdinal >= 0 && powerOrdinal < BreathNode.Power.values().length) {
+      this.power = BreathNode.Power.values()[powerOrdinal];
+//      System.err.println("NBT power readSpawnData:"+ power); // todo remove
+    }
+    this.setSizeFromPower(power);
   }
 
   /**

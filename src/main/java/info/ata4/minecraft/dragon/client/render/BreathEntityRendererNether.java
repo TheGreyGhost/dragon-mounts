@@ -18,7 +18,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- * Created by EveryoneElse on 26/03/2016.
+ * Created by TGG on 26/03/2016.
  */
 @SideOnly(Side.CLIENT)
 public class BreathEntityRendererNether extends Render {
@@ -46,18 +46,45 @@ public class BreathEntityRendererNether extends Render {
     double uMax = 1.0F;
     double vMin = 0.0F;
     double vMax = 1.0F;
-    double xSize = 1.0F;
-    double xOffset = 0.5F;
-    double yOffset = 0.25F;
+    double xSize = entity.width;
+    double ySize = entity.height;
+    double xOffset = xSize / 2;
+    double yOffset = ySize / 2;
     GlStateManager.rotate(180.0F - this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
     GlStateManager.rotate(-this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
     worldrenderer.startDrawingQuads();
     worldrenderer.setNormal(0.0F, 1.0F, 0.0F);
-    worldrenderer.addVertexWithUV( (0.0 - xOffset),  (0.0 - yOffset), 0.0D,  uMin, vMax);
-    worldrenderer.addVertexWithUV( (xSize - xOffset),  (0.0 - yOffset), 0.0D,  uMax, vMax);
-    worldrenderer.addVertexWithUV( (xSize - xOffset),  (1.0 - yOffset), 0.0D,  uMax, vMin);
-    worldrenderer.addVertexWithUV( (0.0 - xOffset),  (1.0 - yOffset), 0.0D,  uMin, vMin);
+    worldrenderer.addVertexWithUV((0.0 - xOffset), (0.0 - yOffset), 0.0D, uMin, vMax);
+    worldrenderer.addVertexWithUV((xSize - xOffset), (0.0 - yOffset), 0.0D, uMax, vMax);
+    worldrenderer.addVertexWithUV( (xSize - xOffset),  (ySize - yOffset), 0.0D,  uMax, vMin);
+    worldrenderer.addVertexWithUV( (0.0 - xOffset),  (ySize - yOffset), 0.0D,  uMin, vMin);
     tessellator.draw();
+
+    GlStateManager.disableLighting();
+    TextureMap texturemap = Minecraft.getMinecraft().getTextureMapBlocks();
+    TextureAtlasSprite fireLayer0 = texturemap.getAtlasSprite("minecraft:blocks/fire_layer_0");
+    TextureAtlasSprite fireLayer1 = texturemap.getAtlasSprite("minecraft:blocks/fire_layer_1");
+    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
+    worldrenderer.startDrawingQuads();
+
+    this.bindTexture(TextureMap.locationBlocksTexture);
+    float fireLayer0MinU = fireLayer0.getMinU();
+    float fireLayer0MinV = fireLayer0.getMinV();
+    float fireLayer0MaxU = fireLayer0.getMaxU();
+    float fireLayer0MaxV = fireLayer0.getMaxV();
+
+    final float Z_NUDGE = -0.01F;
+    yOffset -= ySize / 2;  // draw flame from midpt of ball
+    worldrenderer.addVertexWithUV((0.0 - xOffset), (0.0 - yOffset), Z_NUDGE, fireLayer0MaxU, fireLayer0MaxV);
+    worldrenderer.addVertexWithUV((xSize - xOffset), (0.0 - yOffset), Z_NUDGE, fireLayer0MinU, fireLayer0MaxV);
+    worldrenderer.addVertexWithUV((xSize - xOffset), (ySize - yOffset), Z_NUDGE, fireLayer0MinU, fireLayer0MinV);
+    worldrenderer.addVertexWithUV((0.0 - xOffset),  (ySize - yOffset), Z_NUDGE, fireLayer0MaxU, fireLayer0MinV);
+
+    tessellator.draw();
+
+    GlStateManager.enableLighting();
+
     GlStateManager.disableRescaleNormal();
     GlStateManager.popMatrix();
     super.doRender(entity, x, y, z, yaw, partialTicks);
@@ -73,6 +100,7 @@ public class BreathEntityRendererNether extends Render {
    * (Render<T extends Entity>) and this method has signature public void func_76986_a(T entity, double d, double d1,
    * double d2, float f, float f1). But JAD is pre 1.5 so doe
    */
+  @Override
   public void doRender(Entity entity, double x, double y, double z, float p_76986_8_, float partialTicks) {
     this.doRender((EntityBreathProjectileNether)entity, x, y, z, p_76986_8_, partialTicks);
   }
