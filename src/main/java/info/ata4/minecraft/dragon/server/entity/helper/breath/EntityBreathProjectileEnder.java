@@ -33,7 +33,10 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
   {
     if (this.worldObj.isRemote) {
       for (int i = 0; i < 2; ++i) {
-        this.worldObj.spawnParticle(EnumParticleTypes.PORTAL, this.posX + (this.rand.nextDouble() - 0.5D) * (double)this.width, this.posY + this.rand.nextDouble() * (double)this.height - 0.25D, this.posZ + (this.rand.nextDouble() - 0.5D) * (double)this.width, (this.rand.nextDouble() - 0.5D) * 2.0D, -this.rand.nextDouble(), (this.rand.nextDouble() - 0.5D) * 2.0D, new int[0]);
+        this.worldObj.spawnParticle(EnumParticleTypes.PORTAL, this.posX + (this.rand.nextDouble() - 0.5D) * (double)this.width,
+                this.posY + this.rand.nextDouble() * (double)this.height - 0.25D,
+                this.posZ + (this.rand.nextDouble() - 0.5D) * (double)this.width,
+                (this.rand.nextDouble() - 0.5D) * 2.0D, -this.rand.nextDouble(), (this.rand.nextDouble() - 0.5D) * 2.0D, new int[0]);
       }
     }
     super.onUpdate();
@@ -47,17 +50,17 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
 //    System.err.println("power:" + power);
     switch (power) {
       case SMALL: {
-        return 0.50F;
+        return 0.60F;
       }
       case MEDIUM: {
-        return 0.65F;
+        return 0.80F;
       }
       case LARGE: {
-        return  0.80F;
+        return  0.90F;
       }
       default: {
         System.err.println("Invalid Power in setSizeFromPower:" + power);
-        return 0.80F;
+        return 0.90F;
       }
     }
 
@@ -158,10 +161,10 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
     double savedY = this.posY;
     double savedZ = this.posZ;
 
-    super.setPositionAndUpdate(this.posX, this.posY, this.posZ);
-    List collisions = this.worldObj.getCollidingBoundingBoxes(this, this.getEntityBoundingBox());
+    entityToTeleport.setPositionAndUpdate(this.posX, this.posY, this.posZ);
+    List collisions = this.worldObj.getCollidingBoundingBoxes(entityToTeleport, entityToTeleport.getEntityBoundingBox());
     if (!collisions.isEmpty()) {
-      this.setPosition(savedX, savedY, savedZ);
+      entityToTeleport.setPosition(savedX, savedY, savedZ);
       return false;
     }
     short particleCount = 128;
@@ -171,11 +174,11 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
       float xMotion = (this.rand.nextFloat() - 0.5F) * 0.2F;
       float yMotion = (this.rand.nextFloat() - 0.5F) * 0.2F;
       float zMotion = (this.rand.nextFloat() - 0.5F) * 0.2F;
-      double particleX = savedX + (this.posX - savedX) * fractionalDistance + (this.rand.nextDouble() - 0.5D) * (double) this.width * 2.0D;
-      double particleY = savedY + (this.posY - savedY) * fractionalDistance + this.rand.nextDouble() * (double) this.height;
-      double particleZ = savedZ + (this.posZ - savedZ) * fractionalDistance + (this.rand.nextDouble() - 0.5D) * (double) this.width * 2.0D;
+      double particleX = savedX + (entityToTeleport.posX - savedX) * fractionalDistance + (this.rand.nextDouble() - 0.5D) * (double) entityToTeleport.width * 2.0D;
+      double particleY = savedY + (entityToTeleport.posY - savedY) * fractionalDistance + this.rand.nextDouble() * (double) entityToTeleport.height;
+      double particleZ = savedZ + (entityToTeleport.posZ - savedZ) * fractionalDistance + (this.rand.nextDouble() - 0.5D) * (double) entityToTeleport.width * 2.0D;
       this.worldObj
-              .spawnParticle(EnumParticleTypes.PORTAL, particleX, particleY, particleZ, (double) xMotion, (double) yMotion, (double) zMotion, new int[0]);
+              .spawnParticle(EnumParticleTypes.PORTAL, particleX, particleY, particleZ, xMotion, yMotion, zMotion, new int[0]);
     }
 
     this.worldObj.playSoundEffect(savedX, savedY, savedZ, "mob.endermen.portal", 1.0F, 1.0F);
@@ -183,22 +186,22 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
     return true;
   }
 
-  @Override
-  protected void inWaterUpdate()
-  {
-    Random rand = this.worldObj.rand;
-    this.worldObj.playSoundEffect(this.posX + 0.5D, this.posY + 0.5D, this.posZ + 0.5D,
-                                  "random.fizz", 0.5F, 2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F);
-
-    final float SMOKE_Y_OFFSET = 1.2F;
-    for (int i = 0; i < 8; ++i) {
-      this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,
-              this.posX + Math.random(), this.posY + SMOKE_Y_OFFSET, this.posZ + Math.random(), 0.0D, 0.0D, 0.0D,
-              new int[0]);
-    }
-
-    setDead();
-  }
+//  @Override
+//  protected void inWaterUpdate()
+//  {
+////    Random rand = this.worldObj.rand;
+////    this.worldObj.playSoundEffect(this.posX + 0.5D, this.posY + 0.5D, this.posZ + 0.5D,
+////                                  "random.fizz", 0.5F, 2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F);
+////
+////    final float SMOKE_Y_OFFSET = 1.2F;
+////    for (int i = 0; i < 8; ++i) {
+////      this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,
+////              this.posX + Math.random(), this.posY + SMOKE_Y_OFFSET, this.posZ + Math.random(), 0.0D, 0.0D, 0.0D,
+////              new int[0]);
+////    }
+////
+////    setDead();
+//  }
 
 
   public static class BreathProjectileFactoryEnder implements BreathProjectileFactory {

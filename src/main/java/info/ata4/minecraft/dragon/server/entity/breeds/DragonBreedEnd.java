@@ -9,6 +9,10 @@
  */
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
+import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
+import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -28,5 +32,30 @@ public class DragonBreedEnd extends DragonBreed {
         addHabitatBlock(Blocks.obsidian);
         addHabitatBiome(BiomeGenBase.sky);
     }
+
+    @Override
+    public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
+    {
+        return new BreathWeaponEnder(dragon);
+    }
+
+    @Override
+    public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon)
+    {
+        return BreathWeaponSpawnType.PROJECTILE;
+    }
+
+    @Override
+    public BreathProjectileFactory getBreathProjectileFactory(EntityTameableDragon dragon)
+    {
+        return new EntityBreathProjectileEnder.BreathProjectileFactoryEnder();
+    }
+
+    @Override
+    public Pair<Float, Float> getBreathWeaponRange(DragonLifeStage dragonLifeStage)
+    {
+        return new Pair<Float, Float>(10F, 40F);
+    }
+
 
 }

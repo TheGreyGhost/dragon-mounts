@@ -12,6 +12,7 @@ package info.ata4.minecraft.dragon.server;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.cmd.CommandDragon;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileEnder;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileNether;
 import info.ata4.minecraft.dragon.server.handler.DragonEggBlockHandler;
 import info.ata4.minecraft.dragon.server.network.DragonControlMessage;
@@ -109,6 +110,10 @@ public class CommonProxy {
       final int PROJECTILE_NETHER_ENTITY_ID = 27;
       EntityRegistry.registerModEntity(EntityBreathProjectileNether.class, "NetherFireball", PROJECTILE_NETHER_ENTITY_ID,
                                        DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
+
+        final int PROJECTILE_ENDER_ENTITY_ID = 28;
+        EntityRegistry.registerModEntity(EntityBreathProjectileEnder.class, "EnderGlobe", PROJECTILE_ENDER_ENTITY_ID,
+                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
 
 
     }

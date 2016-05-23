@@ -57,7 +57,7 @@ public class DragonBreedNether extends DragonBreed {
   @Override
   public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
   {
-    return new BreathWeaponNether(dragon);
+    return new BreathWeaponEnder(dragon);
   }
 
   @Override

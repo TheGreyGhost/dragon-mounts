@@ -12,10 +12,12 @@ package info.ata4.minecraft.dragon.client;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.gui.GuiDragonDebug;
 import info.ata4.minecraft.dragon.client.handler.*;
+import info.ata4.minecraft.dragon.client.render.BreathEntityRendererEnder;
 import info.ata4.minecraft.dragon.client.render.BreathEntityRendererNether;
 import info.ata4.minecraft.dragon.client.render.DragonRenderer;
 import info.ata4.minecraft.dragon.server.CommonProxy;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileEnder;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileNether;
 import info.ata4.minecraft.dragon.test.StartupClientOnly;
 import info.ata4.minecraft.dragon.test.StartupCommon;
@@ -33,68 +35,75 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import java.io.File;
 
 /**
- *
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  */
-public class ClientProxy extends CommonProxy {
-    
-    private static final int DEFAULT_ITEM_SUBTYPE = 0;
+public class ClientProxy extends CommonProxy
+{
 
-    @Override
-    public void onPreInit(FMLPreInitializationEvent evt) {
-        super.onPreInit(evt);
-        DragonMounts.instance.getConfig().clientInit();
-        MinecraftForge.EVENT_BUS.register(new TextureStitcherBreathFX());
-      StartupClientOnly.preInitClientOnly();
+  private static final int DEFAULT_ITEM_SUBTYPE = 0;
+
+  @Override
+  public void onPreInit(FMLPreInitializationEvent evt)
+  {
+    super.onPreInit(evt);
+    DragonMounts.instance.getConfig().clientInit();
+    MinecraftForge.EVENT_BUS.register(new TextureStitcherBreathFX());
+    StartupClientOnly.preInitClientOnly();
+  }
+
+  @Override
+  public void onInit(FMLInitializationEvent evt)
+  {
+    super.onInit(evt);
+    ModelResourceLocation itemModelResourceLocation =
+            new ModelResourceLocation("dragonmounts:dragonorb", "inventory");
+
+    Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
+            .register(itemDragonOrb, DEFAULT_ITEM_SUBTYPE, itemModelResourceLocation);
+    StartupClientOnly.initClientOnly();
+  }
+
+  @Override
+  public void onPostInit(FMLPostInitializationEvent event)
+  {
+    super.onPostInit(event);
+    if (DragonMounts.instance.getConfig().isDebug()) {
+      MinecraftForge.EVENT_BUS.register(new GuiDragonDebug());
     }
 
-    @Override
-    public void onInit(FMLInitializationEvent evt) {
-        super.onInit(evt);
-        ModelResourceLocation itemModelResourceLocation =
-                new ModelResourceLocation("dragonmounts:dragonorb", "inventory");
+    RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
+    RenderingRegistry.registerEntityRenderingHandler(EntityTameableDragon.class,
+            new DragonRenderer(renderManager));
+    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileNether.class,
+            new BreathEntityRendererNether(renderManager, 1.0F));
+    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileEnder.class,
+            new BreathEntityRendererEnder(renderManager, 1.0F));
 
-        Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
-                .register(itemDragonOrb, DEFAULT_ITEM_SUBTYPE, itemModelResourceLocation);
-      StartupClientOnly.initClientOnly();
-    }
+    FMLCommonHandler.instance().bus().register(new DragonControl(getNetwork()));
+    DragonOrbControl.createSingleton(getNetwork());
+    DragonOrbControl.initialiseInterceptors();
+    FMLCommonHandler.instance().bus().register(DragonOrbControl.getInstance());
+    MinecraftForge.EVENT_BUS.register(new TargetHighlighter());
+    FMLCommonHandler.instance().bus().register(new DragonEntityWatcher());
+    StartupClientOnly.postInitClientOnly();
 
-    @Override
-    public void onPostInit(FMLPostInitializationEvent event) {
-        super.onPostInit(event);
-        if (DragonMounts.instance.getConfig().isDebug()) {
-            MinecraftForge.EVENT_BUS.register(new GuiDragonDebug());
-        }
+  }
 
-        RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
-        RenderingRegistry.registerEntityRenderingHandler(EntityTameableDragon.class,
-                new DragonRenderer(renderManager));
-      RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileNether.class,
-                                                       new BreathEntityRendererNether(renderManager, 1.0F));
+  /**
+   * returns the EntityPlayerSP if this is the client, otherwise returns null.
+   *
+   * @return
+   */
+  @Override
+  public Entity getClientEntityPlayerSP()
+  {
+    return Minecraft.getMinecraft().thePlayer;
+  }
 
-        FMLCommonHandler.instance().bus().register(new DragonControl(getNetwork()));
-        DragonOrbControl.createSingleton(getNetwork());
-        DragonOrbControl.initialiseInterceptors();
-        FMLCommonHandler.instance().bus().register(DragonOrbControl.getInstance());
-        MinecraftForge.EVENT_BUS.register(new TargetHighlighter());
-        FMLCommonHandler.instance().bus().register(new DragonEntityWatcher());
-      StartupClientOnly.postInitClientOnly();
-
-    }
-
-    /**
-     * returns the EntityPlayerSP if this is the client, otherwise returns null.
-     *
-     * @return
-     */
-    @Override
-    public Entity getClientEntityPlayerSP() {
-        return Minecraft.getMinecraft().thePlayer;
-    }
-
-    @Override
-    public File getDataDirectory() {
-        return Minecraft.getMinecraft().mcDataDir;
-    }
+  @Override
+  public File getDataDirectory()
+  {
+    return Minecraft.getMinecraft().mcDataDir;
+  }
 
 }
