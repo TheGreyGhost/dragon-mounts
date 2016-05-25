@@ -32,7 +32,8 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
   public void onUpdate()
   {
     if (this.worldObj.isRemote) {
-      for (int i = 0; i < 2; ++i) {
+      final int NUMBER_OF_PARTICLES_PER_TICK = 20;
+      for (int i = 0; i < NUMBER_OF_PARTICLES_PER_TICK; ++i) {
         this.worldObj.spawnParticle(EnumParticleTypes.PORTAL, this.posX + (this.rand.nextDouble() - 0.5D) * (double)this.width,
                 this.posY + this.rand.nextDouble() * (double)this.height - 0.25D,
                 this.posZ + (this.rand.nextDouble() - 0.5D) * (double)this.width,
@@ -40,12 +41,32 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
       }
     }
     super.onUpdate();
+    if (--ticksToLive <= 0) {
+      final float CLOUD_Y_OFFSET = 0.0F;
+      final float X_Y_Z_SPREAD = 0.3F;
+      final float MOTION_SPREAD = 0.1F;
+      final int PARTICLE_COUNT = 30;
+      Random random = new Random();
+      for (int i = 0; i < PARTICLE_COUNT; ++i) {
+        this.worldObj.spawnParticle(EnumParticleTypes.SPELL_WITCH,
+                this.posX + X_Y_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
+                this.posY + CLOUD_Y_OFFSET + X_Y_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
+                this.posZ + X_Y_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
+                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                new int[0]);
+      }
+      this.setDead();
+    }
+
   }
 
   /**
    * Return the motion factor for this projectile. The factor is multiplied by the original motion.
    * effectively a 'drag' on the projectile motion
    */
+  @Override
   protected float getMotionFactor() {
 //    System.err.println("power:" + power);
     switch (power) {
@@ -66,6 +87,13 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
 
   }
 
+  @Override
+  protected int getLifeTimeTicks(BreathNode.Power power)
+  {
+    return 60;
+  }
+
+  @Override
   protected void setSizeFromPower(BreathNode.Power power)
   {
     switch (power) {
@@ -94,7 +122,6 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
   {
     int teleportDistance = 0;
     int effectRadius = 0;
-
 
     if (!this.worldObj.isRemote) {
       switch (power) {
@@ -202,7 +229,6 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
 ////
 ////    setDead();
 //  }
-
 
   public static class BreathProjectileFactoryEnder implements BreathProjectileFactory {
     public void spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)

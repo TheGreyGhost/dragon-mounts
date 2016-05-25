@@ -37,10 +37,46 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     super(worldIn);
     this.setSize(1.0F, 1.0F);
     power = BreathNode.Power.SMALL;  // default
+    ticksToLive = getLifeTimeTicks(power);
+  }
+
+  public EntityBreathProjectile(World worldIn, EntityLivingBase shooter,
+                                Vec3 origin, Vec3 destination, BreathNode.Power i_power) {
+    super(worldIn);
+    this.shootingEntity = shooter;
+    power = i_power;
+    this.setSizeFromPower(power);
+    Vec3 offset = destination.subtract(origin);
+    double yaw = MathX.calculateYaw(offset);
+    double pitch = MathX.calculatePitch(offset);
+
+    this.setLocationAndAngles(origin.xCoord, origin.yCoord, origin.zCoord,
+            (float)yaw, (float)pitch);
+//    this.setPosition(this.posX, this.posY, this.posZ);
+    this.motionX = this.motionY = this.motionZ = 0.0D;
+
+    final double ACCELERATION_BLOCKS_PER_TICK_SQ = 0.2;
+
+    Vec3 normalisedOffset = offset.normalize();
+    this.accelerationX = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.xCoord;
+    this.accelerationY = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.yCoord;
+    this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.zCoord;
+
+    ticksToLive = getLifeTimeTicks(power);
+
+//    projectileNumber =  ++projectilesFired;
+//    ticksTillFreeze = 10 - projectilesFired;
   }
 
   protected void entityInit() {
   }
+
+  /**
+   * Return the lifetime of the projectile
+   * @param power
+   * @return lifetime in ticks
+   */
+  abstract protected int getLifeTimeTicks(BreathNode.Power power);
 
   /**
    * Checks if the entity is in range to render by using the past in distance and comparing it to its average edge
@@ -69,31 +105,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 //  private static int projectilesFired = 0;  //todo remove
 //  private int ticksTillFreeze; //todo remove
 //  private int projectileNumber; //todo remove
-
-  public EntityBreathProjectile(World worldIn, EntityLivingBase shooter,
-                                Vec3 origin, Vec3 destination, BreathNode.Power i_power) {
-    super(worldIn);
-    this.shootingEntity = shooter;
-    power = i_power;
-    this.setSizeFromPower(power);
-    Vec3 offset = destination.subtract(origin);
-    double yaw = MathX.calculateYaw(offset);
-    double pitch = MathX.calculatePitch(offset);
-
-    this.setLocationAndAngles(origin.xCoord, origin.yCoord, origin.zCoord,
-                              (float)yaw, (float)pitch);
-//    this.setPosition(this.posX, this.posY, this.posZ);
-    this.motionX = this.motionY = this.motionZ = 0.0D;
-
-    final double ACCELERATION_BLOCKS_PER_TICK_SQ = 0.2;
-
-    Vec3 normalisedOffset = offset.normalize();
-    this.accelerationX = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.xCoord;
-    this.accelerationY = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.yCoord;
-    this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.zCoord;
-//    projectileNumber =  ++projectilesFired;
-//    ticksTillFreeze = 10 - projectilesFired;
-  }
 
   // used during initialisation to calculate the entity size based on the power.
   //  must not access member variables!
@@ -237,9 +248,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
       this.motionX *= (double) motionFactor;
       this.motionY *= (double) motionFactor;
       this.motionZ *= (double) motionFactor;
-      this.worldObj
-              .spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D,
-                             new int[0]);
+
       this.setPosition(this.posX, this.posY, this.posZ);
 //      if (!this.worldObj.isRemote) {
         System.out.format("%s Pos: [%f, %f, %f] motion:[%f, %f, %f]\n",
@@ -283,26 +292,27 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     tagCompound.setDouble("accelerationX", accelerationX);
     tagCompound.setDouble("accelerationY", accelerationY);
     tagCompound.setDouble("accelerationZ", accelerationZ);
+    tagCompound.setInteger("ticksToLive", ticksToLive);
   }
 
   /**
    * (abstract) Protected helper method to read subclass entity data from NBT.
    */
-  public void readEntityFromNBT(NBTTagCompound tagCompund) {
-    this.xTile = tagCompund.getShort("xTile");
-    this.yTile = tagCompund.getShort("yTile");
-    this.zTile = tagCompund.getShort("zTile");
+  public void readEntityFromNBT(NBTTagCompound tagCompound) {
+    this.xTile = tagCompound.getShort("xTile");
+    this.yTile = tagCompound.getShort("yTile");
+    this.zTile = tagCompound.getShort("zTile");
 
-    if (tagCompund.hasKey("inTile", 8)) {
-      this.inTile = Block.getBlockFromName(tagCompund.getString("inTile"));
+    if (tagCompound.hasKey("inTile", 8)) {
+      this.inTile = Block.getBlockFromName(tagCompound.getString("inTile"));
     } else {
-      this.inTile = Block.getBlockById(tagCompund.getByte("inTile") & 255);
+      this.inTile = Block.getBlockById(tagCompound.getByte("inTile") & 255);
     }
 
-    this.inGround = tagCompund.getByte("inGround") == 1;
+    this.inGround = tagCompound.getByte("inGround") == 1;
 
-    if (tagCompund.hasKey("direction", 9)) {
-      NBTTagList nbttaglist = tagCompund.getTagList("direction", 6);
+    if (tagCompound.hasKey("direction", 9)) {
+      NBTTagList nbttaglist = tagCompound.getTagList("direction", 6);
       this.motionX = nbttaglist.getDouble(0);
       this.motionY = nbttaglist.getDouble(1);
       this.motionZ = nbttaglist.getDouble(2);
@@ -310,19 +320,20 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
       this.setDead();
     }
 
-    this.accelerationX = tagCompund.getDouble("accelerationX");
-    this.accelerationY = tagCompund.getDouble("accelerationY");
-    this.accelerationZ = tagCompund.getDouble("accelerationZ");
+    this.accelerationX = tagCompound.getDouble("accelerationX");
+    this.accelerationY = tagCompound.getDouble("accelerationY");
+    this.accelerationZ = tagCompound.getDouble("accelerationZ");
 
 //    System.err.println("NBT read power:"+ power); // todo remove
     power = BreathNode.Power.SMALL;  // default
-    if (tagCompund.hasKey("ExplosionPower", 99)) {
-      int powerIndex = tagCompund.getInteger("ExplosionPower");
+    if (tagCompound.hasKey("ExplosionPower", 99)) {
+      int powerIndex = tagCompound.getInteger("ExplosionPower");
       if (powerIndex >= 0 && powerIndex < BreathNode.Power.values().length) {
         this.power = BreathNode.Power.values()[powerIndex];
 //        System.err.println("NBT power:"+ power); // todo remove
       }
     }
+    ticksToLive = tagCompound.getInteger("ticksToLive");
   }
 
   /**
@@ -426,5 +437,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   }
 
   protected BreathNode.Power power;
+  protected int ticksToLive;
 
 }

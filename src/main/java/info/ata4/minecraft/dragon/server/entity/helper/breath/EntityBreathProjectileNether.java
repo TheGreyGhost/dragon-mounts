@@ -34,12 +34,34 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
     final int BURN_DURATION_SECONDS = 1; // used to trigger rendering of fire
 //    this.setFire(BURN_DURATION_SECONDS); //todo reinstate
     super.onUpdate();
+    this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D,
+            new int[0]);
+
+    if (--ticksToLive <= 0) {
+      final float SMOKE_Y_OFFSET = 0.0F;
+      final float X_Z_SPREAD = 0.5F;
+      final float MOTION_SPREAD = 0.1F;
+      Random random = new Random();
+      for (int i = 0; i < 8; ++i) {
+        this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,
+                this.posX + X_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
+                this.posY + SMOKE_Y_OFFSET,
+                this.posZ + X_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
+                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                new int[0]);
+      }
+      this.setDead();
+    }
+
   }
 
   /**
    * Return the motion factor for this projectile. The factor is multiplied by the original motion.
    * effectively a 'drag' on the projectile motion
    */
+  @Override
   protected float getMotionFactor() {
 //    System.err.println("power:" + power);
     switch (power) {
@@ -60,6 +82,7 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
 
   }
 
+  @Override
   protected void setSizeFromPower(BreathNode.Power power)
   {
     switch (power) {
@@ -79,6 +102,12 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
         System.err.println("Invalid Power in setSizeFromPower:" + power);
       }
     }
+  }
+
+  @Override
+  protected int getLifeTimeTicks(BreathNode.Power power)
+  {
+    return 80;
   }
 
   /**
@@ -141,7 +170,6 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
 
     setDead();
   }
-
 
   public static class BreathProjectileFactoryNether implements BreathProjectileFactory {
     public void spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
