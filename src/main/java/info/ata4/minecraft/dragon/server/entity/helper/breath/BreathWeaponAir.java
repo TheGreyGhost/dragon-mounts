@@ -81,8 +81,7 @@ public class BreathWeaponAir extends BreathWeapon
         if (pathLength > MAX_PATH_LENGTH) {
           pathLength = MAX_PATH_LENGTH;
         }
-//        System.out.println("Spread fire pathlength:" + pathLength); //todo remove
-//        spreadFire(world, blockPos, pathLength);
+//        spreadFire(world, blockPos, pathLength);    // removed because it didn't work well
       }
       return currentHitDensity;
     }

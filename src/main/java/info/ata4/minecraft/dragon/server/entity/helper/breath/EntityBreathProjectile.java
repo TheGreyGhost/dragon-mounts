@@ -251,10 +251,10 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 
       this.setPosition(this.posX, this.posY, this.posZ);
 //      if (!this.worldObj.isRemote) {
-        System.out.format("%s Pos: [%f, %f, %f] motion:[%f, %f, %f]\n",
-                          this.worldObj.isRemote ? "client" : "server",
-                          this.posX, this.posY, this.posZ,
-                          this.motionX, this.motionY, this.motionZ);  //todo remove
+//        System.out.format("%s Pos: [%f, %f, %f] motion:[%f, %f, %f]\n",
+//                          this.worldObj.isRemote ? "client" : "server",
+//                          this.posX, this.posY, this.posZ,
+//                          this.motionX, this.motionY, this.motionZ);  //todo remove
 //      }
     }
   }
@@ -288,7 +288,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     tagCompound.setString("inTile", resourcelocation == null ? "" : resourcelocation.toString());
     tagCompound.setByte("inGround", (byte) (this.inGround ? 1 : 0));
     tagCompound.setTag("direction", this.newDoubleNBTList(new double[]{this.motionX, this.motionY, this.motionZ}));
-    tagCompound.setInteger("ExplosionPower", this.power.ordinal());
+    tagCompound.setInteger("ProjectilePower", this.power.ordinal());
     tagCompound.setDouble("accelerationX", accelerationX);
     tagCompound.setDouble("accelerationY", accelerationY);
     tagCompound.setDouble("accelerationZ", accelerationZ);
@@ -326,8 +326,8 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 
 //    System.err.println("NBT read power:"+ power); // todo remove
     power = BreathNode.Power.SMALL;  // default
-    if (tagCompound.hasKey("ExplosionPower", 99)) {
-      int powerIndex = tagCompound.getInteger("ExplosionPower");
+    if (tagCompound.hasKey("ProjectilePower", 99)) {
+      int powerIndex = tagCompound.getInteger("ProjectilePower");
       if (powerIndex >= 0 && powerIndex < BreathNode.Power.values().length) {
         this.power = BreathNode.Power.values()[powerIndex];
 //        System.err.println("NBT power:"+ power); // todo remove

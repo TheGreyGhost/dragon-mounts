@@ -1,7 +1,11 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.DragonMounts;
+import info.ata4.minecraft.dragon.client.render.CustomEntityFXTypes;
+import info.ata4.minecraft.dragon.client.render.EntityFXEnderTrail;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.*;
@@ -34,10 +38,16 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
     if (this.worldObj.isRemote) {
       final int NUMBER_OF_PARTICLES_PER_TICK = 20;
       for (int i = 0; i < NUMBER_OF_PARTICLES_PER_TICK; ++i) {
-        this.worldObj.spawnParticle(EnumParticleTypes.PORTAL, this.posX + (this.rand.nextDouble() - 0.5D) * (double)this.width,
-                this.posY + this.rand.nextDouble() * (double)this.height - 0.25D,
-                this.posZ + (this.rand.nextDouble() - 0.5D) * (double)this.width,
-                (this.rand.nextDouble() - 0.5D) * 2.0D, -this.rand.nextDouble(), (this.rand.nextDouble() - 0.5D) * 2.0D, new int[0]);
+        double particleX = this.posX + (this.rand.nextDouble() - 0.5D) * (double)this.width;
+        double particleY = this.posY + this.rand.nextDouble() * (double)this.height - 0.25D;
+        double particleZ = this.posZ + (this.rand.nextDouble() - 0.5D) * (double)this.width;
+        double xMotion = (this.rand.nextDouble() - 0.5D) * 2.0D;
+        double yMotion =  -this.rand.nextDouble();
+        double zMotion = (this.rand.nextDouble() - 0.5D) * 2.0D;
+
+        DragonMounts.proxy.spawnCustomEntityFX(CustomEntityFXTypes.ENDERTRAIL, this.worldObj,
+                                               particleX, particleY, particleZ,
+                                               xMotion, yMotion, zMotion);
       }
     }
     super.onUpdate();
@@ -160,17 +170,29 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
           ++numberOfAttempts;
         }
       }
-//      float explosionSize = 1.0F;
-//      float damageAmount = 1.0F;
-//
-//      if (movingObject.entityHit != null) {
-//        DamageSource fireballDamage = new EntityDamageSourceIndirect("fireball", this, shootingEntity).setFireDamage().setProjectile();
-//        movingObject.entityHit.attackEntityFrom(fireballDamage, damageAmount);
-//        this.func_174815_a(this.shootingEntity, movingObject.entityHit);
-//      }
-//
-//      boolean flag = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
-//      this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, explosionSize, flag, flag);
+
+      if (movingObject.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+        this.worldObj.playSoundEffect(this.posX, this.posY, this.posZ, "mob.endermen.portal", 1.0F, 1.0F);
+        this.playSound("mob.endermen.portal", 1.0F, 1.0F);
+
+        boolean mobGriefingOK = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
+        if (mobGriefingOK && DragonMounts.instance.getConfig().isBreathAffectsBlocks()) {
+
+          // delete all blocks within given radius of impact location
+          for (int dx = -effectRadius; dx <= effectRadius; ++dx) {
+            for (int dz = -effectRadius; dz <= effectRadius; ++dz) {
+              for (int dy = -effectRadius; dy <= effectRadius; ++dy) {
+                if (dx * dx + dy * dy + dz * dz <= effectRadius * effectRadius) {
+                  BlockPos erasePosition = new BlockPos(movingObject.getBlockPos().add(dx, dy, dz));
+                  worldObj.setBlockToAir(erasePosition);
+
+                }
+              }
+            }
+          }
+        }
+      }
+
       this.setDead();
     }
   }
@@ -188,24 +210,11 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
     double savedY = this.posY;
     double savedZ = this.posZ;
 
-    entityToTeleport.setPositionAndUpdate(this.posX, this.posY, this.posZ);
+    entityToTeleport.setPositionAndUpdate(newX, newY, newZ);
     List collisions = this.worldObj.getCollidingBoundingBoxes(entityToTeleport, entityToTeleport.getEntityBoundingBox());
     if (!collisions.isEmpty()) {
       entityToTeleport.setPosition(savedX, savedY, savedZ);
       return false;
-    }
-    short particleCount = 128;
-
-    for (int i = 0; i < particleCount; ++i) {
-      double fractionalDistance = (double) i / ((double) particleCount - 1.0D);
-      float xMotion = (this.rand.nextFloat() - 0.5F) * 0.2F;
-      float yMotion = (this.rand.nextFloat() - 0.5F) * 0.2F;
-      float zMotion = (this.rand.nextFloat() - 0.5F) * 0.2F;
-      double particleX = savedX + (entityToTeleport.posX - savedX) * fractionalDistance + (this.rand.nextDouble() - 0.5D) * (double) entityToTeleport.width * 2.0D;
-      double particleY = savedY + (entityToTeleport.posY - savedY) * fractionalDistance + this.rand.nextDouble() * (double) entityToTeleport.height;
-      double particleZ = savedZ + (entityToTeleport.posZ - savedZ) * fractionalDistance + (this.rand.nextDouble() - 0.5D) * (double) entityToTeleport.width * 2.0D;
-      this.worldObj
-              .spawnParticle(EnumParticleTypes.PORTAL, particleX, particleY, particleZ, xMotion, yMotion, zMotion, new int[0]);
     }
 
     this.worldObj.playSoundEffect(savedX, savedY, savedZ, "mob.endermen.portal", 1.0F, 1.0F);
@@ -213,31 +222,11 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
     return true;
   }
 
-//  @Override
-//  protected void inWaterUpdate()
-//  {
-////    Random rand = this.worldObj.rand;
-////    this.worldObj.playSoundEffect(this.posX + 0.5D, this.posY + 0.5D, this.posZ + 0.5D,
-////                                  "random.fizz", 0.5F, 2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F);
-////
-////    final float SMOKE_Y_OFFSET = 1.2F;
-////    for (int i = 0; i < 8; ++i) {
-////      this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,
-////              this.posX + Math.random(), this.posY + SMOKE_Y_OFFSET, this.posZ + Math.random(), 0.0D, 0.0D, 0.0D,
-////              new int[0]);
-////    }
-////
-////    setDead();
-//  }
-
   public static class BreathProjectileFactoryEnder implements BreathProjectileFactory {
     public void spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
     {
       if (coolDownTimerTicks > 0) return;
 
-//      System.out.format("origin [%.1f, %.1f, %.1f] -> target [%.1f, %.1f, %.1f]\n",
-//                        origin.xCoord, origin.yCoord, origin.zCoord,
-//                        target.xCoord, target.yCoord, target.zCoord);  //todo remove
       final int COOLDOWN_TIME_TICKS = 60;
       EntityBreathProjectileEnder entity = new EntityBreathProjectileEnder(world, dragon, origin, target, power);
       world.spawnEntityInWorld(entity);

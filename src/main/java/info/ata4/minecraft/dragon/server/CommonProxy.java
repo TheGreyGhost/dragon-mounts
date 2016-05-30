@@ -10,6 +10,7 @@
 package info.ata4.minecraft.dragon.server;
 
 import info.ata4.minecraft.dragon.DragonMounts;
+import info.ata4.minecraft.dragon.client.render.CustomEntityFXTypes;
 import info.ata4.minecraft.dragon.server.cmd.CommandDragon;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileEnder;
@@ -27,6 +28,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.WeightedRandomChestContent;
+import net.minecraft.world.World;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.*;
@@ -152,4 +154,7 @@ public class CommonProxy {
         return FMLServerHandler.instance().getSavesDirectory();
     }
 
+    public void spawnCustomEntityFX(CustomEntityFXTypes entityFXtype,
+                                    World world, double x, double y, double z,
+                                    double velocityX, double velocityY, double velocityZ) {};
 }

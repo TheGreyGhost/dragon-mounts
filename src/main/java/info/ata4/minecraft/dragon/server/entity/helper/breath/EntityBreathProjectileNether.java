@@ -1,5 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -31,8 +32,6 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
   @Override
   public void onUpdate()
   {
-    final int BURN_DURATION_SECONDS = 1; // used to trigger rendering of fire
-//    this.setFire(BURN_DURATION_SECONDS); //todo reinstate
     super.onUpdate();
     this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D,
             new int[0]);
@@ -115,10 +114,7 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
    */
   protected void onImpact(MovingObjectPosition movingObject)
   {
-//    this.setDead();
-
-//    return;
-    if (!this.worldObj.isRemote) {   //todo reinstate
+    if (!this.worldObj.isRemote) {
       float explosionSize = 1.0F;
       float damageAmount = 1.0F;
       switch (power) {
@@ -148,8 +144,11 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
         this.func_174815_a(this.shootingEntity, movingObject.entityHit);
       }
 
-      boolean flag = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
-      this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, explosionSize, flag, flag);
+      if (DragonMounts.instance.getConfig().isBreathAffectsBlocks()) {
+        boolean flag = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
+        this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, explosionSize, flag, flag);
+      }
+
       this.setDead();
     }
   }
@@ -176,9 +175,6 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
     {
       if (coolDownTimerTicks > 0) return;
 
-//      System.out.format("origin [%.1f, %.1f, %.1f] -> target [%.1f, %.1f, %.1f]\n",
-//                        origin.xCoord, origin.yCoord, origin.zCoord,
-//                        target.xCoord, target.yCoord, target.zCoord);  //todo remove
       final int COOLDOWN_TIME_TICKS = 40;
       EntityBreathProjectileNether entity = new EntityBreathProjectileNether(world, dragon, origin, target, power);
       world.spawnEntityInWorld(entity);

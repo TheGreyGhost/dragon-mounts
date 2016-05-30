@@ -9,12 +9,11 @@
  */
 package info.ata4.minecraft.dragon.client;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.gui.GuiDragonDebug;
 import info.ata4.minecraft.dragon.client.handler.*;
-import info.ata4.minecraft.dragon.client.render.BreathEntityRendererEnder;
-import info.ata4.minecraft.dragon.client.render.BreathEntityRendererNether;
-import info.ata4.minecraft.dragon.client.render.DragonRenderer;
+import info.ata4.minecraft.dragon.client.render.*;
 import info.ata4.minecraft.dragon.server.CommonProxy;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileEnder;
@@ -22,9 +21,11 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjec
 import info.ata4.minecraft.dragon.test.StartupClientOnly;
 import info.ata4.minecraft.dragon.test.StartupCommon;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -104,6 +105,25 @@ public class ClientProxy extends CommonProxy
   public File getDataDirectory()
   {
     return Minecraft.getMinecraft().mcDataDir;
+  }
+
+  @Override
+  public void spawnCustomEntityFX(CustomEntityFXTypes entityFXtype,
+                                  World world, double x, double y, double z,
+                                  double velocityX, double velocityY, double velocityZ)
+  {
+    EntityFX entityFXToSpawn;
+    switch (entityFXtype) {
+      case ENDERTRAIL: {
+        entityFXToSpawn = new EntityFXEnderTrail(world, x, y, z, velocityX, velocityY, velocityZ);
+        break;
+      }
+      default: {
+        throw new IllegalArgumentException(entityFXtype.toString());
+      }
+    }
+
+    Minecraft.getMinecraft().effectRenderer.addEffect(entityFXToSpawn);
   }
 
 }

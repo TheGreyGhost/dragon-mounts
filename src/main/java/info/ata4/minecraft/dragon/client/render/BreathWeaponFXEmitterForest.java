@@ -12,10 +12,6 @@ public class BreathWeaponFXEmitterForest extends BreathWeaponFXEmitter
 {
   public void spawnBreathParticles(World world, BreathNode.Power power, int tickCount)
   {
-//    if (--ticksTillNext > 0) {
-//      return;
-//    }
-//    ticksTillNext = 100;
     final int CLOUDS_PER_TICK = 1;
     spawnMultipleWithSmoothedDirection(world, power, CLOUDS_PER_TICK, tickCount);
   }
@@ -37,7 +33,5 @@ public class BreathWeaponFXEmitterForest extends BreathWeaponFXEmitter
                                                                         partialTickHeadStart);
     return breathFXForest;
   }
-
-  private int ticksTillNext = 0;  // todo debugging only
 
 }
