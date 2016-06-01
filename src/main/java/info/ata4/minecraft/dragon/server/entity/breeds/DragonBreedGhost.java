@@ -10,6 +10,9 @@
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
+import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.ai.EntityAIRestrictSun;
 import net.minecraft.entity.ai.EntityAITasks.EntityAITaskEntry;
@@ -112,4 +115,30 @@ public class DragonBreedGhost extends DragonBreed {
     public EnumCreatureAttribute getCreatureAttribute() {
         return EnumCreatureAttribute.UNDEAD;
     }
+
+    @Override
+    public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)
+    {
+        return new BreathWeaponGhost(dragon);
+    }
+
+    @Override
+    public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon)
+    {
+        return BreathWeaponSpawnType.PROJECTILE;
+    }
+
+    @Override
+    public BreathProjectileFactory getBreathProjectileFactory(EntityTameableDragon dragon)
+    {
+        return new EntityBreathProjectileGhost.BreathProjectileFactoryGhost();
+    }
+
+    @Override
+    public Pair<Float, Float> getBreathWeaponRange(DragonLifeStage dragonLifeStage)
+    {
+        return new Pair<Float, Float>(5F, 40F);
+    }
+
+
 }

@@ -157,15 +157,15 @@ public abstract class DragonBreed {
     // PROJECTILE = spawn a single Entity, similar to EntityFIreball for ghast
     // NODES = continuous stream of small nodes
 
-    public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon) // todo later: abstract
-    {
-      throw new UnsupportedOperationException();
-    }
+    abstract public BreathWeaponSpawnType getBreathWeaponSpawnType(EntityTameableDragon dragon);
+//    {
+//      throw new UnsupportedOperationException();
+//    }
 
     /** return a new Breath Weapon FX Emitter based on breed
      * @return
      */
-    public  BreathWeaponFXEmitter getBreathWeaponFXEmitter(EntityTameableDragon dragon)  // todo later: abstract
+    public  BreathWeaponFXEmitter getBreathWeaponFXEmitter(EntityTameableDragon dragon)
     {
       throw new UnsupportedOperationException();
     }
@@ -173,17 +173,17 @@ public abstract class DragonBreed {
     /** return a new BreathWeapon based on breed
      * @return
      */
-    public BreathWeapon getBreathWeapon(EntityTameableDragon dragon)               // todo later: abstract
-    {
-        throw new UnsupportedOperationException();
-    }
+    abstract public BreathWeapon getBreathWeapon(EntityTameableDragon dragon);
+//    {
+//        throw new UnsupportedOperationException();
+//    }
 
     public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
     {
         throw new UnsupportedOperationException();
     }
 
-    public BreathProjectileFactory getBreathProjectileFactory(EntityTameableDragon dragon)               // todo later: abstract
+    public BreathProjectileFactory getBreathProjectileFactory(EntityTameableDragon dragon)
     {
       throw new UnsupportedOperationException();
     }

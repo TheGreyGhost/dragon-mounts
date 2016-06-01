@@ -279,4 +279,29 @@ public class MathX {
         return pitch;
     }
 
+    /**
+     * Return a random integer in the given range
+     * @param random
+     * @param minValue minimum possible value (inclusive)
+     * @param maxValue maximum possible value (exclusive)
+     * @return the random value lying between [minimum, maximum]
+     */
+  public static int getRandomInRange(Random random, int minValue, int maxValue)
+  {
+    return random.nextInt(maxValue - minValue + 1) + minValue;
+  }
+
+    /**
+     * Return a random float in the given range
+     * @param random
+     * @param minValue minimum possible value (inclusive)
+     * @param maxValue maximum possible value (exclusive)
+     * @return the random value lying between [minimum, maximum]
+     */
+    public static float getRandomInRange(Random random, float minValue, float maxValue)
+    {
+        return random.nextFloat() * (maxValue - minValue) + minValue;
+    }
+
+
 }
