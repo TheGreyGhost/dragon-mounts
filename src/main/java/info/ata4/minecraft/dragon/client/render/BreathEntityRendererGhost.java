@@ -35,7 +35,6 @@ public class BreathEntityRendererGhost extends Render
 
     double beamLength = 10.0;// target minus head
 
-
     Tessellator tessellator = Tessellator.getInstance();
     WorldRenderer worldrenderer = tessellator.getWorldRenderer();
     GlStateManager.disableTexture2D();
@@ -49,8 +48,7 @@ public class BreathEntityRendererGhost extends Render
     float[] segmentXmax = new float[SEGMENT_COUNT+1];
     float[] segmentZmax = new float[SEGMENT_COUNT+1];
 
-    final long SEED = 2362;
-    Random random = new Random();
+    Random random = new Random(entity.getRandomSeed());
 
     final float SEGMENT_HEIGHT = 1.0F / SEGMENT_COUNT;
     final float MAX_DEVIATION_PER_SEGMENT_MAIN_STRAND = SEGMENT_HEIGHT / 3.0F;
@@ -78,14 +76,15 @@ public class BreathEntityRendererGhost extends Render
       segmentZmax[i] -= zSum * (i+1) / (float)SEGMENT_COUNT;
     }
 
-    final int MAX_NUMBER_OF_STRANDS = 6;
-    int numberOfStrands = random.nextInt(MAX_NUMBER_OF_STRANDS) + 1;
+    final int MIN_NUMBER_OF_STRANDS = 3;
+    final int MAX_NUMBER_OF_STRANDS = 9;
+    int numberOfStrands = MathX.getRandomInRange(random, MIN_NUMBER_OF_STRANDS, MAX_NUMBER_OF_STRANDS);
 
     // lightning is made of four 'shells' of increasing size, to make the core of the lighting bright (most opaque) and
     //  the outer part pale (translucent)
 
     for (int shell = 0; shell < 4; ++shell) {
-      Random random1 = new Random(SEED);
+      Random random1 = new Random(entity.getRandomSeed1());
 
       // multiple strands per strike.  One reaches all the way from top to bottom.  The others start part way
       //   down from the top, and finish above the ground.

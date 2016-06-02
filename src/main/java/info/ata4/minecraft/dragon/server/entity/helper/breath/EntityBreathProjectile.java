@@ -280,6 +280,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   /**
    * (abstract) Protected helper method to write subclass entity data to NBT.
    */
+  @Override
   public void writeEntityToNBT(NBTTagCompound tagCompound) {
     tagCompound.setShort("xTile", (short) this.xTile);
     tagCompound.setShort("yTile", (short) this.yTile);
@@ -298,6 +299,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   /**
    * (abstract) Protected helper method to read subclass entity data from NBT.
    */
+  @Override
   public void readEntityFromNBT(NBTTagCompound tagCompound) {
     this.xTile = tagCompound.getShort("xTile");
     this.yTile = tagCompound.getShort("yTile");

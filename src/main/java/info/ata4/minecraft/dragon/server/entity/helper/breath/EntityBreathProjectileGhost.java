@@ -2,7 +2,10 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.util.Pair;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
@@ -18,6 +21,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
                                      Vec3 origin, Vec3 destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);
+    randomSeed = System.currentTimeMillis();
   }
 
   // used by some spawn code under circumstances I don't fully understand yet
@@ -26,10 +30,25 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     super(worldIn);
   }
 
+  public enum RenderStage {PRESTRIKE(3), STRIKE(2), POSTSTRIKE(6), DONE(0);
+    RenderStage(int i_durationTicks)
+    {
+      durationTicks = i_durationTicks;
+    }
+    public int getDuration() {return durationTicks;}
+    public RenderStage next() {return (this == DONE) ? DONE : RenderStage.values()[this.ordinal() + 1];}
+    private int durationTicks;
+  }
+
   @Override
   public void onUpdate()
   {
     super.onUpdate();
+    ++ageInTicks;
+    ++timeInThisRenderStage;
+    if (timeInThisRenderStage >= renderStage.getDuration()) {
+      renderStage = renderStage.next();
+    }
 //    this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D,
 //            new int[0]);
 //
@@ -50,7 +69,6 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
 //      }
 //      this.setDead();
 //    }
-
   }
 
   /**
@@ -166,6 +184,68 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
 
     setDead();
   }
+
+  @Override
+  public void writeEntityToNBT(NBTTagCompound tagCompound)
+  {
+    super.writeEntityToNBT(tagCompound);
+    tagCompound.setInteger("RenderStage", renderStage.ordinal());
+    tagCompound.setInteger("AgeInTicks", ageInTicks);
+    tagCompound.setLong("RandomSeed", randomSeed);
+    tagCompound.setLong("RandomSeed1", randomSeed1);
+  }
+
+  @Override
+  public void readEntityFromNBT(NBTTagCompound tagCompound)
+  {
+    super.readEntityFromNBT(tagCompound);
+    randomSeed = tagCompound.getLong("RandomSeed");
+    randomSeed1 = tagCompound.getLong("RandomSeed1");
+    ageInTicks = tagCompound.getInteger("AgeInTicks");
+    int renderIndex = tagCompound.getInteger("RenderStage");
+    if (renderIndex >= 0 && renderIndex < RenderStage.values().length) {
+      renderStage = RenderStage.values()[renderIndex];
+    }
+  }
+
+  @Override
+  public void writeSpawnData(ByteBuf buffer)
+  {
+    super.writeSpawnData(buffer);
+    buffer.writeLong(randomSeed);
+    buffer.writeLong(randomSeed1);
+  }
+
+  @Override
+  public void readSpawnData(ByteBuf additionalData)
+  {
+    super.readSpawnData(additionalData);
+    randomSeed = additionalData.readLong();
+    randomSeed1 = additionalData.readLong();
+  }
+
+  public long getRandomSeed()
+  {
+    return randomSeed;
+  }
+  public long getRandomSeed1()
+  {
+    return randomSeed1;
+  }
+
+  /** returns the current render stage, and the time currently spent in this stage
+    * @return
+   */
+  public Pair<RenderStage, Integer> getRenderStage()
+  {
+    return new Pair<RenderStage, Integer>(renderStage, timeInThisRenderStage);
+  }
+
+  private RenderStage renderStage = RenderStage.PRESTRIKE;
+  private int timeInThisRenderStage = 0;
+  private int ageInTicks = 0;
+  private long randomSeed;
+  private long randomSeed1;
 
   public static class BreathProjectileFactoryGhost implements BreathProjectileFactory {
     public void spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
