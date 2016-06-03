@@ -32,6 +32,8 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   public double accelerationX;
   public double accelerationY;
   public double accelerationZ;
+  private Vec3 origin;
+  private Vec3 destination;
 
   public EntityBreathProjectile(World worldIn) {
     super(worldIn);
@@ -41,9 +43,11 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   }
 
   public EntityBreathProjectile(World worldIn, EntityLivingBase shooter,
-                                Vec3 origin, Vec3 destination, BreathNode.Power i_power) {
+                                Vec3 i_origin, Vec3 i_destination, BreathNode.Power i_power) {
     super(worldIn);
     this.shootingEntity = shooter;
+    origin = i_origin;
+    destination = i_destination;
     power = i_power;
     this.setSizeFromPower(power);
     Vec3 offset = destination.subtract(origin);
@@ -294,6 +298,12 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     tagCompound.setDouble("accelerationY", accelerationY);
     tagCompound.setDouble("accelerationZ", accelerationZ);
     tagCompound.setInteger("ticksToLive", ticksToLive);
+    tagCompound.setDouble("originX", origin.xCoord);
+    tagCompound.setDouble("originY", origin.yCoord);
+    tagCompound.setDouble("originZ", origin.zCoord);
+    tagCompound.setDouble("destinationX", destination.xCoord);
+    tagCompound.setDouble("destinationY", destination.yCoord);
+    tagCompound.setDouble("destinationZ", destination.zCoord);
   }
 
   /**
@@ -336,6 +346,15 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
       }
     }
     ticksToLive = tagCompound.getInteger("ticksToLive");
+
+    double originX = tagCompound.getDouble("originX");
+    double originY = tagCompound.getDouble("originY");
+    double originZ = tagCompound.getDouble("originZ");
+    double destinationX = tagCompound.getDouble("destinationX");
+    double destinationY = tagCompound.getDouble("destinationY");
+    double destinationZ = tagCompound.getDouble("destinationZ");
+    origin = new Vec3(originX, originY, originZ);
+    destination = new Vec3(destinationX, destinationY, destinationZ);
   }
 
   /**
@@ -351,6 +370,12 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     buffer.writeFloat((float)accelerationX);
     buffer.writeFloat((float)accelerationY);
     buffer.writeFloat((float)accelerationZ);
+    buffer.writeDouble(origin.xCoord);
+    buffer.writeDouble(origin.yCoord);
+    buffer.writeDouble(origin.zCoord);
+    buffer.writeDouble(destination.xCoord);
+    buffer.writeDouble(destination.yCoord);
+    buffer.writeDouble(destination.zCoord);
   }
 
   /**
@@ -372,6 +397,15 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 //      System.err.println("NBT power readSpawnData:"+ power); // todo remove
     }
     this.setSizeFromPower(power);
+
+    double originX = additionalData.readDouble();
+    double originY = additionalData.readDouble();
+    double originZ = additionalData.readDouble();
+    double destinationX = additionalData.readDouble();
+    double destinationY = additionalData.readDouble();
+    double destinationZ = additionalData.readDouble();
+    origin = new Vec3(originX, originY, originZ);
+    destination = new Vec3(destinationX, destinationY, destinationZ);
   }
 
   /**

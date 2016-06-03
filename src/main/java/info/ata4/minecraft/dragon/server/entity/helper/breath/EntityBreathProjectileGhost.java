@@ -185,6 +185,11 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     setDead();
   }
 
+  public Vec3 getVectorMouthToTarget()
+  {
+
+  }
+
   @Override
   public void writeEntityToNBT(NBTTagCompound tagCompound)
   {

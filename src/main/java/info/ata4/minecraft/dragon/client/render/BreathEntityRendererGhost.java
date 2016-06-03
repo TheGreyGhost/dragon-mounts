@@ -24,14 +24,24 @@ public class BreathEntityRendererGhost extends Render
   {
     // render the lightning from the origin (mouth of the dragon) to the current location
     // Based on vanilla lightning render:
-    // a total of three strands per strike.  One reaches all the way from top to bottom.  The other two start part way
+    // multiple strands per strike.  One reaches all the way from top to bottom.  The others start part way
     //   down from the top, and finish above the ground
     // lightning is made of four 'shells' of increasing size, to make the core of the lighting bright (most opaque) and
     //  the outer part pale (translucent)
-    // The unscaled lightning is 1.0 high and follows a 'random walk' in x and z, deviating by up to
-    // 1 in 3 for the main strand; or 1 in 1 for the other strands
+    // The unscaled lightning is 1.0 high (y = 1.0 at the dragon mouth, y = 0.0 at the target point)
+    //     and follows a 'random walk' in x and z, deviating by up to:
+    //     1 in 3 for the main strand; or 1 in 1 for the other strands
     //  for vanilla the walk starts from 0,0,0 and deviates upwards
-    //  For the breath weapon, we force to 0,0,0 at both origin and target.
+    //  For the breath weapon, we force to 0,y,0 at both mouth and target.
+
+    // during rendering the y axis of the lightning (from y = 0 at target to y = 1 at mouth) is mapped onto the vector between the
+    //   the dragon's mouth and the target point.
+    // This is accomplished by:
+    // 1) scale to the correct length
+    // 2) rotate to the correct angle (rotate along the shortest path, i.e. around the vector formed from the
+    //      cross product of the lightning [0, 1, 0] and the target->mouth vector
+    // 3) translate the origin to the target point
+    // OpenGL transforms are used to achieve this
 
     double beamLength = 10.0;// target minus head
 
