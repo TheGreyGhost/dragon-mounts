@@ -32,8 +32,8 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   public double accelerationX;
   public double accelerationY;
   public double accelerationZ;
-  private Vec3 origin;
-  private Vec3 destination;
+  protected Vec3 origin;
+  protected Vec3 destination;
 
   public EntityBreathProjectile(World worldIn) {
     super(worldIn);

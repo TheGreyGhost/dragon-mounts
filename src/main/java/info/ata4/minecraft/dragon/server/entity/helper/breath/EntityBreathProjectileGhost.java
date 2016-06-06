@@ -24,7 +24,8 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     randomSeed = System.currentTimeMillis();
   }
 
-  // used by some spawn code under circumstances I don't fully understand yet
+  // used by spawn code on the client side.  Relevant member variables are populated by a subsequent call to
+  //   readSpawnData()
   public EntityBreathProjectileGhost(World worldIn)
   {
     super(worldIn);
@@ -185,10 +186,18 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     setDead();
   }
 
-  public Vec3 getVectorMouthToTarget()
+  public Vec3 getTargetPoint()
   {
-
+    return  new Vec3(0, 11, 0);
+//    return destination;  todo uncomment
   }
+
+  public Vec3 getMouthPoint()
+  {
+    return  new Vec3(0, 10, 0);
+    // return origin; todo uncomment
+  }
+
 
   @Override
   public void writeEntityToNBT(NBTTagCompound tagCompound)

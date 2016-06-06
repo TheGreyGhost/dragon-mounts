@@ -1,14 +1,22 @@
 package info.ata4.minecraft.dragon.test;
 
+import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileGhost;
 import info.ata4.minecraft.dragon.test.testclasses.TestForestBreath;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.command.CommandClone;
 import net.minecraft.command.server.CommandTeleport;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+
+import java.util.Vector;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -27,6 +35,16 @@ public class TestRunner
 //        success = test1(worldIn, playerIn);  // todo restore
         TestForestBreath testForestBreath = new TestForestBreath();
         testForestBreath.test1(worldIn, playerIn);
+        break;
+      }
+      case 2: {
+        EntityTameableDragon dragon = new EntityTameableDragon(worldIn);
+        Vec3 origin = new Vec3(0, 10, 0);
+        Vec3 target = new Vec3(0, 11, 0);
+        BreathNode.Power power = BreathNode.Power.SMALL;
+        EntityBreathProjectileGhost entity = new EntityBreathProjectileGhost(worldIn, dragon, origin, target, power);
+        worldIn.spawnEntityInWorld(entity);
+        System.out.println("Lighting spawned: mouth at [x,y,z] = " + origin);
         break;
       }
       default: {
