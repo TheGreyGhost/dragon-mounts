@@ -122,6 +122,9 @@ public class CommonProxy {
         final int PROJECTILE_GHOST_ENTITY_ID = 29;
         EntityRegistry.registerModEntity(EntityBreathProjectileGhost.class, "GhostEntity", PROJECTILE_GHOST_ENTITY_ID,
                 DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
+        final int WEATHER_EFFECT_GHOST_ENTITY_ID = 30;
+        EntityRegistry.registerModEntity(EntityBreathProjectileGhost.class, "GhostWeatherEntity", WEATHER_EFFECT_GHOST_ENTITY_ID,
+                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
 
     }
 

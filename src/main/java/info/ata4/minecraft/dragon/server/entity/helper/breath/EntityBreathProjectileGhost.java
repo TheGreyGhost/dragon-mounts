@@ -1,6 +1,5 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
-import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.util.Pair;
 import io.netty.buffer.ByteBuf;
@@ -13,6 +12,12 @@ import java.util.Random;
 
 /**
  * Represents the Ghost Breath weapon lightning strike
+ * Used in conjunction with EntityBreathhost, i.e.
+ *   the projectile is spawned, and when it onUpdates() it adds the weather effect entity to handle the rendering
+ * I did it this way to simplify the transmission from server to client and control the collisions better
+ * Using the weather effect solves the problem of frustum check, i.e. that the entity doesn't render if the
+ *   bounding box is outside your view.  Entity.ignoreFrustumCheck flag couldn't overcome this problem because of
+ *   the way that entities are cached per chunk.
  * Created by TGG on 14/03/2016.
  */
 public class EntityBreathProjectileGhost extends EntityBreathProjectile {
@@ -31,13 +36,14 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     super(worldIn);
   }
 
-  public enum RenderStage {PRESTRIKE(3), STRIKE(2), POSTSTRIKE(6), DONE(0);
-    RenderStage(int i_durationTicks)
+  public enum LifeStage
+  {PRESTRIKE(1), STRIKE(2), POSTSTRIKE(6), DONE(0);
+    LifeStage(int i_durationTicks)
     {
       durationTicks = i_durationTicks;
     }
     public int getDuration() {return durationTicks;}
-    public RenderStage next() {return (this == DONE) ? DONE : RenderStage.values()[this.ordinal() + 1];}
+    public LifeStage next() {return (this == DONE) ? DONE : LifeStage.values()[this.ordinal() + 1];}
     private int durationTicks;
   }
 
@@ -46,9 +52,27 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   {
     super.onUpdate();
     ++ageInTicks;
-    ++timeInThisRenderStage;
-    if (timeInThisRenderStage >= renderStage.getDuration()) {
-      renderStage = renderStage.next();
+    ++timeInThisLifeStage;
+    if (timeInThisLifeStage >= lifeStage.getDuration()) {
+      lifeStage = lifeStage.next();
+      timeInThisLifeStage = 0;
+      switch (lifeStage) {
+        case STRIKE: {
+          //todo perform raytrace here
+          if (this.worldObj.isRemote) {
+            EntityBreathGhost entityBreathGhost = new EntityBreathGhost(worldObj, origin, destination, power);
+            this.worldObj.addWeatherEffect(entityBreathGhost);
+          }
+          break;
+        }
+        case POSTSTRIKE: {
+          //todo cause damage here
+          break;
+        }
+        case DONE: {
+          this.setDead();
+        }
+      }
     }
 //    this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D,
 //            new int[0]);
@@ -203,7 +227,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   public void writeEntityToNBT(NBTTagCompound tagCompound)
   {
     super.writeEntityToNBT(tagCompound);
-    tagCompound.setInteger("RenderStage", renderStage.ordinal());
+    tagCompound.setInteger("LifeStage", lifeStage.ordinal());
     tagCompound.setInteger("AgeInTicks", ageInTicks);
     tagCompound.setLong("RandomSeed", randomSeed);
     tagCompound.setLong("RandomSeed1", randomSeed1);
@@ -216,9 +240,9 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     randomSeed = tagCompound.getLong("RandomSeed");
     randomSeed1 = tagCompound.getLong("RandomSeed1");
     ageInTicks = tagCompound.getInteger("AgeInTicks");
-    int renderIndex = tagCompound.getInteger("RenderStage");
-    if (renderIndex >= 0 && renderIndex < RenderStage.values().length) {
-      renderStage = RenderStage.values()[renderIndex];
+    int renderIndex = tagCompound.getInteger("LifeStage");
+    if (renderIndex >= 0 && renderIndex < LifeStage.values().length) {
+      lifeStage = LifeStage.values()[renderIndex];
     }
   }
 
@@ -250,13 +274,13 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   /** returns the current render stage, and the time currently spent in this stage
     * @return
    */
-  public Pair<RenderStage, Integer> getRenderStage()
+  public Pair<LifeStage, Integer> getLifeStage()
   {
-    return new Pair<RenderStage, Integer>(renderStage, timeInThisRenderStage);
+    return new Pair<LifeStage, Integer>(lifeStage, timeInThisLifeStage);
   }
 
-  private RenderStage renderStage = RenderStage.PRESTRIKE;
-  private int timeInThisRenderStage = 0;
+  private LifeStage lifeStage = LifeStage.PRESTRIKE;
+  private int timeInThisLifeStage = 0;
   private int ageInTicks = 0;
   private long randomSeed;
   private long randomSeed1;

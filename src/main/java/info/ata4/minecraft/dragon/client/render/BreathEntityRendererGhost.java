@@ -1,15 +1,13 @@
 package info.ata4.minecraft.dragon.client.render;
 
+import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathGhost;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileGhost;
 import info.ata4.minecraft.dragon.util.math.MathX;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
@@ -24,7 +22,7 @@ public class BreathEntityRendererGhost extends Render
     super(renderManager);
   }
 
-  public void doRender(EntityBreathProjectileGhost entity, double x, double y, double z, float yaw, float partialTicks)
+  public void doRender(EntityBreathGhost entity, double x, double y, double z, float yaw, float partialTicks)
   {
     //todo delete from here
 //    GlStateManager.pushMatrix();
@@ -160,93 +158,104 @@ public class BreathEntityRendererGhost extends Render
       final int MAX_NUMBER_OF_STRANDS = 9;
       int numberOfStrands = MathX.getRandomInRange(random, MIN_NUMBER_OF_STRANDS, MAX_NUMBER_OF_STRANDS);
 
+
+      worldrenderer.startDrawing(GL11.GL_QUADS);  // http://www.glprogramming.com/red/chapter02.html
+      float baseBrightness = 0.5F;
+      worldrenderer.setColorRGBA_F(0.9F * baseBrightness, 0.9F * baseBrightness, 1.0F * baseBrightness, 0.3F);
+
+      worldrenderer.addVertex(-0.2, 0.0, 0.0);
+      worldrenderer.addVertex( 0.2, 0.0, 0.0);
+      worldrenderer.addVertex( 0.2, 1.0, 0.0);
+      worldrenderer.addVertex(-0.2, 1.0, 0.0);
+      tessellator.draw();
+
       // lightning is made of four 'shells' of increasing size, to make the core of the lighting bright (most opaque) and
       //  the outer part pale (translucent)
 
-      for (int shell = 0; shell < 4; ++shell) {
-        Random random1 = new Random(entity.getRandomSeed1());
-
-        // multiple strands per strike.  One reaches all the way from top to bottom.  The others start part way
-        //   down from the top, and finish above the ground.
-        // In this case "top" is the dragon head and "bottom" is the target point
-
-        for (int strandNumber = 0; strandNumber < numberOfStrands; ++strandNumber) {
-          int uppermostYSegment = MAX_SEGMENT;
-          int lowermostYsegment = 0;
-
-          // for non-main strands, choose a random starting segment and ending segment
-          if (strandNumber > 0) {
-            final int SEGMENTS_FROM_HEAD = 1;  // how close to the mouth can we branch out?
-            final int SEGMENTS_FROM_TARGET = 1; // how close to the target could a branch finish?
-            uppermostYSegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET,
-                    MAX_SEGMENT - SEGMENTS_FROM_HEAD);
-            lowermostYsegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET, uppermostYSegment);
-          }
-
-          float segmentX = segmentXmax[uppermostYSegment];
-          float segmentZ = segmentZmax[uppermostYSegment];
-
-          for (int ySegment = uppermostYSegment; ySegment >= lowermostYsegment; --ySegment) {
-            float segmentXtop = segmentX;
-            float segmentZtop = segmentZ;
-
-            if (strandNumber == 0) {
-              segmentX = segmentXmin[ySegment];
-              segmentZ = segmentZmin[ySegment];
-            } else {
-              segmentX += MathX.getRandomInRange(random, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
-              segmentZ += MathX.getRandomInRange(random, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
-            }
-
-            worldrenderer.startDrawing(GL11.GL_TRIANGLE_STRIP);  // http://www.glprogramming.com/red/chapter02.html
-            float baseBrightness = 0.5F;
-            worldrenderer.setColorRGBA_F(0.9F * baseBrightness, 0.9F * baseBrightness, 1.0F * baseBrightness, 0.3F);
-            float topWidth = BEAM_WIDTH_SCALED * (0.1F + shell * 0.2F);
-            float bottomWidth = BEAM_WIDTH_SCALED * (0.1F + shell * 0.2F);
-
-            if (strandNumber == 0) {  //todo consider scaling to be fattest in the middle and normal at the ends; also normalise for seg count!
-              topWidth *= (ySegment + 1) * 0.1F + 1.0F;
-              bottomWidth *= ySegment * 0.1F + 1.0F;
-            }
-
-            // draws a vertical square tube, sides only, centred around [x,,z], over the given 16-block-high segment
-            for (int vertex = 0; vertex < 5; ++vertex) {
-              float xTop = -topWidth;
-              float zTop = -topWidth;
-
-              if (vertex == 1 || vertex == 2) {
-                xTop += topWidth * 2.0F;
-              }
-
-              if (vertex == 2 || vertex == 3) {
-                zTop += topWidth * 2.0F;
-              }
-
-              float xBottom = bottomWidth;
-              float zBottom = bottomWidth;
-
-              if (vertex == 1 || vertex == 2) {
-                xBottom += bottomWidth * 2.0F;
-              }
-
-              if (vertex == 2 || vertex == 3) {
-                zBottom += bottomWidth * 2.0F;
-              }
-
-              worldrenderer.addVertex(xBottom + segmentX, SEGMENT_HEIGHT * ySegment, zBottom + segmentZ);
-              worldrenderer.addVertex(xTop + segmentXtop, SEGMENT_HEIGHT * (ySegment + 1), zTop + segmentZtop);
-            }
-
-            tessellator.draw();
-//          System.out.format("[%f, %d, %f] %f to [%f, %d, %f] %f\n", deltaX, 16 * ySegment, deltaZ, bottomWidth,
-//                  deltaXInitial, 16 * (ySegment + 1), deltaZInitial, topWidth);
-//            System.out.format("%f, %f, %f, %f, %f, %f, %f, %f\n",
-//                    segmentX, LIGHTNING_HEIGHT - SEGMENT_HEIGHT * ySegment, segmentZ, bottomWidth,
-//                    segmentXtop, LIGHTNING_HEIGHT - SEGMENT_HEIGHT * (ySegment + 1), segmentZtop, topWidth);
-
-          }
-        }
-      }
+//      for (int shell = 0; shell < 4; ++shell) {
+//        Random random1 = new Random(entity.getRandomSeed1());
+//
+//        // multiple strands per strike.  One reaches all the way from top to bottom.  The others start part way
+//        //   down from the top, and finish above the ground.
+//        // In this case "top" is the dragon head and "bottom" is the target point
+//
+//        for (int strandNumber = 0; strandNumber < numberOfStrands; ++strandNumber) {
+//          int uppermostYSegment = MAX_SEGMENT;
+//          int lowermostYsegment = 0;
+//
+//          // for non-main strands, choose a random starting segment and ending segment
+//          if (strandNumber > 0) {
+//            final int SEGMENTS_FROM_HEAD = 1;  // how close to the mouth can we branch out?
+//            final int SEGMENTS_FROM_TARGET = 1; // how close to the target could a branch finish?
+//            uppermostYSegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET,
+//                    MAX_SEGMENT - SEGMENTS_FROM_HEAD);
+//            lowermostYsegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET, uppermostYSegment);
+//          }
+//
+//          float segmentX = segmentXmax[uppermostYSegment];
+//          float segmentZ = segmentZmax[uppermostYSegment];
+//
+//          for (int ySegment = uppermostYSegment; ySegment >= lowermostYsegment; --ySegment) {
+//            float segmentXtop = segmentX;
+//            float segmentZtop = segmentZ;
+//
+//            if (strandNumber == 0) {
+//              segmentX = segmentXmin[ySegment];
+//              segmentZ = segmentZmin[ySegment];
+//            } else {
+//              segmentX += MathX.getRandomInRange(random, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
+//              segmentZ += MathX.getRandomInRange(random, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
+//            }
+//
+//            worldrenderer.startDrawing(GL11.GL_TRIANGLE_STRIP);  // http://www.glprogramming.com/red/chapter02.html
+//            float baseBrightness = 0.5F;
+//            worldrenderer.setColorRGBA_F(0.9F * baseBrightness, 0.9F * baseBrightness, 1.0F * baseBrightness, 0.3F);
+//            float topWidth = BEAM_WIDTH_SCALED * (0.1F + shell * 0.2F);
+//            float bottomWidth = BEAM_WIDTH_SCALED * (0.1F + shell * 0.2F);
+//
+//            if (strandNumber == 0) {  //todo consider scaling to be fattest in the middle and normal at the ends; also normalise for seg count!
+//              topWidth *= (ySegment + 1) * 0.1F + 1.0F;
+//              bottomWidth *= ySegment * 0.1F + 1.0F;
+//            }
+//
+//            // draws a vertical square tube, sides only, centred around [x,,z], over the given 16-block-high segment
+//            for (int vertex = 0; vertex < 5; ++vertex) {
+//              float xTop = -topWidth;
+//              float zTop = -topWidth;
+//
+//              if (vertex == 1 || vertex == 2) {
+//                xTop += topWidth * 2.0F;
+//              }
+//
+//              if (vertex == 2 || vertex == 3) {
+//                zTop += topWidth * 2.0F;
+//              }
+//
+//              float xBottom = bottomWidth;
+//              float zBottom = bottomWidth;
+//
+//              if (vertex == 1 || vertex == 2) {
+//                xBottom += bottomWidth * 2.0F;
+//              }
+//
+//              if (vertex == 2 || vertex == 3) {
+//                zBottom += bottomWidth * 2.0F;
+//              }
+//
+//              worldrenderer.addVertex(xBottom + segmentX, SEGMENT_HEIGHT * ySegment, zBottom + segmentZ);
+//              worldrenderer.addVertex(xTop + segmentXtop, SEGMENT_HEIGHT * (ySegment + 1), zTop + segmentZtop);
+//            }
+//
+//            tessellator.draw();
+////          System.out.format("[%f, %d, %f] %f to [%f, %d, %f] %f\n", deltaX, 16 * ySegment, deltaZ, bottomWidth,
+////                  deltaXInitial, 16 * (ySegment + 1), deltaZInitial, topWidth);
+////            System.out.format("%f, %f, %f, %f, %f, %f, %f, %f\n",
+////                    segmentX, LIGHTNING_HEIGHT - SEGMENT_HEIGHT * ySegment, segmentZ, bottomWidth,
+////                    segmentXtop, LIGHTNING_HEIGHT - SEGMENT_HEIGHT * (ySegment + 1), segmentZtop, topWidth);
+//
+//          }
+//        }
+//      }
 
       GlStateManager.disableBlend();
       GlStateManager.enableLighting();
@@ -267,31 +276,31 @@ public class BreathEntityRendererGhost extends Render
    * @param entity
    */
 
-  private void applyTransformation(EntityBreathProjectileGhost entity)
+  private void applyTransformation(EntityBreathGhost entity)
   {
-    Vec3 mouth = entity.getMouthPoint();
-    Vec3 target = entity.getTargetPoint();
+    Vec3 startPoint = entity.getStartPoint();
+    Vec3 endPoint = entity.getEndPoint();
 
-    Vec3 mouthToTarget = target.subtract(mouth);
-    double lightningLength = mouthToTarget.lengthVector();
+    Vec3 startToEnd = endPoint.subtract(startPoint);
+    double lightningLength = startToEnd.lengthVector();
 
     Vec3 lightingAxis = new Vec3(0, 1, 0);
-    Vec3 rotationAxis = lightingAxis.crossProduct(mouthToTarget);
-    double cosTheta = lightingAxis.dotProduct(mouthToTarget);
+    Vec3 rotationAxis = lightingAxis.crossProduct(startToEnd);
+    double cosTheta = lightingAxis.dotProduct(startToEnd);
     double theta = Math.toDegrees(Math.acos(cosTheta));
 
     // openGL applies transformations in the reverse order...
 
-    GL11.glTranslated(mouth.xCoord, mouth.yCoord, mouth.zCoord);
+//    GL11.glTranslated(startPoint.xCoord, startPoint.yCoord, startPoint.zCoord);  // not required - already done by vanilla
     GL11.glRotated(theta, rotationAxis.xCoord, rotationAxis.yCoord, rotationAxis.zCoord);
     GL11.glScaled(lightningLength, lightningLength, lightningLength);
   }
 
-  private double getLightningLength(EntityBreathProjectileGhost entity)
+  private double getLightningLength(EntityBreathGhost entity)
   {
-    Vec3 mouth = entity.getMouthPoint();
-    Vec3 target = entity.getTargetPoint();
-    double lightningLength = mouth.distanceTo(target);
+    Vec3 startPoint = entity.getStartPoint();
+    Vec3 endPoint = entity.getEndPoint();
+    double lightningLength = startPoint.distanceTo(endPoint);
     return lightningLength;
   }
 
@@ -444,8 +453,8 @@ public class BreathEntityRendererGhost extends Render
    * (Render<T extends Entity>) and this method has signature public void func_76986_a(T entity, double d, double d1,
    * double d2, float f, float f1). But JAD is pre 1.5 so doe
    */
-  public void doRender(Entity entity, double x, double y, double z, float p_76986_8_, float partialTicks)
+  public void doRender(Entity entity, double x, double y, double z, float yaw, float partialTicks)
   {
-    this.doRender((EntityBreathProjectileGhost) entity, x, y, z, p_76986_8_, partialTicks);
+    this.doRender((EntityBreathGhost) entity, x, y, z, yaw, partialTicks);
   }
 }

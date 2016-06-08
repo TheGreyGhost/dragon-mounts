@@ -39,12 +39,31 @@ public class TestRunner
       }
       case 2: {
         EntityTameableDragon dragon = new EntityTameableDragon(worldIn);
+        ++testCounter;
         Vec3 origin = new Vec3(0, 10, 0);
         Vec3 target = new Vec3(0, 11, 0);
+        if (testCounter == 1) {
+           origin = new Vec3(0, 10, 0);
+           target = new Vec3(0, 11, 0);
+        }
+        if (testCounter == 2) {
+           origin = new Vec3(0, 10, 0);
+           target = new Vec3(0, 11.01, 0);
+        }
+        if (testCounter == 3) {
+           origin = new Vec3(0, 10, 0);
+           target = new Vec3(1, 10, 0);
+        }
+        if (testCounter == 4) {
+           origin = new Vec3(0, 10, 0);
+           target = new Vec3(0, 10, 1);
+          testCounter = 0;
+        }
         BreathNode.Power power = BreathNode.Power.SMALL;
         EntityBreathProjectileGhost entity = new EntityBreathProjectileGhost(worldIn, dragon, origin, target, power);
         worldIn.spawnEntityInWorld(entity);
-        System.out.println("Lighting spawned: mouth at [x,y,z] = " + origin);
+        System.out.println("Lighting spawned: mouth at [x,y,z] = " + origin + "to destination [x,y,z,] = " + target);
+
         break;
       }
       default: {
@@ -56,6 +75,8 @@ public class TestRunner
     System.out.println("Test Number " + testNumber + " called on server side:" + (success ? "success" : "failure"));
     return success;
   }
+
+  static private int testCounter = 0;
 
   public boolean runClientSideTest(World worldIn, EntityPlayer playerIn, int testNumber)
   {

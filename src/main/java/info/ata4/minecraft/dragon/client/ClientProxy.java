@@ -16,6 +16,7 @@ import info.ata4.minecraft.dragon.client.handler.*;
 import info.ata4.minecraft.dragon.client.render.*;
 import info.ata4.minecraft.dragon.server.CommonProxy;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathGhost;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileEnder;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileGhost;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileNether;
@@ -80,8 +81,10 @@ public class ClientProxy extends CommonProxy
             new BreathEntityRendererNether(renderManager, 1.0F));
     RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileEnder.class,
             new BreathEntityRendererEnder(renderManager, 1.0F));
-    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileGhost.class,
+    RenderingRegistry.registerEntityRenderingHandler(EntityBreathGhost.class,
             new BreathEntityRendererGhost(renderManager));
+    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileGhost.class,         // dummy - renders blank
+            new NullEntityRenderer(renderManager));
 
     FMLCommonHandler.instance().bus().register(new DragonControl(getNetwork()));
     DragonOrbControl.createSingleton(getNetwork());
