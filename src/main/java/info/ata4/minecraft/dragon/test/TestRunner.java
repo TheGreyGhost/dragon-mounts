@@ -48,15 +48,19 @@ public class TestRunner
         }
         if (testCounter == 2) {
            origin = new Vec3(0, 10, 0);
-           target = new Vec3(0, 11.01, 0);
+           target = new Vec3(1, 10, 0);
         }
         if (testCounter == 3) {
            origin = new Vec3(0, 10, 0);
-           target = new Vec3(1, 10, 0);
+           target = new Vec3(1, 11, 0);
         }
         if (testCounter == 4) {
            origin = new Vec3(0, 10, 0);
-           target = new Vec3(0, 10, 1);
+           target = new Vec3(0, 11, 1);
+        }
+        if (testCounter == 5) {
+          origin = new Vec3(0, 10, 0);
+          target = new Vec3(2, 12, 2);
           testCounter = 0;
         }
         BreathNode.Power power = BreathNode.Power.SMALL;

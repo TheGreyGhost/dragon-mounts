@@ -60,7 +60,7 @@ public class EntityBreathGhost extends EntityWeatherEffect
   private Vec3 endPoint;
   private long randomSeed;
 
-  public enum RenderStage {PRESTRIKE(1), STRIKE(2), POSTSTRIKE(400), DONE(0);
+  public enum RenderStage {PRESTRIKE(1), STRIKE(2), POSTSTRIKE(100), DONE(0);
     RenderStage(int i_durationTicks)
     {
       durationTicks = i_durationTicks;

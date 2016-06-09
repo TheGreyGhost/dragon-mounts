@@ -273,6 +273,7 @@ public class BreathEntityRendererGhost extends Render
     2) rotate to the correct angle (rotate along the shortest path, i.e. around the vector formed from the
     cross product of the lightning [0, 1, 0] and the target->mouth vector
     3) translate the origin to the mouth point
+   // openGL applies transformations in the reverse order...
    * @param entity
    */
 
@@ -284,15 +285,20 @@ public class BreathEntityRendererGhost extends Render
     Vec3 startToEnd = endPoint.subtract(startPoint);
     double lightningLength = startToEnd.lengthVector();
 
+    //    GL11.glTranslated(startPoint.xCoord, startPoint.yCoord, startPoint.zCoord);  // not required - already done by vanilla
+
+
     Vec3 lightingAxis = new Vec3(0, 1, 0);
     Vec3 rotationAxis = lightingAxis.crossProduct(startToEnd);
-    double cosTheta = lightingAxis.dotProduct(startToEnd);
-    double theta = Math.toDegrees(Math.acos(cosTheta));
+    rotationAxis.normalize();
 
-    // openGL applies transformations in the reverse order...
+    final double ZERO_VEC_THRESHOLD = 0.5;
+    if (rotationAxis.dotProduct(rotationAxis) > ZERO_VEC_THRESHOLD) {
+      double cosTheta = lightingAxis.dotProduct(startToEnd) / lightingAxis.lengthVector() / startToEnd.lengthVector();
+      double theta = Math.toDegrees(Math.acos(cosTheta));
+      GL11.glRotated(theta, rotationAxis.xCoord, rotationAxis.yCoord, rotationAxis.zCoord);
+    }
 
-//    GL11.glTranslated(startPoint.xCoord, startPoint.yCoord, startPoint.zCoord);  // not required - already done by vanilla
-    GL11.glRotated(theta, rotationAxis.xCoord, rotationAxis.yCoord, rotationAxis.zCoord);
     GL11.glScaled(lightningLength, lightningLength, lightningLength);
   }
 
