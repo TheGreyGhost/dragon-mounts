@@ -39,31 +39,25 @@ public class TestRunner
       }
       case 2: {
         EntityTameableDragon dragon = new EntityTameableDragon(worldIn);
+        BreathNode.Power power = BreathNode.Power.SMALL;
         ++testCounter;
-        Vec3 origin = new Vec3(0, 10, 0);
-        Vec3 target = new Vec3(0, 11, 0);
+        Vec3 origin = new Vec3(0, 4, 0);
+        Vec3 target = new Vec3(0, 24, 0);
         if (testCounter == 1) {
-           origin = new Vec3(0, 10, 0);
-           target = new Vec3(0, 11, 0);
+           origin = new Vec3(0, 4, 0);
+           target = new Vec3(0, 24, 0);
         }
         if (testCounter == 2) {
-           origin = new Vec3(0, 10, 0);
-           target = new Vec3(1, 10, 0);
+          origin = new Vec3(0, 4, 0);
+          target = new Vec3(0, 24, 0);
+          power = BreathNode.Power.MEDIUM;
         }
         if (testCounter == 3) {
-           origin = new Vec3(0, 10, 0);
-           target = new Vec3(1, 11, 0);
-        }
-        if (testCounter == 4) {
-           origin = new Vec3(0, 10, 0);
-           target = new Vec3(0, 11, 1);
-        }
-        if (testCounter == 5) {
-          origin = new Vec3(0, 10, 0);
-          target = new Vec3(2, 12, 2);
+          origin = new Vec3(0, 4, 0);
+          target = new Vec3(0, 24, 0);
+          power = BreathNode.Power.LARGE;
           testCounter = 0;
         }
-        BreathNode.Power power = BreathNode.Power.SMALL;
         EntityBreathProjectileGhost entity = new EntityBreathProjectileGhost(worldIn, dragon, origin, target, power);
         worldIn.spawnEntityInWorld(entity);
         System.out.println("Lighting spawned: mouth at [x,y,z] = " + origin + "to destination [x,y,z,] = " + target);

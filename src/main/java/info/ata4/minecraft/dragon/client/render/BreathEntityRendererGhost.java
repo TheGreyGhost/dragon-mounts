@@ -1,14 +1,17 @@
 package info.ata4.minecraft.dragon.client.render;
 
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathGhost;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileGhost;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import org.lwjgl.opengl.GL11;
@@ -118,21 +121,52 @@ public class BreathEntityRendererGhost extends Render
       GlStateManager.disableLighting();
       GlStateManager.enableBlend();
       GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-      final int SEGMENT_COUNT = 10;
-      final int MAX_SEGMENT = SEGMENT_COUNT - 1;
+
+      // change the "multitexturing" lighting value (default value is the brightness of the last block rendered)
+      // - this will make the lightning "glow" brighter than the surroundings if it is dark.
+      final int SKY_LIGHT_VALUE = (int)(15 * entity.getLightIntensity(partialTicks));
+      final int BLOCK_LIGHT_VALUE = 0;
+      OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, SKY_LIGHT_VALUE * 16.0F, BLOCK_LIGHT_VALUE * 16.0F);
+
+      final float MIN_LENGTH_PER_SEGMENT = 2;  // approx minimum length of each segment (distance between "kinks")
+      final int MAX_SEGMENTS_PERMITTED = 10;
+      final int SEGMENT_COUNT = (beamLength / MAX_SEGMENTS_PERMITTED > MIN_LENGTH_PER_SEGMENT) ?
+                                MAX_SEGMENTS_PERMITTED : (int)(beamLength / MIN_LENGTH_PER_SEGMENT) + 1;
+      final int MAX_SEGMENT_IDX = SEGMENT_COUNT - 1;
       float[] segmentXmin = new float[SEGMENT_COUNT + 1];
       float[] segmentZmin = new float[SEGMENT_COUNT + 1];
       float[] segmentXmax = new float[SEGMENT_COUNT + 1];
       float[] segmentZmax = new float[SEGMENT_COUNT + 1];
 
       Random random = new Random(entity.getRandomSeed());
+      final long STRAND_SHAPE_SEED = random.nextLong();
 
       final float LIGHTNING_HEIGHT = 1.0F;
       final float SEGMENT_HEIGHT = LIGHTNING_HEIGHT / SEGMENT_COUNT;
       final float MAX_DEVIATION_PER_SEGMENT_MAIN_STRAND = SEGMENT_HEIGHT / 3.0F;
       final float MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS = SEGMENT_HEIGHT;
 
-      final float BEAM_WIDTH_BLOCKS = 0.2F;
+      BreathNode.Power power = entity.getPower();
+      final float BEAM_WIDTH_BLOCKS;
+      switch (power) {
+        case SMALL: {
+          BEAM_WIDTH_BLOCKS = 0.06F;
+          break;
+        }
+        case MEDIUM: {
+          BEAM_WIDTH_BLOCKS = 0.12F;
+          break;
+        }
+        case LARGE: {
+          BEAM_WIDTH_BLOCKS = 0.2F;
+          break;
+        }
+        default: {
+          BEAM_WIDTH_BLOCKS = 0.2F;
+          System.err.println("Unexpected power: "+ power);
+        }
+      }
+
       final float BEAM_WIDTH_SCALED = (float) (BEAM_WIDTH_BLOCKS / beamLength);
 
       float xSum = 0.0F;
@@ -154,108 +188,127 @@ public class BreathEntityRendererGhost extends Render
         segmentZmax[i] -= zSum * (i + 1) / (float) SEGMENT_COUNT;
       }
 
-      final int MIN_NUMBER_OF_STRANDS = 3;
-      final int MAX_NUMBER_OF_STRANDS = 9;
+      final int MIN_NUMBER_OF_STRANDS = Math.min(3, SEGMENT_COUNT - 3);
+      final int MAX_NUMBER_OF_STRANDS = Math.min(9, SEGMENT_COUNT - 1);
       int numberOfStrands = MathX.getRandomInRange(random, MIN_NUMBER_OF_STRANDS, MAX_NUMBER_OF_STRANDS);
 
-
-      worldrenderer.startDrawing(GL11.GL_QUADS);  // http://www.glprogramming.com/red/chapter02.html
-      float baseBrightness = 0.5F;
-      worldrenderer.setColorRGBA_F(0.9F * baseBrightness, 0.9F * baseBrightness, 1.0F * baseBrightness, 0.3F);
-
-      worldrenderer.addVertex(-0.2, 0.0, 0.0);
-      worldrenderer.addVertex( 0.2, 0.0, 0.0);
-      worldrenderer.addVertex( 0.2, 1.0, 0.0);
-      worldrenderer.addVertex(-0.2, 1.0, 0.0);
-      tessellator.draw();
+//
+//      worldrenderer.startDrawing(GL11.GL_QUADS);  // http://www.glprogramming.com/red/chapter02.html
+//      float baseBrightness = 0.5F;
+//      worldrenderer.setColorRGBA_F(0.9F * baseBrightness, 0.9F * baseBrightness, 1.0F * baseBrightness, 0.3F);
+//
+//      worldrenderer.addVertex(-0.2, 0.0, 0.0);
+//      worldrenderer.addVertex( 0.2, 0.0, 0.0);
+//      worldrenderer.addVertex( 0.2, 1.0, 0.0);
+//      worldrenderer.addVertex(-0.2, 1.0, 0.0);
+//      tessellator.draw();
 
       // lightning is made of four 'shells' of increasing size, to make the core of the lighting bright (most opaque) and
       //  the outer part pale (translucent)
 
-//      for (int shell = 0; shell < 4; ++shell) {
-//        Random random1 = new Random(entity.getRandomSeed1());
-//
-//        // multiple strands per strike.  One reaches all the way from top to bottom.  The others start part way
-//        //   down from the top, and finish above the ground.
-//        // In this case "top" is the dragon head and "bottom" is the target point
-//
-//        for (int strandNumber = 0; strandNumber < numberOfStrands; ++strandNumber) {
-//          int uppermostYSegment = MAX_SEGMENT;
-//          int lowermostYsegment = 0;
-//
-//          // for non-main strands, choose a random starting segment and ending segment
-//          if (strandNumber > 0) {
-//            final int SEGMENTS_FROM_HEAD = 1;  // how close to the mouth can we branch out?
-//            final int SEGMENTS_FROM_TARGET = 1; // how close to the target could a branch finish?
-//            uppermostYSegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET,
-//                    MAX_SEGMENT - SEGMENTS_FROM_HEAD);
-//            lowermostYsegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET, uppermostYSegment);
-//          }
-//
-//          float segmentX = segmentXmax[uppermostYSegment];
-//          float segmentZ = segmentZmax[uppermostYSegment];
-//
-//          for (int ySegment = uppermostYSegment; ySegment >= lowermostYsegment; --ySegment) {
-//            float segmentXtop = segmentX;
-//            float segmentZtop = segmentZ;
-//
-//            if (strandNumber == 0) {
-//              segmentX = segmentXmin[ySegment];
-//              segmentZ = segmentZmin[ySegment];
-//            } else {
-//              segmentX += MathX.getRandomInRange(random, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
-//              segmentZ += MathX.getRandomInRange(random, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
-//            }
-//
-//            worldrenderer.startDrawing(GL11.GL_TRIANGLE_STRIP);  // http://www.glprogramming.com/red/chapter02.html
-//            float baseBrightness = 0.5F;
-//            worldrenderer.setColorRGBA_F(0.9F * baseBrightness, 0.9F * baseBrightness, 1.0F * baseBrightness, 0.3F);
-//            float topWidth = BEAM_WIDTH_SCALED * (0.1F + shell * 0.2F);
-//            float bottomWidth = BEAM_WIDTH_SCALED * (0.1F + shell * 0.2F);
-//
-//            if (strandNumber == 0) {  //todo consider scaling to be fattest in the middle and normal at the ends; also normalise for seg count!
-//              topWidth *= (ySegment + 1) * 0.1F + 1.0F;
-//              bottomWidth *= ySegment * 0.1F + 1.0F;
-//            }
-//
-//            // draws a vertical square tube, sides only, centred around [x,,z], over the given 16-block-high segment
-//            for (int vertex = 0; vertex < 5; ++vertex) {
-//              float xTop = -topWidth;
-//              float zTop = -topWidth;
-//
-//              if (vertex == 1 || vertex == 2) {
-//                xTop += topWidth * 2.0F;
-//              }
-//
-//              if (vertex == 2 || vertex == 3) {
-//                zTop += topWidth * 2.0F;
-//              }
-//
-//              float xBottom = bottomWidth;
-//              float zBottom = bottomWidth;
-//
-//              if (vertex == 1 || vertex == 2) {
-//                xBottom += bottomWidth * 2.0F;
-//              }
-//
-//              if (vertex == 2 || vertex == 3) {
-//                zBottom += bottomWidth * 2.0F;
-//              }
-//
-//              worldrenderer.addVertex(xBottom + segmentX, SEGMENT_HEIGHT * ySegment, zBottom + segmentZ);
-//              worldrenderer.addVertex(xTop + segmentXtop, SEGMENT_HEIGHT * (ySegment + 1), zTop + segmentZtop);
-//            }
-//
-//            tessellator.draw();
-////          System.out.format("[%f, %d, %f] %f to [%f, %d, %f] %f\n", deltaX, 16 * ySegment, deltaZ, bottomWidth,
-////                  deltaXInitial, 16 * (ySegment + 1), deltaZInitial, topWidth);
-////            System.out.format("%f, %f, %f, %f, %f, %f, %f, %f\n",
-////                    segmentX, LIGHTNING_HEIGHT - SEGMENT_HEIGHT * ySegment, segmentZ, bottomWidth,
-////                    segmentXtop, LIGHTNING_HEIGHT - SEGMENT_HEIGHT * (ySegment + 1), segmentZtop, topWidth);
-//
-//          }
-//        }
-//      }
+      final float NUMBER_OF_SHELLS = 4;
+      final float CORE_HALF_WIDTH = BEAM_WIDTH_SCALED / NUMBER_OF_SHELLS;
+      final float HALF_WIDTH_PER_SHELL = CORE_HALF_WIDTH;
+      final float ORIGIN_WIDTH_INCREASE_FACTOR = 2.0F;  // how much wider is the origin than the target (2 = twice as wide)
+      final float SECONDARY_STRAND_RELATIVE_MIN_WIDTH = 0.3F;  // width of secondary strand relative to primary
+      final float SECONDARY_STRAND_RELATIVE_MAX_WIDTH = 0.8F;  // width of secondary strand relative to primary
+
+      for (int shell = 0; shell < NUMBER_OF_SHELLS; ++shell) {
+        Random random1 = new Random(STRAND_SHAPE_SEED);
+
+        // multiple strands per strike.  One (primary strand) reaches all the way from mouth to target.  The others
+        //   (secondary strands) start part way along from the mouth, and finish before the target.
+
+        for (int strandNumber = 0; strandNumber < numberOfStrands; ++strandNumber) {
+          int uppermostYSegment = MAX_SEGMENT_IDX;
+          int lowermostYsegment = 0;
+
+          // for non-main strands, choose a random starting segment and ending segment
+          if (strandNumber > 0) {
+            final int SEGMENTS_FROM_HEAD = 1;  // how close to the mouth can we branch out?
+            final int SEGMENTS_FROM_TARGET = 1; // how close to the target could a branch finish?
+            int HIGHEST_SEGMENT_POSSIBLE = Math.max(MAX_SEGMENT_IDX - SEGMENTS_FROM_HEAD, SEGMENTS_FROM_TARGET);
+            uppermostYSegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET,
+                    HIGHEST_SEGMENT_POSSIBLE);
+            lowermostYsegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET, uppermostYSegment);
+          }
+
+          float segmentX = segmentXmax[uppermostYSegment];
+          float segmentZ = segmentZmax[uppermostYSegment];
+
+          for (int ySegment = uppermostYSegment; ySegment >= lowermostYsegment; --ySegment) {
+            float segmentXtop = segmentX;
+            float segmentZtop = segmentZ;
+
+            if (strandNumber == 0) {
+              segmentX = segmentXmin[ySegment];
+              segmentZ = segmentZmin[ySegment];
+            } else {
+              segmentX += MathX.getRandomInRange(random1, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
+              segmentZ += MathX.getRandomInRange(random1, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
+            }
+
+            worldrenderer.startDrawing(GL11.GL_TRIANGLE_STRIP);  // http://www.glprogramming.com/red/chapter02.html
+            final float BASE_BRIGHTNESS = 2.0F;
+            final float BRIGHTNESS_EACH_SHELL = Math.min(BASE_BRIGHTNESS / NUMBER_OF_SHELLS, 1);
+            final float ALPHA_VALUE = 0.5F;
+            worldrenderer.setColorRGBA_F(0.8F * BRIGHTNESS_EACH_SHELL, 0.8F * BRIGHTNESS_EACH_SHELL,
+                    1.0F * BRIGHTNESS_EACH_SHELL, ALPHA_VALUE);
+            float topHalfWidth = CORE_HALF_WIDTH + shell * HALF_WIDTH_PER_SHELL;
+            float bottomHalfWidth = CORE_HALF_WIDTH + shell * HALF_WIDTH_PER_SHELL;
+
+            if (strandNumber == 0) {
+              topHalfWidth *= MathX.lerp(1.0F, ORIGIN_WIDTH_INCREASE_FACTOR, (ySegment + 1) / (float)SEGMENT_COUNT);
+              bottomHalfWidth *= MathX.lerp(1.0F, ORIGIN_WIDTH_INCREASE_FACTOR, ySegment / (float)SEGMENT_COUNT);
+            } else {
+              float strandRelativeWidth = MathX.lerp(SECONDARY_STRAND_RELATIVE_MIN_WIDTH,
+                      SECONDARY_STRAND_RELATIVE_MAX_WIDTH,
+                      random1.nextFloat());
+              topHalfWidth *= strandRelativeWidth;
+              bottomHalfWidth *= strandRelativeWidth;
+            }
+
+            // draws a vertical square tube, sides only, centred around [x,,z], over the given 16-block-high segment
+            for (int vertex = 0; vertex < 5; ++vertex) {
+              float xTop = -topHalfWidth;
+              float zTop = -topHalfWidth;
+
+              if (vertex == 1 || vertex == 2) {
+                xTop += topHalfWidth * 2.0F;
+              }
+
+              if (vertex == 2 || vertex == 3) {
+                zTop += topHalfWidth * 2.0F;
+              }
+
+              float xBottom = -bottomHalfWidth;
+              float zBottom = -bottomHalfWidth;
+
+              if (vertex == 1 || vertex == 2) {
+                xBottom += bottomHalfWidth * 2.0F;
+              }
+
+              if (vertex == 2 || vertex == 3) {
+                zBottom += bottomHalfWidth * 2.0F;
+              }
+
+              worldrenderer.addVertex(xBottom + segmentX, SEGMENT_HEIGHT * ySegment, zBottom + segmentZ);
+              worldrenderer.addVertex(xTop + segmentXtop, SEGMENT_HEIGHT * (ySegment + 1), zTop + segmentZtop);
+//              System.out.format("[%f, %f, %f] ", xBottom + segmentX, SEGMENT_HEIGHT * ySegment, zBottom + segmentZ);
+//              System.out.format("[%f, %f, %f]\n", xTop + segmentXtop, SEGMENT_HEIGHT * (ySegment + 1), zTop + segmentZtop);
+            }
+
+            tessellator.draw();
+//            System.out.format("Drawn\n");
+//          System.out.format("[%f, %d, %f] %f to [%f, %d, %f] %f\n", deltaX, 16 * ySegment, deltaZ, bottomWidth,
+//                  deltaXInitial, 16 * (ySegment + 1), deltaZInitial, topWidth);
+//            System.out.format("%f, %f, %f, %f, %f, %f, %f, %f\n",
+//                    segmentX, LIGHTNING_HEIGHT - SEGMENT_HEIGHT * ySegment, segmentZ, bottomWidth,
+//                    segmentXtop, LIGHTNING_HEIGHT - SEGMENT_HEIGHT * (ySegment + 1), segmentZtop, topWidth);
+
+          }
+        }
+      }
 
       GlStateManager.disableBlend();
       GlStateManager.enableLighting();
