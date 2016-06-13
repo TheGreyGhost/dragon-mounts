@@ -1,6 +1,10 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import com.google.common.base.Preconditions;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.network.BreathWeaponTarget;
+import info.ata4.minecraft.dragon.server.network.DragonOrbTargets;
+import info.ata4.minecraft.dragon.server.network.DragonTargetMessage;
 import info.ata4.minecraft.dragon.util.Pair;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityLivingBase;
@@ -8,6 +12,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
 import java.util.Random;
 
 /**
@@ -22,11 +27,39 @@ import java.util.Random;
  */
 public class EntityBreathProjectileGhost extends EntityBreathProjectile {
 
+  /**
+   * Create the projectile entity, which has collided with an object
+   * @param worldIn
+   * @param shooter the dragon shooting the lightning
+   * @param origin the position of the dragon's mouth
+   * @param destination the end point of the lightning (the object struck)
+   * @param power the power of the lightning
+   * @param objectStruck the entity or block which was struck (not null!)
+   */
+  public EntityBreathProjectileGhost(World worldIn, EntityLivingBase shooter,
+                                     Vec3 origin, Vec3 destination, BreathNode.Power power,
+                                     BreathWeaponTarget objectStruck)
+  {
+    super(worldIn, shooter, origin, destination, power);
+    randomSeed = System.currentTimeMillis();
+    Preconditions.checkNotNull(objectStruck);
+    breathWeaponTarget = objectStruck;
+  }
+
+  /**
+   * Create the projectile entity; no collision occurred
+   * @param worldIn
+   * @param shooter the dragon shooting the lightning
+   * @param origin the position of the dragon's mouth
+   * @param destination the endpoint position of the lightning strike (the end of the ray)
+   * @param power the power of the lightning
+   */
   public EntityBreathProjectileGhost(World worldIn, EntityLivingBase shooter,
                                      Vec3 origin, Vec3 destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);
     randomSeed = System.currentTimeMillis();
+    breathWeaponTarget = BreathWeaponTarget.targetDirection(destination.subtract(origin));
   }
 
   // used by spawn code on the client side.  Relevant member variables are populated by a subsequent call to
@@ -231,6 +264,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     tagCompound.setInteger("AgeInTicks", ageInTicks);
     tagCompound.setLong("RandomSeed", randomSeed);
     tagCompound.setLong("RandomSeed1", randomSeed1);
+    tagCompound.setString("Target", breathWeaponTarget.toEncodedString());
   }
 
   @Override
@@ -244,6 +278,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     if (renderIndex >= 0 && renderIndex < LifeStage.values().length) {
       lifeStage = LifeStage.values()[renderIndex];
     }
+    breathWeaponTarget = BreathWeaponTarget.fromEncodedString(tagCompound.getString("Target"));
   }
 
   @Override
@@ -252,6 +287,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     super.writeSpawnData(buffer);
     buffer.writeLong(randomSeed);
     buffer.writeLong(randomSeed1);
+    breathWeaponTarget.toBytes(buffer);
   }
 
   @Override
@@ -260,6 +296,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     super.readSpawnData(additionalData);
     randomSeed = additionalData.readLong();
     randomSeed1 = additionalData.readLong();
+    breathWeaponTarget = BreathWeaponTarget.fromBytes(additionalData);
   }
 
   public long getRandomSeed()
@@ -284,11 +321,14 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   private int ageInTicks = 0;
   private long randomSeed;
   private long randomSeed1;
+  private BreathWeaponTarget breathWeaponTarget;
 
   public static class BreathProjectileFactoryGhost implements BreathProjectileFactory {
     public void spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
     {
       if (coolDownTimerTicks > 0) return;
+
+      rayTraceServer here
 
       final int COOLDOWN_TIME_TICKS = 40;
       EntityBreathProjectileGhost entity = new EntityBreathProjectileGhost(world, dragon, origin, target, power);
