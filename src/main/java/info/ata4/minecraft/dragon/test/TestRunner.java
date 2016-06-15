@@ -41,20 +41,20 @@ public class TestRunner
         EntityTameableDragon dragon = new EntityTameableDragon(worldIn);
         BreathNode.Power power = BreathNode.Power.SMALL;
         ++testCounter;
-        Vec3 origin = new Vec3(0, 4, 0);
-        Vec3 target = new Vec3(0, 24, 0);
+        Vec3 origin = new Vec3(0, 24, 0);
+        Vec3 target = new Vec3(0, 4, 0);
         if (testCounter == 1) {
-           origin = new Vec3(0, 4, 0);
-           target = new Vec3(0, 24, 0);
+           origin = new Vec3(0, 24, 0);
+           target = new Vec3(0, 4, 0);
         }
         if (testCounter == 2) {
-          origin = new Vec3(0, 4, 0);
-          target = new Vec3(0, 24, 0);
+          origin = new Vec3(0, 24, 0);
+          target = new Vec3(0, 4, 0);
           power = BreathNode.Power.MEDIUM;
         }
         if (testCounter == 3) {
-          origin = new Vec3(0, 4, 0);
-          target = new Vec3(0, 24, 0);
+          origin = new Vec3(0, 24, 0);
+          target = new Vec3(0, 4, 0);
           power = BreathNode.Power.LARGE;
           testCounter = 0;
         }

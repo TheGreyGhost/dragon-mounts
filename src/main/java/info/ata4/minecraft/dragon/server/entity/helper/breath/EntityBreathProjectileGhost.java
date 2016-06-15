@@ -98,7 +98,9 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
       switch (lifeStage) {
         case STRIKE: {
           if (this.worldObj.isRemote) {
-            Vec3 targetPoint = breathWeaponTarget.getTargetedPoint(worldObj, origin);
+            Vec3 targetPoint =  breathWeaponTarget.getTypeOfTarget() == BreathWeaponTarget.TypeOfTarget.DIRECTION
+                              ? destination
+                              : breathWeaponTarget.getTargetedPoint(worldObj, origin);
             EntityBreathGhost entityBreathGhost = new EntityBreathGhost(worldObj, origin, targetPoint, power);
             this.worldObj.addWeatherEffect(entityBreathGhost);
           }

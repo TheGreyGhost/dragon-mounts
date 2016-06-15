@@ -133,10 +133,10 @@ public class BreathEntityRendererGhost extends Render
       final int SEGMENT_COUNT = (beamLength / MAX_SEGMENTS_PERMITTED > MIN_LENGTH_PER_SEGMENT) ?
                                 MAX_SEGMENTS_PERMITTED : (int)(beamLength / MIN_LENGTH_PER_SEGMENT) + 1;
       final int MAX_SEGMENT_IDX = SEGMENT_COUNT - 1;
-      float[] segmentXmin = new float[SEGMENT_COUNT + 1];
-      float[] segmentZmin = new float[SEGMENT_COUNT + 1];
-      float[] segmentXmax = new float[SEGMENT_COUNT + 1];
-      float[] segmentZmax = new float[SEGMENT_COUNT + 1];
+      float[] mainStrandSegmentXlower = new float[SEGMENT_COUNT + 1];
+      float[] mainStrandSegmentZlower = new float[SEGMENT_COUNT + 1];
+      float[] mainStrandSegmentXupper = new float[SEGMENT_COUNT + 1];
+      float[] mainStrandSegmentZupper = new float[SEGMENT_COUNT + 1];
 
       Random random = new Random(entity.getRandomSeed());
       final long STRAND_SHAPE_SEED = random.nextLong();
@@ -172,20 +172,20 @@ public class BreathEntityRendererGhost extends Render
       float xSum = 0.0F;
       float zSum = 0.0F;
       for (int i = 0; i < SEGMENT_COUNT; ++i) {
-        segmentXmin[i] = xSum;
-        segmentZmin[i] = zSum;
+        mainStrandSegmentXlower[i] = xSum;
+        mainStrandSegmentZlower[i] = zSum;
         xSum += MathX.getRandomInRange(random, -MAX_DEVIATION_PER_SEGMENT_MAIN_STRAND, MAX_DEVIATION_PER_SEGMENT_MAIN_STRAND);
         zSum += MathX.getRandomInRange(random, -MAX_DEVIATION_PER_SEGMENT_MAIN_STRAND, MAX_DEVIATION_PER_SEGMENT_MAIN_STRAND);
-        segmentXmax[i] = xSum;
-        segmentZmax[i] = zSum;
+        mainStrandSegmentXupper[i] = xSum;
+        mainStrandSegmentZupper[i] = zSum;
       }
 
       // force end point to zero by subtracting the straight line between first segment and last segment
       for (int i = 0; i < SEGMENT_COUNT; ++i) {
-        segmentXmin[i] -= xSum * i / (float) SEGMENT_COUNT;
-        segmentZmin[i] -= zSum * i / (float) SEGMENT_COUNT;
-        segmentXmax[i] -= xSum * (i + 1) / (float) SEGMENT_COUNT;
-        segmentZmax[i] -= zSum * (i + 1) / (float) SEGMENT_COUNT;
+        mainStrandSegmentXlower[i] -= xSum * i / (float) SEGMENT_COUNT;
+        mainStrandSegmentZlower[i] -= zSum * i / (float) SEGMENT_COUNT;
+        mainStrandSegmentXupper[i] -= xSum * (i + 1) / (float) SEGMENT_COUNT;
+        mainStrandSegmentZupper[i] -= zSum * (i + 1) / (float) SEGMENT_COUNT;
       }
 
       final int MIN_NUMBER_OF_STRANDS = Math.min(3, SEGMENT_COUNT - 3);
@@ -212,7 +212,10 @@ public class BreathEntityRendererGhost extends Render
       final float ORIGIN_WIDTH_INCREASE_FACTOR = 2.0F;  // how much wider is the origin than the target (2 = twice as wide)
       final float SECONDARY_STRAND_RELATIVE_MIN_WIDTH = 0.3F;  // width of secondary strand relative to primary
       final float SECONDARY_STRAND_RELATIVE_MAX_WIDTH = 0.8F;  // width of secondary strand relative to primary
-
+todo outstanding bugs:
+      test lightning doesn't have shells - because of scale -1?
+      dragon breath direction-only doesn't work - not visible
+      dragon breath targeted entity or block works fine
       for (int shell = 0; shell < NUMBER_OF_SHELLS; ++shell) {
         Random random1 = new Random(STRAND_SHAPE_SEED);
 
@@ -225,24 +228,28 @@ public class BreathEntityRendererGhost extends Render
 
           // for non-main strands, choose a random starting segment and ending segment
           if (strandNumber > 0) {
-            final int SEGMENTS_FROM_HEAD = 1;  // how close to the mouth can we branch out?
+            final int SEGMENTS_FROM_MOUTH = 1;  // how close to the mouth can we branch out?
             final int SEGMENTS_FROM_TARGET = 1; // how close to the target could a branch finish?
-            int HIGHEST_SEGMENT_POSSIBLE = Math.max(MAX_SEGMENT_IDX - SEGMENTS_FROM_HEAD, SEGMENTS_FROM_TARGET);
-            uppermostYSegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET,
+            int HIGHEST_SEGMENT_POSSIBLE = Math.max(MAX_SEGMENT_IDX - SEGMENTS_FROM_TARGET, SEGMENTS_FROM_MOUTH);
+            uppermostYSegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_MOUTH,
                     HIGHEST_SEGMENT_POSSIBLE);
-            lowermostYsegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_TARGET, uppermostYSegment);
+            lowermostYsegment = MathX.getRandomInRange(random1, SEGMENTS_FROM_MOUTH, uppermostYSegment);
           }
 
-          float segmentX = segmentXmax[uppermostYSegment];
-          float segmentZ = segmentZmax[uppermostYSegment];
+          float strandRelativeWidth = MathX.lerp(SECONDARY_STRAND_RELATIVE_MIN_WIDTH,
+                  SECONDARY_STRAND_RELATIVE_MAX_WIDTH,
+                  random1.nextFloat());
 
-          for (int ySegment = uppermostYSegment; ySegment >= lowermostYsegment; --ySegment) {
-            float segmentXtop = segmentX;
-            float segmentZtop = segmentZ;
+          float segmentX = mainStrandSegmentXlower[lowermostYsegment];
+          float segmentZ = mainStrandSegmentZlower[lowermostYsegment];
+
+          for (int ySegment = lowermostYsegment; ySegment <= uppermostYSegment; ++ySegment) {
+            float segmentXlower = segmentX;
+            float segmentZlower = segmentZ;
 
             if (strandNumber == 0) {
-              segmentX = segmentXmin[ySegment];
-              segmentZ = segmentZmin[ySegment];
+              segmentX = mainStrandSegmentXupper[ySegment];
+              segmentZ = mainStrandSegmentZupper[ySegment];
             } else {
               segmentX += MathX.getRandomInRange(random1, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
               segmentZ += MathX.getRandomInRange(random1, -MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS, MAX_DEVIATION_PER_SEGMENT_OTHER_STRANDS);
@@ -254,46 +261,43 @@ public class BreathEntityRendererGhost extends Render
             final float ALPHA_VALUE = 0.5F;
             worldrenderer.setColorRGBA_F(0.8F * BRIGHTNESS_EACH_SHELL, 0.8F * BRIGHTNESS_EACH_SHELL,
                     1.0F * BRIGHTNESS_EACH_SHELL, ALPHA_VALUE);
-            float topHalfWidth = CORE_HALF_WIDTH + shell * HALF_WIDTH_PER_SHELL;
-            float bottomHalfWidth = CORE_HALF_WIDTH + shell * HALF_WIDTH_PER_SHELL;
+            float upperHalfWidth = CORE_HALF_WIDTH + shell * HALF_WIDTH_PER_SHELL;
+            float lowerHalfWidth = CORE_HALF_WIDTH + shell * HALF_WIDTH_PER_SHELL;
 
             if (strandNumber == 0) {
-              topHalfWidth *= MathX.lerp(1.0F, ORIGIN_WIDTH_INCREASE_FACTOR, (ySegment + 1) / (float)SEGMENT_COUNT);
-              bottomHalfWidth *= MathX.lerp(1.0F, ORIGIN_WIDTH_INCREASE_FACTOR, ySegment / (float)SEGMENT_COUNT);
+              upperHalfWidth *= MathX.lerp(ORIGIN_WIDTH_INCREASE_FACTOR, 1.0F, (ySegment + 1) / (float)SEGMENT_COUNT);
+              lowerHalfWidth *= MathX.lerp(ORIGIN_WIDTH_INCREASE_FACTOR, 1.0F, ySegment / (float)SEGMENT_COUNT);
             } else {
-              float strandRelativeWidth = MathX.lerp(SECONDARY_STRAND_RELATIVE_MIN_WIDTH,
-                      SECONDARY_STRAND_RELATIVE_MAX_WIDTH,
-                      random1.nextFloat());
-              topHalfWidth *= strandRelativeWidth;
-              bottomHalfWidth *= strandRelativeWidth;
+              upperHalfWidth *= strandRelativeWidth;
+              lowerHalfWidth *= strandRelativeWidth;
             }
 
             // draws a vertical square tube, sides only, centred around [x,,z], over the given 16-block-high segment
             for (int vertex = 0; vertex < 5; ++vertex) {
-              float xTop = -topHalfWidth;
-              float zTop = -topHalfWidth;
+              float xUpper = -upperHalfWidth;
+              float zUpper = -upperHalfWidth;
 
               if (vertex == 1 || vertex == 2) {
-                xTop += topHalfWidth * 2.0F;
+                xUpper += upperHalfWidth * 2.0F;
               }
 
               if (vertex == 2 || vertex == 3) {
-                zTop += topHalfWidth * 2.0F;
+                zUpper += upperHalfWidth * 2.0F;
               }
 
-              float xBottom = -bottomHalfWidth;
-              float zBottom = -bottomHalfWidth;
+              float xLower = -lowerHalfWidth;
+              float zLower = -lowerHalfWidth;
 
               if (vertex == 1 || vertex == 2) {
-                xBottom += bottomHalfWidth * 2.0F;
+                xLower += lowerHalfWidth * 2.0F;
               }
 
               if (vertex == 2 || vertex == 3) {
-                zBottom += bottomHalfWidth * 2.0F;
+                zLower += lowerHalfWidth * 2.0F;
               }
 
-              worldrenderer.addVertex(xBottom + segmentX, SEGMENT_HEIGHT * ySegment, zBottom + segmentZ);
-              worldrenderer.addVertex(xTop + segmentXtop, SEGMENT_HEIGHT * (ySegment + 1), zTop + segmentZtop);
+              worldrenderer.addVertex(xLower + segmentXlower, SEGMENT_HEIGHT * ySegment, zLower + segmentZlower);
+              worldrenderer.addVertex(xUpper + segmentX, SEGMENT_HEIGHT * (ySegment + 1), zUpper + segmentZ);
 //              System.out.format("[%f, %f, %f] ", xBottom + segmentX, SEGMENT_HEIGHT * ySegment, zBottom + segmentZ);
 //              System.out.format("[%f, %f, %f]\n", xTop + segmentXtop, SEGMENT_HEIGHT * (ySegment + 1), zTop + segmentZtop);
             }
@@ -324,7 +328,7 @@ public class BreathEntityRendererGhost extends Render
     This is accomplished by:
     1) scale to the correct length
     2) rotate to the correct angle (rotate along the shortest path, i.e. around the vector formed from the
-    cross product of the lightning [0, 1, 0] and the target->mouth vector
+    cross product of the lightning [0, 1, 0] and the mouth->target vector
     3) translate the origin to the mouth point
    // openGL applies transformations in the reverse order...
    * @param entity
@@ -346,10 +350,14 @@ public class BreathEntityRendererGhost extends Render
     rotationAxis.normalize();
 
     final double ZERO_VEC_THRESHOLD = 0.5;
-    if (rotationAxis.dotProduct(rotationAxis) > ZERO_VEC_THRESHOLD) {
+    if (rotationAxis.dotProduct(rotationAxis) >= ZERO_VEC_THRESHOLD) {
       double cosTheta = lightingAxis.dotProduct(startToEnd) / lightingAxis.lengthVector() / startToEnd.lengthVector();
       double theta = Math.toDegrees(Math.acos(cosTheta));
       GL11.glRotated(theta, rotationAxis.xCoord, rotationAxis.yCoord, rotationAxis.zCoord);
+    } else { // collinear, so check if we need to flip direction
+      if (lightingAxis.dotProduct(startToEnd) < 0) {
+        GL11.glScaled(-1.0, -1.0, -1.0);
+      }
     }
 
     GL11.glScaled(lightningLength, lightningLength, lightningLength);
