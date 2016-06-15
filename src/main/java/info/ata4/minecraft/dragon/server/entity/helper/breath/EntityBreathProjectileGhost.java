@@ -1,19 +1,25 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.network.BreathWeaponTarget;
 import info.ata4.minecraft.dragon.server.network.DragonOrbTargets;
 import info.ata4.minecraft.dragon.server.network.DragonTargetMessage;
+import info.ata4.minecraft.dragon.server.util.RayTraceServer;
 import info.ata4.minecraft.dragon.util.Pair;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Represents the Ghost Breath weapon lightning strike
@@ -91,9 +97,9 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
       timeInThisLifeStage = 0;
       switch (lifeStage) {
         case STRIKE: {
-          //todo perform raytrace here
           if (this.worldObj.isRemote) {
-            EntityBreathGhost entityBreathGhost = new EntityBreathGhost(worldObj, origin, destination, power);
+            Vec3 targetPoint = breathWeaponTarget.getTargetedPoint(worldObj, origin);
+            EntityBreathGhost entityBreathGhost = new EntityBreathGhost(worldObj, origin, targetPoint, power);
             this.worldObj.addWeatherEffect(entityBreathGhost);
           }
           break;
@@ -328,10 +334,26 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     {
       if (coolDownTimerTicks > 0) return;
 
-      rayTraceServer here
+      float maxDistance = 0;
+      switch (power) {
+        case SMALL: {maxDistance = 10; break;}
+        case MEDIUM: {maxDistance = 20; break;}
+        case LARGE: {maxDistance = 40; break;}
+      }
+
+      Set<Entity> entitiesToIgnore = Collections.emptySet();
+      MovingObjectPosition hitPoint = RayTraceServer.rayTraceServer(world, origin, target, maxDistance, dragon, entitiesToIgnore);
+
+      BreathWeaponTarget objectStruck = BreathWeaponTarget.fromMovingObjectPosition(hitPoint, null);
 
       final int COOLDOWN_TIME_TICKS = 40;
-      EntityBreathProjectileGhost entity = new EntityBreathProjectileGhost(world, dragon, origin, target, power);
+      EntityBreathProjectileGhost entity;
+      if (objectStruck == null) {
+        entity = new EntityBreathProjectileGhost(world, dragon, origin, target, power);
+      } else {
+        entity = new EntityBreathProjectileGhost(world, dragon, origin, target, power, objectStruck);
+      }
+
       world.spawnEntityInWorld(entity);
       coolDownTimerTicks = COOLDOWN_TIME_TICKS;
     }

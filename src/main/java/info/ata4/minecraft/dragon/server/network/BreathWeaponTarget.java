@@ -122,12 +122,13 @@ public class BreathWeaponTarget
   /**
    * Create a target from a MovingObjectPosition
    * @param movingObjectPosition can be null
+   * @param entityPlayer can be null
    * @return null if not possible
    */
   public static BreathWeaponTarget fromMovingObjectPosition(MovingObjectPosition movingObjectPosition, EntityPlayer entityPlayer)
   {
     if (movingObjectPosition == null) {
-      return targetDirection(entityPlayer.getLook(1.0F));
+      return (entityPlayer == null) ? null : targetDirection(entityPlayer.getLook(1.0F));
     }
     switch (movingObjectPosition.typeOfHit) {
       case BLOCK: {
@@ -149,7 +150,7 @@ public class BreathWeaponTarget
         return targetEntity(movingObjectPosition.entityHit);
       }
       case MISS: {
-        return targetDirection(entityPlayer.getLook(1.0F));
+        return (entityPlayer == null) ? null : targetDirection(entityPlayer.getLook(1.0F));
       }
       default: {
         if (printedError) return null;
