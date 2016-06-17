@@ -4,8 +4,11 @@ import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.effect.EntityWeatherEffect;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+
+import java.util.Random;
 
 /**
  * Represents the Ghost Breath weapon lightning strike, as a 'weather effect' entity
@@ -103,6 +106,22 @@ public class EntityBreathGhost extends EntityWeatherEffect
 
           worldClient.playSound(endPoint.xCoord, endPoint.yCoord, endPoint.zCoord, "random.explode",
                   explosionVolume, 0.5F + this.rand.nextFloat() * 0.2F, false);
+
+          final float CLOUD_Y_OFFSET = 0.0F;
+          final float X_Y_Z_SPREAD = 0.3F;
+          final float MOTION_SPREAD = 0.1F;
+          final int PARTICLE_COUNT = 30;
+          Random random = new Random();
+          for (int i = 0; i < PARTICLE_COUNT; ++i) {
+            this.worldObj.spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL,
+                    endPoint.xCoord + X_Y_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
+                    endPoint.yCoord + CLOUD_Y_OFFSET + X_Y_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
+                    endPoint.zCoord + X_Y_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
+                    MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                    MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                    MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
+                    new int[0]);
+          }
         }
       }
       if (renderStage == RenderStage.DONE) {
