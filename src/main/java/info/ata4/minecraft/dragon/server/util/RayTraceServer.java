@@ -123,7 +123,7 @@ public class RayTraceServer
    *   is hit by the raytrace (block or entity).
    * @param world
    * @param startPoint starting point for the raytrace
-   * @param direction direction of the raytrace
+   * @param direction direction of the raytrace (doesn't need to be normalised)
    * @param maxDistance maximum length (in blocks) of the raytrace
    * @param entityToIgnore ignore this entity (typically - the player)
    * @param otherEntitiesToIgnore other entities to ignore as well (culled later)
@@ -138,9 +138,10 @@ public class RayTraceServer
      * Will not target entities which are tamed by the player
      * @return the block or entity that the player is looking at / targeting with their cursor.  null if no collision
      */
-    Vec3 endPoint = startPoint.addVector(direction.xCoord * maxDistance,
-            direction.yCoord * maxDistance,
-            direction.zCoord * maxDistance);
+    Vec3 normalisedDirection = direction.normalize();
+    Vec3 endPoint = startPoint.addVector(normalisedDirection.xCoord * maxDistance,
+            normalisedDirection.yCoord * maxDistance,
+            normalisedDirection.zCoord * maxDistance);
     final boolean STOP_ON_LIQUID = true;
     final boolean IGNORE_BOUNDING_BOX = true;
     final boolean RETURN_NULL_IF_NO_COLLIDE = true;

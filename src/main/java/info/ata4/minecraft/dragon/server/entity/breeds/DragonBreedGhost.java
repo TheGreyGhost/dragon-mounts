@@ -137,7 +137,16 @@ public class DragonBreedGhost extends DragonBreed {
     @Override
     public Pair<Float, Float> getBreathWeaponRange(DragonLifeStage dragonLifeStage)
     {
-        return new Pair<Float, Float>(5F, 40F);
+        float minDistance = 5;
+        float maxDistance = 0;
+        switch (dragonLifeStage) {
+          case EGG: {break;} //eh?
+          case HATCHLING: {maxDistance = 10; break;}
+          case JUVENILE: {maxDistance = 20; break;}
+          case ADULT: {maxDistance = 40; break;}
+        default: {System.err.println("Invalid dragonLifeStage" + dragonLifeStage); break;}
+        }
+        return new Pair<Float, Float>(minDistance, maxDistance);
     }
 
 

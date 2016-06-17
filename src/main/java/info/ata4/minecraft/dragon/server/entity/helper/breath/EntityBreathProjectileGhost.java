@@ -8,6 +8,7 @@ import info.ata4.minecraft.dragon.server.network.DragonOrbTargets;
 import info.ata4.minecraft.dragon.server.network.DragonTargetMessage;
 import info.ata4.minecraft.dragon.server.util.RayTraceServer;
 import info.ata4.minecraft.dragon.util.Pair;
+import info.ata4.minecraft.dragon.util.math.MathX;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -76,7 +77,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   }
 
   public enum LifeStage
-  {PRESTRIKE(1), STRIKE(2), POSTSTRIKE(6), DONE(0);
+  {PRESTRIKE(1), STRIKE(2), POSTSTRIKE(4), DONE(0);
     LifeStage(int i_durationTicks)
     {
       durationTicks = i_durationTicks;
@@ -98,9 +99,9 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
       switch (lifeStage) {
         case STRIKE: {
           if (this.worldObj.isRemote) {
-            Vec3 targetPoint =  breathWeaponTarget.getTypeOfTarget() == BreathWeaponTarget.TypeOfTarget.DIRECTION
-                              ? destination
-                              : breathWeaponTarget.getTargetedPoint(worldObj, origin);
+            Vec3 targetPoint = (breathWeaponTarget.getTypeOfTarget() == BreathWeaponTarget.TypeOfTarget.DIRECTION)
+                    ? destination
+                    : breathWeaponTarget.getTargetedPoint(worldObj, origin);
             EntityBreathGhost entityBreathGhost = new EntityBreathGhost(worldObj, origin, targetPoint, power);
             this.worldObj.addWeatherEffect(entityBreathGhost);
           }
@@ -336,21 +337,21 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     {
       if (coolDownTimerTicks > 0) return;
 
-      float maxDistance = 0;
-      switch (power) {
-        case SMALL: {maxDistance = 10; break;}
-        case MEDIUM: {maxDistance = 20; break;}
-        case LARGE: {maxDistance = 40; break;}
-      }
+      Pair<Float, Float> ranges = dragon.getBreed().getBreathWeaponRange(dragon.getLifeStageHelper().getLifeStage());
+      float minDistance = ranges.getFirst();
+      float maxDistance = ranges.getSecond();
 
       Set<Entity> entitiesToIgnore = Collections.emptySet();
-      MovingObjectPosition hitPoint = RayTraceServer.rayTraceServer(world, origin, target, maxDistance, dragon, entitiesToIgnore);
+      Vec3 direction = target.subtract(origin).normalize();
+      MovingObjectPosition hitPoint = RayTraceServer.rayTraceServer(world, origin, direction, maxDistance, dragon, entitiesToIgnore);
 
       BreathWeaponTarget objectStruck = BreathWeaponTarget.fromMovingObjectPosition(hitPoint, null);
 
       final int COOLDOWN_TIME_TICKS = 40;
       EntityBreathProjectileGhost entity;
       if (objectStruck == null) {
+        direction = MathX.multiply(direction, maxDistance);
+        target = target.add(direction);
         entity = new EntityBreathProjectileGhost(world, dragon, origin, target, power);
       } else {
         entity = new EntityBreathProjectileGhost(world, dragon, origin, target, power, objectStruck);

@@ -212,10 +212,7 @@ public class BreathEntityRendererGhost extends Render
       final float ORIGIN_WIDTH_INCREASE_FACTOR = 2.0F;  // how much wider is the origin than the target (2 = twice as wide)
       final float SECONDARY_STRAND_RELATIVE_MIN_WIDTH = 0.3F;  // width of secondary strand relative to primary
       final float SECONDARY_STRAND_RELATIVE_MAX_WIDTH = 0.8F;  // width of secondary strand relative to primary
-todo outstanding bugs:
-      test lightning doesn't have shells - because of scale -1?
-      dragon breath direction-only doesn't work - not visible
-      dragon breath targeted entity or block works fine
+
       for (int shell = 0; shell < NUMBER_OF_SHELLS; ++shell) {
         Random random1 = new Random(STRAND_SHAPE_SEED);
 
@@ -345,20 +342,20 @@ todo outstanding bugs:
     //    GL11.glTranslated(startPoint.xCoord, startPoint.yCoord, startPoint.zCoord);  // not required - already done by vanilla
 
 
-    Vec3 lightingAxis = new Vec3(0, 1, 0);
-    Vec3 rotationAxis = lightingAxis.crossProduct(startToEnd);
+    Vec3 lightningAxis = new Vec3(0, 1, 0);
+    Vec3 rotationAxis = lightningAxis.crossProduct(startToEnd);
     rotationAxis.normalize();
 
     final double ZERO_VEC_THRESHOLD = 0.5;
+    double thetaDegrees;
     if (rotationAxis.dotProduct(rotationAxis) >= ZERO_VEC_THRESHOLD) {
-      double cosTheta = lightingAxis.dotProduct(startToEnd) / lightingAxis.lengthVector() / startToEnd.lengthVector();
-      double theta = Math.toDegrees(Math.acos(cosTheta));
-      GL11.glRotated(theta, rotationAxis.xCoord, rotationAxis.yCoord, rotationAxis.zCoord);
-    } else { // collinear, so check if we need to flip direction
-      if (lightingAxis.dotProduct(startToEnd) < 0) {
-        GL11.glScaled(-1.0, -1.0, -1.0);
-      }
+      double cosTheta = lightningAxis.dotProduct(startToEnd) / lightningAxis.lengthVector() / startToEnd.lengthVector();
+      thetaDegrees = Math.toDegrees(Math.acos(cosTheta));
+    } else { // collinear, so check if we need to flip direction by 180 degrees.  use an arbitrary rotation axis
+      thetaDegrees = lightningAxis.dotProduct(startToEnd) < 0 ? 180 : 0;
+      rotationAxis = new Vec3(1, 0, 0);  // is definitely not collinear with lightning axis
     }
+    GL11.glRotated(thetaDegrees, rotationAxis.xCoord, rotationAxis.yCoord, rotationAxis.zCoord);
 
     GL11.glScaled(lightningLength, lightningLength, lightningLength);
   }
