@@ -93,7 +93,7 @@ public class EntityBreathGhost extends EntityWeatherEffect
       renderStage = renderStage.next();
       timeInThisRenderStage = 0;
       if (renderStage == RenderStage.STRIKE) {
-        if (this.worldObj instanceof WorldClient) {
+        if (this.worldObj.isRemote) {
           WorldClient worldClient = (WorldClient)this.worldObj;
           worldClient.playSound(startPoint.xCoord, startPoint.xCoord, startPoint.xCoord, "ambient.weather.thunder",
                   10000.0F, 0.8F + this.rand.nextFloat() * 0.2F, false);

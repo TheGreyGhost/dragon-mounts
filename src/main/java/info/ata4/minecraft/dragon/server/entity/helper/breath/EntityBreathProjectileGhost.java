@@ -10,17 +10,19 @@ import info.ata4.minecraft.dragon.server.util.RayTraceServer;
 import info.ata4.minecraft.dragon.util.Pair;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.effect.EntityLightningBolt;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents the Ghost Breath weapon lightning strike
@@ -48,9 +50,10 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
                                      BreathWeaponTarget objectStruck)
   {
     super(worldIn, shooter, origin, destination, power);
-    randomSeed = System.currentTimeMillis();
+//    randomSeed = System.currentTimeMillis();
     Preconditions.checkNotNull(objectStruck);
     breathWeaponTarget = objectStruck;
+    objectWasStruck = true;
   }
 
   /**
@@ -65,8 +68,9 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
                                      Vec3 origin, Vec3 destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);
-    randomSeed = System.currentTimeMillis();
+//    randomSeed = System.currentTimeMillis();
     breathWeaponTarget = BreathWeaponTarget.targetDirection(destination.subtract(origin));
+    objectWasStruck = false;
   }
 
   // used by spawn code on the client side.  Relevant member variables are populated by a subsequent call to
@@ -77,7 +81,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   }
 
   public enum LifeStage
-  {PRESTRIKE(1), STRIKE(2), POSTSTRIKE(4), DONE(0);
+  {PRESTRIKE(1), STRIKE(4), POSTSTRIKE(1), DONE(0);
     LifeStage(int i_durationTicks)
     {
       durationTicks = i_durationTicks;
@@ -104,11 +108,24 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
                     : breathWeaponTarget.getTargetedPoint(worldObj, origin);
             EntityBreathGhost entityBreathGhost = new EntityBreathGhost(worldObj, origin, targetPoint, power);
             this.worldObj.addWeatherEffect(entityBreathGhost);
+            this.worldObj.setLastLightningBolt(2);
           }
           break;
         }
         case POSTSTRIKE: {
-          //todo cause damage here
+          // copy from EntityLightningBolt.onUpdate()
+          if (objectWasStruck) {
+            Vec3 impactPoint = breathWeaponTarget.getTargetedPoint(worldObj, origin);
+            float effectRadius = 1.0F;
+            switch (power) {
+              case SMALL: {effectRadius = 1.0F; break; }
+              case MEDIUM: {effectRadius = 1.0F; break; }
+              case LARGE: {effectRadius = 1.0F; break; }
+              default: {System.err.println("Unexpected power:" + power); break; }
+            }
+            igniteBlock(impactPoint, effectRadius);
+            strikeEntities(impactPoint, effectRadius);
+          }
           break;
         }
         case DONE: {
@@ -116,6 +133,79 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
         }
       }
     }
+  }
+
+    // ignite all flammable blocks within the given radius of the impact point
+    // (or more strictly: for each flammable block within the effect radius, check all its faces, and for each face which is
+    //   air, check that its centre is within effectRadius of the impactPoint
+    private void igniteBlock(World world, Vec3 impactPoint, float effectRadius)
+    {
+      BlockPos blockPosCentre = new BlockPos(impactPoint);
+      if (world.isRemote
+          || !world.getGameRules().getGameRuleBooleanValue("doFireTick")
+          || !world.isAreaLoaded(blockPosCentre, 10)
+          ) {
+        return;
+      }
+
+      boolean playIgnitionSound = false;
+      int xMin = (int)(blockPosCentre.getX() - effectRadius);
+      int xMax = (int)(blockPosCentre.getX() + effectRadius);
+      int yMin = (int)(blockPosCentre.getY() - effectRadius);
+      int yMax = (int)(blockPosCentre.getY() + effectRadius);
+      int zMin = (int)(blockPosCentre.getZ() - effectRadius);
+      int zMax = (int)(blockPosCentre.getZ() + effectRadius);
+      for (int y = yMin; y <= yMax; ++y) {
+        for (int x = xMin; x <= xMax; ++x) {
+          for (int z = zMin; z <= zMax; ++z) {
+            BlockPos blockPos = new BlockPos(x, y, z);
+            IBlockState iBlockState = world.getBlockState(blockPos);
+            Block block = iBlockState.getBlock();
+            for (EnumFacing facing : EnumFacing.values()) {
+              BlockPos sideToIgnite = blockPosCentre.offset(facing);
+              if (sideToIgnite.distanceSqToCenter(impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord)
+                  <= effectRadius * effectRadius ) {
+                if (world.isAirBlock(sideToIgnite) && block.isFlammable(world, sideToIgnite, facing)) {
+                  playIgnitionSound = true;
+                  world.setBlockState(sideToIgnite, Blocks.fire.getDefaultState());
+                }
+              }
+            }
+          }
+        }
+      }
+      if (playIgnitionSound) {
+        final float MIN_PITCH = 0.8F;
+        final float MAX_PITCH = 1.2F;
+        final float VOLUME = 1.0F;
+        world.playSoundEffect(blockPosCentre.getX() + 0.5, blockPosCentre.getY() + 0.5, blockPosCentre.getZ() + 0.5,
+                "fire.ignite", VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH));
+      }
+    }
+
+    private void strikeEntities(World world, Vec3 impactPoint, float effectRadius)
+    {
+      EntityLightningBolt entityLightningBolt = new EntityLightningBolt(world,
+              impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord);
+      AxisAlignedBB effectAABB = new AxisAlignedBB(impactPoint.xCoord - effectRadius,
+              impactPoint.yCoord - effectRadius,
+              impactPoint.zCoord - effectRadius,
+              impactPoint.xCoord + effectRadius,
+              impactPoint.yCoord + effectRadius,
+              impactPoint.zCoord + effectRadius);
+
+      List<Entity> list = (List<Entity>)world.getEntitiesWithinAABBExcludingEntity(this, effectAABB);
+
+      for (Entity entity : list) {
+        if (MathX.getClosestDistanceSQ(entity.getBoundingBox(), impactPoint) <= effectRadius * effectRadius) {
+          if (!net.minecraftforge.event.ForgeEventFactory.onEntityStruckByLightning(entity, entityLightningBolt))
+            entity.onStruckByLightning(entityLightningBolt);
+        }
+      }
+    }
+
+
+
 //    this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D,
 //            new int[0]);
 //
@@ -136,7 +226,6 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
 //      }
 //      this.setDead();
 //    }
-  }
 
   /**
    * Return the motion factor for this projectile. The factor is multiplied by the original motion.
@@ -252,27 +341,14 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     setDead();
   }
 
-  public Vec3 getTargetPoint()
-  {
-    return  new Vec3(0, 11, 0);
-//    return destination;  todo uncomment
-  }
-
-  public Vec3 getMouthPoint()
-  {
-    return  new Vec3(0, 10, 0);
-    // return origin; todo uncomment
-  }
-
-
   @Override
   public void writeEntityToNBT(NBTTagCompound tagCompound)
   {
     super.writeEntityToNBT(tagCompound);
     tagCompound.setInteger("LifeStage", lifeStage.ordinal());
     tagCompound.setInteger("AgeInTicks", ageInTicks);
-    tagCompound.setLong("RandomSeed", randomSeed);
-    tagCompound.setLong("RandomSeed1", randomSeed1);
+//    tagCompound.setLong("RandomSeed", randomSeed);
+//    tagCompound.setLong("RandomSeed1", randomSeed1);
     tagCompound.setString("Target", breathWeaponTarget.toEncodedString());
   }
 
@@ -280,8 +356,8 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   public void readEntityFromNBT(NBTTagCompound tagCompound)
   {
     super.readEntityFromNBT(tagCompound);
-    randomSeed = tagCompound.getLong("RandomSeed");
-    randomSeed1 = tagCompound.getLong("RandomSeed1");
+//    randomSeed = tagCompound.getLong("RandomSeed");
+//    randomSeed1 = tagCompound.getLong("RandomSeed1");
     ageInTicks = tagCompound.getInteger("AgeInTicks");
     int renderIndex = tagCompound.getInteger("LifeStage");
     if (renderIndex >= 0 && renderIndex < LifeStage.values().length) {
@@ -294,8 +370,8 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   public void writeSpawnData(ByteBuf buffer)
   {
     super.writeSpawnData(buffer);
-    buffer.writeLong(randomSeed);
-    buffer.writeLong(randomSeed1);
+//    buffer.writeLong(randomSeed);
+//    buffer.writeLong(randomSeed1);
     breathWeaponTarget.toBytes(buffer);
   }
 
@@ -303,18 +379,9 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   public void readSpawnData(ByteBuf additionalData)
   {
     super.readSpawnData(additionalData);
-    randomSeed = additionalData.readLong();
-    randomSeed1 = additionalData.readLong();
+//    randomSeed = additionalData.readLong();
+//    randomSeed1 = additionalData.readLong();
     breathWeaponTarget = BreathWeaponTarget.fromBytes(additionalData);
-  }
-
-  public long getRandomSeed()
-  {
-    return randomSeed;
-  }
-  public long getRandomSeed1()
-  {
-    return randomSeed1;
   }
 
   /** returns the current render stage, and the time currently spent in this stage
@@ -328,9 +395,10 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   private LifeStage lifeStage = LifeStage.PRESTRIKE;
   private int timeInThisLifeStage = 0;
   private int ageInTicks = 0;
-  private long randomSeed;
-  private long randomSeed1;
+//  private long randomSeed;
+//  private long randomSeed1;
   private BreathWeaponTarget breathWeaponTarget;
+  boolean objectWasStruck = false;
 
   public static class BreathProjectileFactoryGhost implements BreathProjectileFactory {
     public void spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)

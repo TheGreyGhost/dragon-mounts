@@ -9,6 +9,7 @@
  */
 package info.ata4.minecraft.dragon.util.math;
 
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 
@@ -301,6 +302,17 @@ public class MathX {
     public static float getRandomInRange(Random random, float minValue, float maxValue)
     {
         return random.nextFloat() * (maxValue - minValue) + minValue;
+    }
+
+    /**
+     * find the closest distance between the aabb to the given point
+     * @param aabb the aabb
+     * @param point the point to be measured to
+     * @return the distance squared
+     */
+    public static double getClosestDistanceSQ(AxisAlignedBB aabb, Vec3 point)
+    {
+
     }
 
 
