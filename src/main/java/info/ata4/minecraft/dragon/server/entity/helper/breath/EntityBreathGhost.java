@@ -98,17 +98,18 @@ public class EntityBreathGhost extends EntityWeatherEffect
           worldClient.playSound(startPoint.xCoord, startPoint.xCoord, startPoint.xCoord, "ambient.weather.thunder",
                   10000.0F, 0.8F + this.rand.nextFloat() * 0.2F, false);
           float explosionVolume = 1.0F;
+          float cloudSpread = 1.0F;
           switch (power) {
-            case SMALL: {explosionVolume = 1.0F; break;}
-            case MEDIUM: {explosionVolume = 2.0F; break;}
-            case LARGE: {explosionVolume = 200.0F; break;}
+            case SMALL: {explosionVolume = 1.0F; cloudSpread = 1.0F; break;}
+            case MEDIUM: {explosionVolume = 2.0F; cloudSpread = 2.0F; break;}
+            case LARGE: {explosionVolume = 200.0F; cloudSpread = 4.0F; break;}
           }
 
           worldClient.playSound(endPoint.xCoord, endPoint.yCoord, endPoint.zCoord, "random.explode",
                   explosionVolume, 0.5F + this.rand.nextFloat() * 0.2F, false);
 
           final float CLOUD_Y_OFFSET = 0.0F;
-          final float X_Y_Z_SPREAD = 0.3F;
+          final float X_Y_Z_SPREAD = 0.3F * cloudSpread;
           final float MOTION_SPREAD = 0.1F;
           final int PARTICLE_COUNT = 30;
           Random random = new Random();

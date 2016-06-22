@@ -312,7 +312,12 @@ public class MathX {
      */
     public static double getClosestDistanceSQ(AxisAlignedBB aabb, Vec3 point)
     {
-
+      // because the aabb is aligned, we just need to figure out the distance in each cardinal axis and then
+      //  add them together
+      double dx = Math.max(Math.max(0, aabb.minX - point.xCoord), point.xCoord - aabb.maxX);
+      double dy = Math.max(Math.max(0, aabb.minY - point.yCoord), point.yCoord - aabb.maxY);
+      double dz = Math.max(Math.max(0, aabb.minZ - point.zCoord), point.zCoord - aabb.maxZ);
+      return dx*dx + dy*dy + dz*dz;
     }
 
 

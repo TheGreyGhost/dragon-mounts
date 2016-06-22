@@ -119,12 +119,12 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
             float effectRadius = 1.0F;
             switch (power) {
               case SMALL: {effectRadius = 1.0F; break; }
-              case MEDIUM: {effectRadius = 1.0F; break; }
-              case LARGE: {effectRadius = 1.0F; break; }
+              case MEDIUM: {effectRadius = 2.0F; break; }
+              case LARGE: {effectRadius = 4.0F; break; }
               default: {System.err.println("Unexpected power:" + power); break; }
             }
-            igniteBlock(impactPoint, effectRadius);
-            strikeEntities(impactPoint, effectRadius);
+            igniteBlock(this.worldObj, impactPoint, effectRadius);
+            strikeEntities(this.worldObj, impactPoint, effectRadius);
           }
           break;
         }
@@ -136,8 +136,8 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   }
 
     // ignite all flammable blocks within the given radius of the impact point
-    // (or more strictly: for each flammable block within the effect radius, check all its faces, and for each face which is
-    //   air, check that its centre is within effectRadius of the impactPoint
+    // (or more strictly: for each air block within the effect radius (its centre is within effectRadius of the impactPoint)
+    //   , check all adjacent blocks for a face which is flammable
     private void igniteBlock(World world, Vec3 impactPoint, float effectRadius)
     {
       BlockPos blockPosCentre = new BlockPos(impactPoint);
@@ -148,7 +148,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
         return;
       }
 
-      boolean playIgnitionSound = false;
+      int numberOfIgnitions = 0;
       int xMin = (int)(blockPosCentre.getX() - effectRadius);
       int xMax = (int)(blockPosCentre.getX() + effectRadius);
       int yMin = (int)(blockPosCentre.getY() - effectRadius);
@@ -159,25 +159,26 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
         for (int x = xMin; x <= xMax; ++x) {
           for (int z = zMin; z <= zMax; ++z) {
             BlockPos blockPos = new BlockPos(x, y, z);
-            IBlockState iBlockState = world.getBlockState(blockPos);
-            Block block = iBlockState.getBlock();
-            for (EnumFacing facing : EnumFacing.values()) {
-              BlockPos sideToIgnite = blockPosCentre.offset(facing);
-              if (sideToIgnite.distanceSqToCenter(impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord)
-                  <= effectRadius * effectRadius ) {
-                if (world.isAirBlock(sideToIgnite) && block.isFlammable(world, sideToIgnite, facing)) {
-                  playIgnitionSound = true;
-                  world.setBlockState(sideToIgnite, Blocks.fire.getDefaultState());
+            if (world.isAirBlock(blockPos)
+                && blockPos.distanceSqToCenter(impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord)
+                    <= effectRadius * effectRadius) {
+              for (EnumFacing facing : EnumFacing.values()) {
+                BlockPos sideToIgnite = blockPos.offset(facing);
+                IBlockState iBlockState = world.getBlockState(blockPos);
+                Block block = iBlockState.getBlock();
+                if (!block.isAir(world, sideToIgnite) && block.isFlammable(world, sideToIgnite, facing)) {
+                  ++numberOfIgnitions;
+                  world.setBlockState(blockPos, Blocks.fire.getDefaultState());
                 }
               }
             }
           }
         }
       }
-      if (playIgnitionSound) {
+      if (numberOfIgnitions > 0) {
         final float MIN_PITCH = 0.8F;
         final float MAX_PITCH = 1.2F;
-        final float VOLUME = 1.0F;
+        final float VOLUME = 1.0F * numberOfIgnitions;
         world.playSoundEffect(blockPosCentre.getX() + 0.5, blockPosCentre.getY() + 0.5, blockPosCentre.getZ() + 0.5,
                 "fire.ignite", VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH));
       }
@@ -197,7 +198,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
       List<Entity> list = (List<Entity>)world.getEntitiesWithinAABBExcludingEntity(this, effectAABB);
 
       for (Entity entity : list) {
-        if (MathX.getClosestDistanceSQ(entity.getBoundingBox(), impactPoint) <= effectRadius * effectRadius) {
+        if (MathX.getClosestDistanceSQ(entity.getEntityBoundingBox(), impactPoint) <= effectRadius * effectRadius) {
           if (!net.minecraftforge.event.ForgeEventFactory.onEntityStruckByLightning(entity, entityLightningBolt))
             entity.onStruckByLightning(entityLightningBolt);
         }
