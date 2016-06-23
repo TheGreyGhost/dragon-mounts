@@ -27,7 +27,7 @@ import java.util.*;
 
 /**
  * Represents the Ghost Breath weapon lightning strike
- * Used in conjunction with EntityBreathhost, i.e.
+ * Used in conjunction with EntityBreathGhost, i.e.
  *   the projectile is spawned, and when it onUpdates() it adds the weather effect entity to handle the rendering
  * I did it this way to simplify the transmission from server to client and control the collisions better
  * Using the weather effect solves the problem of frustum check, i.e. that the entity doesn't render if the
@@ -114,7 +114,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
           break;
         }
         case POSTSTRIKE: {
-          // copy from EntityLightningBolt.onUpdate()
+          // code copied from EntityLightningBolt.onUpdate()
           if (objectWasStruck) {
             Vec3 impactPoint = breathWeaponTarget.getTargetedPoint(worldObj, origin);
             float effectRadius = 1.0F;
@@ -136,144 +136,90 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     }
   }
 
-    // ignite all flammable blocks within the given radius of the impact point
-    // (or more strictly: for each air block within the effect radius (its centre is within effectRadius of the impactPoint)
-    //   , check all adjacent blocks for a face which is flammable
-    private void igniteBlock(World world, Vec3 impactPoint, float effectRadius)
-    {
-      BlockPos blockPosCentre = new BlockPos(impactPoint);
-      if (world.isRemote
-          || !world.getGameRules().getGameRuleBooleanValue("doFireTick")
-          || !world.isAreaLoaded(blockPosCentre, 10)
-          ) {
-        return;
-      }
+  // ignite all flammable blocks within the given radius of the impact point
+  // (or more strictly: for each air block within the effect radius (its centre is within effectRadius of the impactPoint)
+  //   , check all adjacent blocks for a face which is flammable
+  private void igniteBlock(World world, Vec3 impactPoint, float effectRadius)
+  {
+    BlockPos blockPosCentre = new BlockPos(impactPoint);
+    if (world.isRemote
+        || !world.getGameRules().getGameRuleBooleanValue("doFireTick")
+        || !world.isAreaLoaded(blockPosCentre, 10)
+        ) {
+      return;
+    }
 
-      int numberOfIgnitions = 0;
-      int xMin = (int)(blockPosCentre.getX() - effectRadius);
-      int xMax = (int)(blockPosCentre.getX() + effectRadius);
-      int yMin = (int)(blockPosCentre.getY() - effectRadius);
-      int yMax = (int)(blockPosCentre.getY() + effectRadius);
-      int zMin = (int)(blockPosCentre.getZ() - effectRadius);
-      int zMax = (int)(blockPosCentre.getZ() + effectRadius);
-      for (int y = yMin; y <= yMax; ++y) {
-        for (int x = xMin; x <= xMax; ++x) {
-          for (int z = zMin; z <= zMax; ++z) {
-            BlockPos blockPos = new BlockPos(x, y, z);
-            if (world.isAirBlock(blockPos)
-                && blockPos.distanceSqToCenter(impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord)
-                    <= effectRadius * effectRadius) {
-              for (EnumFacing facing : EnumFacing.values()) {
-                BlockPos sideToIgnite = blockPos.offset(facing);
-                IBlockState iBlockState = world.getBlockState(sideToIgnite);
-                Block block = iBlockState.getBlock();
-                if (!block.isAir(world, sideToIgnite) && block.isFlammable(world, sideToIgnite, facing)) {
-                  ++numberOfIgnitions;
-                  world.setBlockState(blockPos, Blocks.fire.getDefaultState());
-                }
+    int numberOfIgnitions = 0;
+    int xMin = (int)(blockPosCentre.getX() - effectRadius);
+    int xMax = (int)(blockPosCentre.getX() + effectRadius);
+    int yMin = (int)(blockPosCentre.getY() - effectRadius);
+    int yMax = (int)(blockPosCentre.getY() + effectRadius);
+    int zMin = (int)(blockPosCentre.getZ() - effectRadius);
+    int zMax = (int)(blockPosCentre.getZ() + effectRadius);
+    for (int y = yMin; y <= yMax; ++y) {
+      for (int x = xMin; x <= xMax; ++x) {
+        for (int z = zMin; z <= zMax; ++z) {
+          BlockPos blockPos = new BlockPos(x, y, z);
+          if (world.isAirBlock(blockPos)
+              && blockPos.distanceSqToCenter(impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord)
+                  <= effectRadius * effectRadius) {
+            for (EnumFacing facing : EnumFacing.values()) {
+              BlockPos sideToIgnite = blockPos.offset(facing);
+              IBlockState iBlockState = world.getBlockState(sideToIgnite);
+              Block block = iBlockState.getBlock();
+              if (!block.isAir(world, sideToIgnite) && block.isFlammable(world, sideToIgnite, facing)) {
+                ++numberOfIgnitions;
+                world.setBlockState(blockPos, Blocks.fire.getDefaultState());
               }
             }
           }
         }
       }
-      if (numberOfIgnitions > 0) {
-        final float MIN_PITCH = 0.8F;
-        final float MAX_PITCH = 1.2F;
-        final float VOLUME = 1.0F * numberOfIgnitions;
-        world.playSoundEffect(blockPosCentre.getX() + 0.5, blockPosCentre.getY() + 0.5, blockPosCentre.getZ() + 0.5,
-                "fire.ignite", VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH));
+    }
+    if (numberOfIgnitions > 0) {
+      final float MIN_PITCH = 0.8F;
+      final float MAX_PITCH = 1.2F;
+      final float VOLUME = 1.0F * numberOfIgnitions;
+      world.playSoundEffect(blockPosCentre.getX() + 0.5, blockPosCentre.getY() + 0.5, blockPosCentre.getZ() + 0.5,
+              "fire.ignite", VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH));
+    }
+  }
+
+  private void strikeEntities(World world, Vec3 impactPoint, float effectRadius)
+  {
+    EntityLightningBolt entityLightningBolt = new EntityLightningBolt(world,
+            impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord);
+    AxisAlignedBB effectAABB = new AxisAlignedBB(impactPoint.xCoord - effectRadius,
+            impactPoint.yCoord - effectRadius,
+            impactPoint.zCoord - effectRadius,
+            impactPoint.xCoord + effectRadius,
+            impactPoint.yCoord + effectRadius,
+            impactPoint.zCoord + effectRadius);
+
+    List<Entity> list = (List<Entity>)world.getEntitiesWithinAABBExcludingEntity(this, effectAABB);
+
+    for (Entity entity : list) {
+      if (MathX.getClosestDistanceSQ(entity.getEntityBoundingBox(), impactPoint) <= effectRadius * effectRadius) {
+        if (!net.minecraftforge.event.ForgeEventFactory.onEntityStruckByLightning(entity, entityLightningBolt))
+          entity.onStruckByLightning(entityLightningBolt);
       }
     }
-
-    private void strikeEntities(World world, Vec3 impactPoint, float effectRadius)
-    {
-      EntityLightningBolt entityLightningBolt = new EntityLightningBolt(world,
-              impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord);
-      AxisAlignedBB effectAABB = new AxisAlignedBB(impactPoint.xCoord - effectRadius,
-              impactPoint.yCoord - effectRadius,
-              impactPoint.zCoord - effectRadius,
-              impactPoint.xCoord + effectRadius,
-              impactPoint.yCoord + effectRadius,
-              impactPoint.zCoord + effectRadius);
-
-      List<Entity> list = (List<Entity>)world.getEntitiesWithinAABBExcludingEntity(this, effectAABB);
-
-      for (Entity entity : list) {
-        if (MathX.getClosestDistanceSQ(entity.getEntityBoundingBox(), impactPoint) <= effectRadius * effectRadius) {
-          if (!net.minecraftforge.event.ForgeEventFactory.onEntityStruckByLightning(entity, entityLightningBolt))
-            entity.onStruckByLightning(entityLightningBolt);
-        }
-      }
-    }
-
-
-
-//    this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D,
-//            new int[0]);
-//
-//    if (--ticksToLive <= 0) {
-//      final float SMOKE_Y_OFFSET = 0.0F;
-//      final float X_Z_SPREAD = 0.5F;
-//      final float MOTION_SPREAD = 0.1F;
-//      Random random = new Random();
-//      for (int i = 0; i < 8; ++i) {
-//        this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,
-//                this.posX + X_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
-//                this.posY + SMOKE_Y_OFFSET,
-//                this.posZ + X_Z_SPREAD * 2 * (random.nextFloat() - 0.5),
-//                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
-//                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
-//                MOTION_SPREAD * 2 * (random.nextFloat() - 0.5),
-//                new int[0]);
-//      }
-//      this.setDead();
-//    }
+  }
 
   /**
-   * Return the motion factor for this projectile. The factor is multiplied by the original motion.
-   * effectively a 'drag' on the projectile motion
+   * not relevant
    */
   @Override
   protected float getMotionFactor() {
-//    System.err.println("power:" + power);
-//    switch (power) {
-//      case SMALL: {
-//        return 0.50F;
-//      }
-//      case MEDIUM: {
-//        return 0.80F;
-//      }
-//      case LARGE: {
-//        return  0.95F;
-//      }
-//      default: {
-//        System.err.println("Invalid Power in setSizeFromPower:" + power);
-//        return 0.95F;
-//      }
-//    }
     return  0;
   }
 
+  /**
+   * Not relevant
+   */
   @Override
   protected void setSizeFromPower(BreathNode.Power power)
   {
-//    switch (power) {
-//      case SMALL: {
-//        setSize(0.5F, 0.5F);
-//        break;
-//      }
-//      case MEDIUM: {
-//        setSize(0.9F, 0.9F);
-//        break;
-//      }
-//      case LARGE: {
-//        setSize(1.5F, 1.5F);
-//        break;
-//      }
-//      default: {
-//        System.err.println("Invalid Power in setSizeFromPower:" + power);
-//      }
-//    }
   }
 
   @Override
@@ -283,64 +229,18 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   }
 
   /**
-   * Called when this EntityFireball hits a block or entity.
+   * Not relevant
    */
   protected void onImpact(MovingObjectPosition movingObject)
   {
-//    if (!this.worldObj.isRemote) {
-//      float explosionSize = 1.0F;
-//      float damageAmount = 1.0F;
-//      switch (power) {
-//        case SMALL: {
-//          explosionSize = 1.0F;
-//          damageAmount = 1.0F;
-//          break;
-//        }
-//        case MEDIUM: {
-//          explosionSize = 2.0F;
-//          damageAmount = 4.0F;
-//          break;
-//        }
-//        case LARGE: {
-//          explosionSize = 4.0F;
-//          damageAmount = 10.0F;
-//          break;
-//        }
-//        default: {
-//          System.err.println("Invalid Power in onImpact:" + power);
-//        }
-//      }
-//
-//      if (movingObject.entityHit != null) {
-//        DamageSource fireballDamage = new EntityDamageSourceIndirect("fireball", this, shootingEntity).setFireDamage().setProjectile();
-//        movingObject.entityHit.attackEntityFrom(fireballDamage, damageAmount);
-//        this.func_174815_a(this.shootingEntity, movingObject.entityHit);
-//      }
-//
-//      if (DragonMounts.instance.getConfig().isBreathAffectsBlocks()) {
-//        boolean flag = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
-//        this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, explosionSize, flag, flag);
-//      }
-//
-//      this.setDead();
-//    }
   }
 
+  /*
+    Not relevant
+   */
   @Override
   protected void inWaterUpdate()
   {
-    Random rand = this.worldObj.rand;
-    this.worldObj.playSoundEffect(this.posX + 0.5D, this.posY + 0.5D, this.posZ + 0.5D,
-                                  "random.fizz", 0.5F, 2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F);
-
-    final float SMOKE_Y_OFFSET = 1.2F;
-    for (int i = 0; i < 8; ++i) {
-      this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,
-              this.posX + Math.random(), this.posY + SMOKE_Y_OFFSET, this.posZ + Math.random(), 0.0D, 0.0D, 0.0D,
-              new int[0]);
-    }
-
-    setDead();
   }
 
   @Override
