@@ -20,6 +20,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
+import org.lwjgl.Sys;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -164,7 +165,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
                     <= effectRadius * effectRadius) {
               for (EnumFacing facing : EnumFacing.values()) {
                 BlockPos sideToIgnite = blockPos.offset(facing);
-                IBlockState iBlockState = world.getBlockState(blockPos);
+                IBlockState iBlockState = world.getBlockState(sideToIgnite);
                 Block block = iBlockState.getBlock();
                 if (!block.isAir(world, sideToIgnite) && block.isFlammable(world, sideToIgnite, facing)) {
                   ++numberOfIgnitions;
