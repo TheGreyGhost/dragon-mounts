@@ -303,9 +303,9 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   boolean objectWasStruck = false;
 
   public static class BreathProjectileFactoryGhost implements BreathProjectileFactory {
-    public void spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
+    public boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
     {
-      if (coolDownTimerTicks > 0) return;
+      if (coolDownTimerTicks > 0 || !mouthHasBeenClosed) return false;
 
       Pair<Float, Float> ranges = dragon.getBreed().getBreathWeaponRange(dragon.getLifeStageHelper().getLifeStage());
       float minDistance = ranges.getFirst();
@@ -329,6 +329,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
 
       world.spawnEntityInWorld(entity);
       coolDownTimerTicks = COOLDOWN_TIME_TICKS;
+      return true;
     }
 
     public void updateTick(DragonBreathHelper.BreathState breathState)
@@ -336,8 +337,12 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
       if (coolDownTimerTicks > 0) {
         --coolDownTimerTicks;
       }
+      if (breathState == DragonBreathHelper.BreathState.IDLE) {
+        mouthHasBeenClosed = true;
+      }
     }
     private int coolDownTimerTicks = 0;
+    private boolean mouthHasBeenClosed = false;
   }
 
 }

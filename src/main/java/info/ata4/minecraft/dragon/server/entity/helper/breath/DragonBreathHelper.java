@@ -81,8 +81,20 @@ public class DragonBreathHelper extends DragonHelper
         return;
       }
     }
+    if (dragon.isClient()) {
+      refreshBreedClientOnly(dragon);
+    }
 
   }
+
+  public void refreshBreedClientOnly(EntityTameableDragon dragon)
+  {
+    if (soundController == null) {
+      soundController = new SoundController();
+    }
+    soundEffectBreathWeapon = dragon.getBreed().getSoundEffectBreathWeapon(soundController, weaponInfoLink);
+  }
+
 
   public enum  BreathState {
     IDLE, STARTING, SUSTAIN, STOPPING
@@ -242,11 +254,15 @@ public class DragonBreathHelper extends DragonHelper
 
   private void updateBreathState(BreathWeaponTarget targetBeingBreathedAt)
   {
+    if (targetBeingBreathedAt == null) {
+      playerHasReleasedTargetSinceLastBreath = true;
+    }
     switch (currentBreathState) {
       case IDLE: {
-        if (targetBeingBreathedAt != null) {
+        if (targetBeingBreathedAt != null && playerHasReleasedTargetSinceLastBreath) {
           transitionStartTick = tickCounter;
           currentBreathState = BreathState.STARTING;
+          playerHasReleasedTargetSinceLastBreath = false;
         }
         break;
       }
@@ -260,8 +276,7 @@ public class DragonBreathHelper extends DragonHelper
       }
       case SUSTAIN: {
         if (targetBeingBreathedAt == null) {
-          transitionStartTick = tickCounter;
-          currentBreathState = BreathState.STOPPING;
+          forceStop();
         }
         break;
       }
@@ -277,6 +292,12 @@ public class DragonBreathHelper extends DragonHelper
         return;
       }
     }
+  }
+
+  private void forceStop()
+  {
+    transitionStartTick = tickCounter;
+    currentBreathState = BreathState.STOPPING;
   }
 
   private void onLivingUpdateServer()
@@ -306,8 +327,11 @@ public class DragonBreathHelper extends DragonHelper
           Vec3 destination = target.getTargetedPoint(dragon.worldObj, origin);
           if (destination != null && currentBreathState == BreathState.SUSTAIN) {
             BreathNode.Power power = dragon.getLifeStageHelper().getBreathPower();
-            breathProjectileFactory.spawnProjectile(dragon.getEntityWorld(), dragon,
+            boolean spawned =  breathProjectileFactory.spawnProjectile(dragon.getEntityWorld(), dragon,  // may not spawn anything if a projectile was spawned recently...
                                                     origin, destination, power);
+            if (spawned) {
+              forceStop();
+            }
           }
         }
         breathProjectileFactory.updateTick(currentBreathState);
@@ -344,6 +368,12 @@ public class DragonBreathHelper extends DragonHelper
       }
       case PROJECTILE: {
         //nothing to do client side for projectiles; they are normal entities
+        // just animate the mouth closed once sustain is reached
+        final int SUSTAIN_VISUAL_DELAY = 8;
+        if (currentBreathState == BreathState.SUSTAIN
+                && tickCounter > transitionStartTick + SUSTAIN_VISUAL_DELAY) {
+          forceStop();
+        }
         break;
       }
       default: {
@@ -352,12 +382,6 @@ public class DragonBreathHelper extends DragonHelper
       }
     }
 
-    if (soundController == null) {
-      soundController = new SoundController();
-    }
-    if (soundEffectBreathWeapon == null) {
-      soundEffectBreathWeapon = new SoundEffectBreathWeapon(soundController, weaponInfoLink);
-    }
     soundEffectBreathWeapon.performTick(Minecraft.getMinecraft().thePlayer);
   }
 
@@ -419,6 +443,7 @@ public class DragonBreathHelper extends DragonHelper
   private BreathWeaponFXEmitter breathWeaponFXEmitter = null;
   private int tickCounter = 0;
   private BreathWeaponTarget breathWeaponTarget;
+  private boolean playerHasReleasedTargetSinceLastBreath = false;
 
   private BreathAffectedArea breathAffectedArea;
   private DragonBreed currentBreed = null;

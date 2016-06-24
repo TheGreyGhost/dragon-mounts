@@ -11,6 +11,10 @@ package info.ata4.minecraft.dragon.server.entity.breeds;
 
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterFire;
+import info.ata4.minecraft.dragon.client.sound.SoundController;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeapon;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponFire;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponNull;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFactory;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFire;
@@ -81,5 +85,11 @@ public class DragonBreedFire extends DragonBreed {
     {
       return new BreathNodeFire.BreathNodeFireFactory();
     }
+
+  @Override
+  public SoundEffectBreathWeapon getSoundEffectBreathWeapon(SoundController i_soundController,
+                                                            SoundEffectBreathWeapon.WeaponSoundUpdateLink i_weaponSoundUpdateLink) {
+    return new SoundEffectBreathWeaponFire(i_soundController, i_weaponSoundUpdateLink);
+  }
 
 }

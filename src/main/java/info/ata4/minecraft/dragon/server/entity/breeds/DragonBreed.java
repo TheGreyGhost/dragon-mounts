@@ -12,6 +12,9 @@ package info.ata4.minecraft.dragon.server.entity.breeds;
 import com.google.common.collect.Table;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
+import info.ata4.minecraft.dragon.client.sound.SoundController;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeapon;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponNull;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFactory;
@@ -197,6 +200,16 @@ public abstract class DragonBreed {
     {
       return getBreathWeaponRangeDefault(dragonLifeStage);
     }
+
+  /**
+   * creates a SoundEffectBreathWeapon that creates the sound from the dragon's mouth when breathing
+   * @return
+   */
+    public SoundEffectBreathWeapon getSoundEffectBreathWeapon(SoundController i_soundController,
+                                                              SoundEffectBreathWeapon.WeaponSoundUpdateLink i_weaponSoundUpdateLink) {
+      return new SoundEffectBreathWeaponNull(i_soundController, i_weaponSoundUpdateLink);
+    }
+
 
     private Pair<Float, Float> getBreathWeaponRangeDefault(DragonLifeStage dragonLifeStage) {
       float minAttackRange = 1.0F;

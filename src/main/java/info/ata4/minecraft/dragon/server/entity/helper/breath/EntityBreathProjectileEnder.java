@@ -223,14 +223,15 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
   }
 
   public static class BreathProjectileFactoryEnder implements BreathProjectileFactory {
-    public void spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
+    public boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
     {
-      if (coolDownTimerTicks > 0) return;
+      if (coolDownTimerTicks > 0 || !mouthHasBeenClosed) return false;
 
       final int COOLDOWN_TIME_TICKS = 60;
       EntityBreathProjectileEnder entity = new EntityBreathProjectileEnder(world, dragon, origin, target, power);
       world.spawnEntityInWorld(entity);
       coolDownTimerTicks = COOLDOWN_TIME_TICKS;
+      return true;
     }
 
     public void updateTick(DragonBreathHelper.BreathState breathState)
@@ -238,8 +239,12 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
       if (coolDownTimerTicks > 0) {
         --coolDownTimerTicks;
       }
+      if (breathState == DragonBreathHelper.BreathState.IDLE) {
+        mouthHasBeenClosed = true;
+      }
     }
     private int coolDownTimerTicks = 0;
+    private boolean mouthHasBeenClosed = false;
   }
 
 }

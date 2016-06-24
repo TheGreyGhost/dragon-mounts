@@ -14,24 +14,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Created by TheGreyGhost on 8/10/14.
- *
- * Used to create sound effects for the breath weapon tool - start up, sustained loop, and wind-down
- * The sound made by the dragon's head
- *   1) initial startup
- *   2) looping while breathing
- *   3) stopping when done
- *  Sometimes the sound doesn't layer properly on the first try.  I don't know why.  I have implemented a preload
- *    which seems to help.
- *
- * The SoundEffectBreathWeapon corresponds to the breath weapon of a single dragon.  Typical usage is:
- * 1) create an instance, and provide a callback function (WeaponSoundUpdateLink)
- * 2) startPlaying(), startPlayingIfNotAlreadyPlaying(), stopPlaying() to start or stop the sounds completely
- * 3) once per tick, call performTick().
- *   3a) performTick() will call the WeaponSoundUpdateLink.refreshWeaponSoundInfo(), which should return the
- *       current data relevant to the sound (eg whether the dragon is breathing, and the location of the beam)
- *
- * Is intended to be subclassed for future different breath weapons.
+ * Created by TheGreyGhost on 24/6/16.
+ *  Sounds effects for the dragon's mouth for fire
  *
  */
 public class SoundEffectBreathWeaponFire extends SoundEffectBreathWeapon
