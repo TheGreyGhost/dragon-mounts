@@ -21,6 +21,12 @@
       "mob/enderdragon/death"
     ]
   },
+  "mob.enderdragon.silence": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/silence"
+    ]
+  },
   "mob.enderdragon.breathweapon.adultbreathefirestart": {
     "category": "neutral",
     "sounds": [

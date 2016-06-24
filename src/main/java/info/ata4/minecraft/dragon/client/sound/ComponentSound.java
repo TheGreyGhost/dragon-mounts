@@ -18,9 +18,9 @@ import static com.google.common.base.Preconditions.checkArgument;
  *
  * Typical usage:
  * 1a) Optional: preload the sound in advance (reduces lag between triggering sound and it actually playing) using
- *      constructor (ResourceLocation, PRELOAD)
- * 1b) Construct the sound with an initial volume, repeat yes/no, plus a ComponentSoundSettings that will
- *       be used to read the updated settings while the sound is playing
+ *      createComponentSound (ResourceLocation, PRELOAD)
+ * 1b) createComponentSoundPreload to create  the sound with an initial volume, repeat yes/no, plus a
+ *       ComponentSoundSettings that will be used to read the updated settings while the sound is playing
  * 2)  Minecraft.getMinecraft().getSoundHandler().playSound(sound);
  * 3)  Update the ComponentSoundSettings object as the sound properties change.  Minecraft automatically ticks the
  *      sound which will update itself to the new properties.
@@ -32,8 +32,44 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 class ComponentSound extends PositionedSound implements ITickableSound
 {
-  public ComponentSound(ResourceLocation i_resourceLocation, float i_volume, RepeatType i_repeat,
-                        ComponentSoundSettings i_soundSettings)
+  /**
+   * Create a ComponentSound for the given sound.
+   * @param i_resourceLocation null means silence
+   * @param i_volume
+   * @param i_repeat
+   * @param i_soundSettings
+   * @return
+   */
+  static public ComponentSound createComponentSound(ResourceLocation i_resourceLocation, float i_volume, RepeatType i_repeat,
+                                     ComponentSoundSettings i_soundSettings)
+  {
+    if (i_resourceLocation == null) {
+      return new ComponentSoundSilent();
+    }
+    return new ComponentSound(i_resourceLocation, i_volume, i_repeat, i_soundSettings);
+  }
+
+  /**
+   * Create a preload ComponentSound for the given sound. (reduces lag between triggering sound and it actually playing)
+   * @param i_resourceLocation null means silence
+   */
+  static public ComponentSound createComponentSoundPreload(ResourceLocation i_resourceLocation)
+  {
+    if (i_resourceLocation == null) {
+      return new ComponentSoundSilent();
+    }
+    return new ComponentSound(i_resourceLocation);
+  }
+
+  /**
+   * Creates the sound ready for playing
+   * @param i_resourceLocation
+   * @param i_volume
+   * @param i_repeat
+   * @param i_soundSettings
+   */
+  protected ComponentSound(ResourceLocation i_resourceLocation, float i_volume, RepeatType i_repeat,
+                         ComponentSoundSettings i_soundSettings)
   {
     super(i_resourceLocation);
     repeat = (i_repeat == RepeatType.REPEAT);
@@ -47,12 +83,10 @@ class ComponentSound extends PositionedSound implements ITickableSound
    * Preload for this sound (plays at very low volume).
    *
    * @param i_resourceLocation the sound to be played
-   * @param mode               dummy argument.  Must always be PRELOAD
    */
-  public ComponentSound(ResourceLocation i_resourceLocation, Mode mode)
+  protected ComponentSound(ResourceLocation i_resourceLocation)
   {
     super(i_resourceLocation);
-    checkArgument(mode == Mode.PRELOAD);
     repeat = false;
     final float VERY_LOW_VOLUME = 0.001F;
     volume = VERY_LOW_VOLUME;

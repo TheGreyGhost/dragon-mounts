@@ -85,13 +85,13 @@ public abstract class SoundEffectProjectile
         }
         case IN_FLIGHT: {
           stopAllProjectileSounds();
-          ComponentSound preloadLoop = new ComponentSound(projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage),
-                  ComponentSound.Mode.PRELOAD);
+          ComponentSound preloadLoop =
+                  ComponentSound.createComponentSoundPreload(projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage));
           soundController.playSound(preloadLoop);
-          ComponentSound preLoadStop = new ComponentSound(projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage),
-                  ComponentSound.Mode.PRELOAD);
+          ComponentSound preLoadStop =
+                  ComponentSound.createComponentSoundPreload(projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage));
           soundController.playSound(preLoadStop);
-          startupSound = new ComponentSound(projectileSound(SoundPart.START, projectileSoundInfo.lifeStage),
+          startupSound = ComponentSound.createComponentSound(projectileSound(SoundPart.START, projectileSoundInfo.lifeStage),
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                   soundSettings);
           startupSound.setPlayCountdown(STARTUP_TICKS);
@@ -100,7 +100,7 @@ public abstract class SoundEffectProjectile
         }
         case FINISHED: {
           stopAllProjectileSounds();
-          stoppingSound = new ComponentSound(projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage),
+          stoppingSound = ComponentSound.createComponentSound(projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage),
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                   soundSettings);
           stoppingSound.setPlayCountdown(STOPPING_TICKS);
@@ -124,7 +124,7 @@ public abstract class SoundEffectProjectile
       case IN_FLIGHT: {
         if (startupSound != null && startupSound.getPlayCountdown() <= 0) {
           stopAllProjectileSounds();
-          loopSound = new ComponentSound(projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage),
+          loopSound = ComponentSound.createComponentSound(projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage),
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.REPEAT, soundSettings);
           soundController.playSound(loopSound);
         }
@@ -209,7 +209,7 @@ public abstract class SoundEffectProjectile
    * Returns the sound of the projectile for the given breed, lifestage, and sound part
    * @param soundPart which part of the breathing sound?
    * @param lifeStage how old is the dragon?
-   * @return the resourcelocation corresponding to the desired sound. null for none.
+   * @return the resourcelocation corresponding to the desired sound.  null for none.
    */
   abstract protected ResourceLocation projectileSound(SoundPart soundPart, DragonLifeStage lifeStage);
 

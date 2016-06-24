@@ -9,6 +9,8 @@ import info.ata4.minecraft.dragon.DragonMounts;
  */
 public enum SoundEffectNames
 {
+  SILENCE("mob.enderdragon.silence"),
+
   ADULT_BREATHE_FIRE_START("mob.enderdragon.breathweapon.adultbreathefirestart"),
   ADULT_BREATHE_FIRE_LOOP("mob.enderdragon.breathweapon.adultbreathefireloop"),
   ADULT_BREATHE_FIRE_STOP("mob.enderdragon.breathweapon.adultbreathefirestop"),
@@ -17,7 +19,8 @@ public enum SoundEffectNames
   JUVENILE_BREATHE_FIRE_STOP("mob.enderdragon.breathweapon.juvenilebreathefirestop"),
   HATCHLING_BREATHE_FIRE_START("mob.enderdragon.breathweapon.hatchlingbreathefirestart"),
   HATCHLING_BREATHE_FIRE_LOOP("mob.enderdragon.breathweapon.hatchlingbreathefireloop"),
-  HATCHLING_BREATHE_FIRE_STOP("mob.enderdragon.breathweapon.hatchlingbreathefirestop");
+  HATCHLING_BREATHE_FIRE_STOP("mob.enderdragon.breathweapon.hatchlingbreathefirestop"),
+  NETHER_PROJECTILE("mob.enderdragon.breathweapon.hatchlingbreathefireloop");
 
   public final String getJsonName() {return DragonMounts.AID + ":" + jsonName;}
 

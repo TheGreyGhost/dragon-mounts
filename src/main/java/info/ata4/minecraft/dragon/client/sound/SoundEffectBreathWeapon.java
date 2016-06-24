@@ -110,7 +110,8 @@ private final float HEAD_MIN_VOLUME = 0.02F;
       switch (weaponSoundInfo.breathingState) {
         case IDLE: {
           stopAllHeadSounds();
-          headStoppingSound = new ComponentSound(weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage),
+          headStoppingSound =
+                  ComponentSound.createComponentSound(weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage),
                                                     HEAD_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                                                     headSoundSettings);
           headStoppingSound.setPlayCountdown(HEAD_STOPPING_TICKS);
@@ -119,13 +120,14 @@ private final float HEAD_MIN_VOLUME = 0.02F;
         }
         case BREATHING: {
           stopAllHeadSounds();
-          ComponentSound preloadLoop = new ComponentSound(weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage),
-                                                                ComponentSound.Mode.PRELOAD);
+          ComponentSound preloadLoop =
+                  ComponentSound.createComponentSoundPreload(weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage));
           soundController.playSound(preloadLoop);
-          ComponentSound preLoadStop = new ComponentSound(weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage),
-                  ComponentSound.Mode.PRELOAD);
+          ComponentSound preLoadStop =
+                  ComponentSound.createComponentSoundPreload(weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage));
           soundController.playSound(preLoadStop);
-          headStartupSound = new ComponentSound(weaponHeadSound(SoundPart.START, weaponSoundInfo.lifeStage),
+          headStartupSound =
+                  ComponentSound.createComponentSound(weaponHeadSound(SoundPart.START, weaponSoundInfo.lifeStage),
                                                    HEAD_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                                                    headSoundSettings);
           headStartupSound.setPlayCountdown(HEAD_STARTUP_TICKS);
@@ -146,7 +148,8 @@ private final float HEAD_MIN_VOLUME = 0.02F;
       case BREATHING: {
         if (headStartupSound != null && headStartupSound.getPlayCountdown() <= 0) {
           stopAllHeadSounds();
-          headLoopSound = new ComponentSound(weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage),
+          headLoopSound =
+                  ComponentSound.createComponentSound(weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage),
                                                 HEAD_MIN_VOLUME, ComponentSound.RepeatType.REPEAT, headSoundSettings);
           soundController.playSound(headLoopSound);
         }
