@@ -28,9 +28,9 @@ public class SoundEffectBreathWeaponNull extends SoundEffectBreathWeapon
      * @return the resourcelocation corresponding to the desired sound
      */
   @Override
-  protected ResourceLocation weaponHeadSound(SoundPart soundPart, DragonLifeStage lifeStage)
+  protected SoundEffectName weaponHeadSound(SoundPart soundPart, DragonLifeStage lifeStage)
   {
-    return null;
+    return SoundEffectName.SILENCE;
   }
 
 

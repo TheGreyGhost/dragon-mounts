@@ -28,7 +28,8 @@ import java.util.*;
 /**
  * Represents the Ghost Breath weapon lightning strike
  * Used in conjunction with EntityBreathGhost, i.e.
- *   the projectile is spawned, and when it onUpdates() it adds the weather effect entity to handle the rendering
+ *   the projectile EntityBreathProjectileGhost s spawned, and when it onUpdates() it adds the weather effect entity EntityBreathGhost
+ *   to handle the rendering
  * I did it this way to simplify the transmission from server to client and control the collisions better
  * Using the weather effect solves the problem of frustum check, i.e. that the entity doesn't render if the
  *   bounding box is outside your view.  Entity.ignoreFrustumCheck flag couldn't overcome this problem because of

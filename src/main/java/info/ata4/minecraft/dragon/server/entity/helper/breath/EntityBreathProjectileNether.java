@@ -1,11 +1,11 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import info.ata4.minecraft.dragon.DragonMounts;
+import info.ata4.minecraft.dragon.client.sound.SoundController;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectile;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectileNether;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.projectile.EntityFireball;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
@@ -17,16 +17,18 @@ import java.util.Random;
  */
 public class EntityBreathProjectileNether extends EntityBreathProjectile {
 
-  public EntityBreathProjectileNether(World worldIn, EntityLivingBase shooter,
+  public EntityBreathProjectileNether(World worldIn, EntityTameableDragon shooter,
                                       Vec3 origin, Vec3 destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);
+    parentDragon = shooter;
   }
 
   // used by some spawn code under circumstances I don't fully understand yet
   public EntityBreathProjectileNether(World worldIn)
   {
     super(worldIn);
+    parentDragon = null;
   }
 
   @Override
@@ -54,6 +56,36 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
       this.setDead();
     }
 
+    if (soundEffectProjectile == null && parentDragon != null) {
+      SoundController soundController = parentDragon.getBreathHelper().getSoundController();
+      soundEffectProjectile = new SoundEffectProjectileNether(soundController, new SoundUpdateLink());
+    }
+    if (soundEffectProjectile != null) {
+      soundEffectProjectile.performTick(Minecraft.getMinecraft().thePlayer);
+    }
+  }
+
+  @Override
+  public void setDead()
+  {
+    super.setDead();
+    if (soundEffectProjectile != null) {
+      soundEffectProjectile.performTick(Minecraft.getMinecraft().thePlayer);
+    }
+  }
+
+  public class SoundUpdateLink implements SoundEffectProjectile.ProjectileSoundUpdateLink
+  {
+    public boolean refreshSoundInfo(SoundEffectProjectile.ProjectileSoundInfo infoToUpdate)
+    {
+      infoToUpdate.projectileState = (ticksToLive > 0 && !isDead)
+                ? SoundEffectProjectile.ProjectileSoundInfo.State.IN_FLIGHT
+                : SoundEffectProjectile.ProjectileSoundInfo.State.FINISHED;
+      infoToUpdate.location = EntityBreathProjectileNether.this.getCurrentPosition();
+      infoToUpdate.relativeVolume = 1.0F;
+      infoToUpdate.lifeStage = EntityBreathProjectileNether.this.parentDragon.getLifeStageHelper().getLifeStage();
+      return true;
+    }
   }
 
   /**
@@ -194,5 +226,8 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
     private int coolDownTimerTicks = 0;
     private boolean mouthHasBeenClosed = false;
   }
+
+  private SoundEffectProjectile soundEffectProjectile;
+  private EntityTameableDragon parentDragon;
 
 }

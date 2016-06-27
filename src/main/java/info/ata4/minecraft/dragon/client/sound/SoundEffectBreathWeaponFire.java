@@ -1,14 +1,7 @@
 package info.ata4.minecraft.dragon.client.sound;
 
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
-import info.ata4.minecraft.dragon.util.math.MathX;
-import net.minecraft.client.audio.ITickableSound;
-import net.minecraft.client.audio.PositionedSound;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
-
-import java.util.Collection;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -32,21 +25,21 @@ public class SoundEffectBreathWeaponFire extends SoundEffectBreathWeapon
    * @return the resourcelocation corresponding to the desired sound
    */
   @Override
-  protected ResourceLocation weaponHeadSound(SoundPart soundPart, DragonLifeStage lifeStage)
+  protected SoundEffectName weaponHeadSound(SoundPart soundPart, DragonLifeStage lifeStage)
   {
-    final SoundEffectNames hatchling[] = {SoundEffectNames.HATCHLING_BREATHE_FIRE_START,
-                                          SoundEffectNames.HATCHLING_BREATHE_FIRE_LOOP,
-                                          SoundEffectNames.HATCHLING_BREATHE_FIRE_STOP};
+    final SoundEffectName hatchling[] = {SoundEffectName.HATCHLING_BREATHE_FIRE_START,
+                                          SoundEffectName.HATCHLING_BREATHE_FIRE_LOOP,
+                                          SoundEffectName.HATCHLING_BREATHE_FIRE_STOP};
 
-    final SoundEffectNames juvenile[] = {SoundEffectNames.JUVENILE_BREATHE_FIRE_START,
-                                          SoundEffectNames.JUVENILE_BREATHE_FIRE_LOOP,
-                                          SoundEffectNames.JUVENILE_BREATHE_FIRE_STOP};
+    final SoundEffectName juvenile[] = {SoundEffectName.JUVENILE_BREATHE_FIRE_START,
+                                          SoundEffectName.JUVENILE_BREATHE_FIRE_LOOP,
+                                          SoundEffectName.JUVENILE_BREATHE_FIRE_STOP};
 
-    final SoundEffectNames adult[] = {SoundEffectNames.ADULT_BREATHE_FIRE_START,
-                                      SoundEffectNames.ADULT_BREATHE_FIRE_LOOP,
-                                      SoundEffectNames.ADULT_BREATHE_FIRE_STOP};
+    final SoundEffectName adult[] = {SoundEffectName.ADULT_BREATHE_FIRE_START,
+                                      SoundEffectName.ADULT_BREATHE_FIRE_LOOP,
+                                      SoundEffectName.ADULT_BREATHE_FIRE_STOP};
 
-    SoundEffectNames [] soundEffectNames;
+    SoundEffectName[] soundEffectNames;
     switch (lifeStage) {
       case HATCHLING: {
         soundEffectNames = hatchling;
@@ -65,7 +58,7 @@ public class SoundEffectBreathWeaponFire extends SoundEffectBreathWeapon
         soundEffectNames = hatchling; // dummy
       }
     }
-    return new ResourceLocation(soundEffectNames[soundPart.ordinal()].getJsonName());
+    return soundEffectNames[soundPart.ordinal()];
   }
 
 

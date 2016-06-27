@@ -1,11 +1,7 @@
 package info.ata4.minecraft.dragon.client.sound;
 
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
-import info.ata4.minecraft.dragon.util.math.MathX;
-import net.minecraft.client.audio.ITickableSound;
-import net.minecraft.client.audio.PositionedSound;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -101,8 +97,8 @@ private final float HEAD_MIN_VOLUME = 0.02F;
     headSoundSettings.playerDistanceToEpicentre =
               (float) weaponSoundInfo.dragonHeadLocation.distanceTo(entityPlayerSP.getPositionVector());
 
-    final int HEAD_STARTUP_TICKS = 40;
-    final int HEAD_STOPPING_TICKS = 60;
+//    final int HEAD_STARTUP_TICKS = 40;
+//    final int HEAD_STOPPING_TICKS = 60;
 
     // if state has changed, stop and start component sounds appropriately
 
@@ -110,27 +106,29 @@ private final float HEAD_MIN_VOLUME = 0.02F;
       switch (weaponSoundInfo.breathingState) {
         case IDLE: {
           stopAllHeadSounds();
+          SoundEffectName headStop = weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage);
           headStoppingSound =
-                  ComponentSound.createComponentSound(weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage),
+                  ComponentSound.createComponentSound(headStop,
                                                     HEAD_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                                                     headSoundSettings);
-          headStoppingSound.setPlayCountdown(HEAD_STOPPING_TICKS);
+          headStoppingSound.setPlayCountdown(headStop.getDurationInTicks());
           soundController.playSound(headStoppingSound);
           break;
         }
         case BREATHING: {
           stopAllHeadSounds();
-          ComponentSound preloadLoop =
-                  ComponentSound.createComponentSoundPreload(weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage));
+          SoundEffectName headStart = weaponHeadSound(SoundPart.START, weaponSoundInfo.lifeStage);
+          SoundEffectName headLoop = weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage);
+          SoundEffectName headStop = weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage);
+
+          ComponentSound preloadLoop = ComponentSound.createComponentSoundPreload(headLoop);
           soundController.playSound(preloadLoop);
-          ComponentSound preLoadStop =
-                  ComponentSound.createComponentSoundPreload(weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage));
+          ComponentSound preLoadStop = ComponentSound.createComponentSoundPreload(headStop);
           soundController.playSound(preLoadStop);
-          headStartupSound =
-                  ComponentSound.createComponentSound(weaponHeadSound(SoundPart.START, weaponSoundInfo.lifeStage),
+          headStartupSound = ComponentSound.createComponentSound(headStart,
                                                    HEAD_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                                                    headSoundSettings);
-          headStartupSound.setPlayCountdown(HEAD_STARTUP_TICKS);
+          headStartupSound.setPlayCountdown(headStart.getDurationInTicks());
           soundController.playSound(headStartupSound);
           break;
         }
@@ -148,8 +146,8 @@ private final float HEAD_MIN_VOLUME = 0.02F;
       case BREATHING: {
         if (headStartupSound != null && headStartupSound.getPlayCountdown() <= 0) {
           stopAllHeadSounds();
-          headLoopSound =
-                  ComponentSound.createComponentSound(weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage),
+          SoundEffectName headLoop = weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage);
+          headLoopSound = ComponentSound.createComponentSound(headLoop,
                                                 HEAD_MIN_VOLUME, ComponentSound.RepeatType.REPEAT, headSoundSettings);
           soundController.playSound(headLoopSound);
         }
@@ -207,6 +205,6 @@ private final float HEAD_MIN_VOLUME = 0.02F;
    * @param lifeStage how old is the dragon?
    * @return the resourcelocation corresponding to the desired sound. null for none.
    */
-  abstract protected ResourceLocation weaponHeadSound(SoundPart soundPart, DragonLifeStage lifeStage);
+  abstract protected SoundEffectName weaponHeadSound(SoundPart soundPart, DragonLifeStage lifeStage);
 
 }

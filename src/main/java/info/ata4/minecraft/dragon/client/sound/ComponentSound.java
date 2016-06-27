@@ -35,18 +35,18 @@ class ComponentSound extends PositionedSound implements ITickableSound
   /**
    * Create a ComponentSound for the given sound.
    * @param i_resourceLocation null means silence
-   * @param i_volume
+   * @param initialVolume
    * @param i_repeat
    * @param i_soundSettings
    * @return
    */
-  static public ComponentSound createComponentSound(ResourceLocation i_resourceLocation, float i_volume, RepeatType i_repeat,
+  static public ComponentSound createComponentSound(ResourceLocation i_resourceLocation, float initialVolume, RepeatType i_repeat,
                                      ComponentSoundSettings i_soundSettings)
   {
     if (i_resourceLocation == null) {
       return new ComponentSoundSilent();
     }
-    return new ComponentSound(i_resourceLocation, i_volume, i_repeat, i_soundSettings);
+    return new ComponentSound(i_resourceLocation, initialVolume, i_repeat, i_soundSettings);
   }
 
   /**
@@ -62,18 +62,49 @@ class ComponentSound extends PositionedSound implements ITickableSound
   }
 
   /**
+   * Create a ComponentSound for the given sound.
+   * @param soundEffectName null means silence
+   * @param initialVolume
+   * @param i_repeat
+   * @param i_soundSettings
+   * @return
+   */
+  static public ComponentSound createComponentSound(SoundEffectName soundEffectName, float initialVolume, RepeatType i_repeat,
+                                                    ComponentSoundSettings i_soundSettings)
+  {
+    if (soundEffectName == null) {
+      return new ComponentSoundSilent();
+    }
+    ResourceLocation resourceLocation = new ResourceLocation(soundEffectName.getJsonName());
+    return new ComponentSound(resourceLocation, initialVolume, i_repeat, i_soundSettings);
+  }
+
+  /**
+   * Create a preload ComponentSound for the given sound. (reduces lag between triggering sound and it actually playing)
+   * @param soundEffectName null means silence
+   */
+  static public ComponentSound createComponentSoundPreload(SoundEffectName soundEffectName)
+  {
+    if (soundEffectName == null) {
+      return new ComponentSoundSilent();
+    }
+    ResourceLocation resourceLocation = new ResourceLocation(soundEffectName.getJsonName());
+    return new ComponentSound(resourceLocation);
+  }
+
+  /**
    * Creates the sound ready for playing
    * @param i_resourceLocation
-   * @param i_volume
+   * @param initialVolume
    * @param i_repeat
    * @param i_soundSettings
    */
-  protected ComponentSound(ResourceLocation i_resourceLocation, float i_volume, RepeatType i_repeat,
+  protected ComponentSound(ResourceLocation i_resourceLocation, float initialVolume, RepeatType i_repeat,
                          ComponentSoundSettings i_soundSettings)
   {
     super(i_resourceLocation);
     repeat = (i_repeat == RepeatType.REPEAT);
-    volume = i_volume;
+    volume = initialVolume;
     attenuationType = AttenuationType.NONE;
     soundSettings = i_soundSettings;
     playMode = Mode.PLAY;
@@ -137,9 +168,6 @@ class ComponentSound extends PositionedSound implements ITickableSound
   @Override
   public void update()
   {
-    final float MINIMUM_VOLUME = 0.10F;
-    final float MAXIMUM_VOLUME = 1.00F;
-    final float INSIDE_VOLUME = 1.00F;
     final float OFF_VOLUME = 0.0F;
 
     if (playMode == Mode.PRELOAD) {
@@ -156,16 +184,24 @@ class ComponentSound extends PositionedSound implements ITickableSound
       this.xPosF = (float) soundSettings.soundEpicentre.xCoord;
       this.yPosF = (float) soundSettings.soundEpicentre.yCoord;
       this.zPosF = (float) soundSettings.soundEpicentre.zCoord;
-      if (soundSettings.playerDistanceToEpicentre < 0.01F) {
-        this.volume = INSIDE_VOLUME;
-      } else {
-        final float MINIMUM_VOLUME_DISTANCE = 40.0F;
-        float fractionToMinimum = soundSettings.playerDistanceToEpicentre / MINIMUM_VOLUME_DISTANCE;
-        this.volume = soundSettings.masterVolume *
-                MathX.clamp(MAXIMUM_VOLUME - fractionToMinimum * (MAXIMUM_VOLUME - MINIMUM_VOLUME),
-                        MINIMUM_VOLUME, MAXIMUM_VOLUME);
-      }
+      this.volume = soundSettings.masterVolume * volumeAdjustmentForDistance(soundSettings.playerDistanceToEpicentre);
     }
+  }
+
+  public static float volumeAdjustmentForDistance(float distanceToEpicentre)
+  {
+    final float MINIMUM_VOLUME = 0.10F;
+    final float MAXIMUM_VOLUME = 1.00F;
+    final float INSIDE_VOLUME = 1.00F;
+    if (distanceToEpicentre < 0.01F) {
+      return INSIDE_VOLUME;
+    } else {
+      final float MINIMUM_VOLUME_DISTANCE = 40.0F;
+      float fractionToMinimum = distanceToEpicentre / MINIMUM_VOLUME_DISTANCE;
+      return MathX.clamp(MAXIMUM_VOLUME - fractionToMinimum * (MAXIMUM_VOLUME - MINIMUM_VOLUME),
+                      MINIMUM_VOLUME, MAXIMUM_VOLUME);
+    }
+
   }
 
   private int playTimeCountDown = -1;

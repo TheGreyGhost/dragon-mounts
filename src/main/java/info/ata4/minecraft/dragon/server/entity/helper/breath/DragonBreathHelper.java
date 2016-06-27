@@ -89,10 +89,7 @@ public class DragonBreathHelper extends DragonHelper
 
   public void refreshBreedClientOnly(EntityTameableDragon dragon)
   {
-    if (soundController == null) {
-      soundController = new SoundController();
-    }
-    soundEffectBreathWeapon = dragon.getBreed().getSoundEffectBreathWeapon(soundController, weaponInfoLink);
+    soundEffectBreathWeapon = dragon.getBreed().getSoundEffectBreathWeapon(getSoundController(), weaponInfoLink);
   }
 
 
@@ -383,6 +380,15 @@ public class DragonBreathHelper extends DragonHelper
     }
 
     soundEffectBreathWeapon.performTick(Minecraft.getMinecraft().thePlayer);
+  }
+
+  public SoundController getSoundController()
+  {
+    if (soundController == null) {
+      soundController = new SoundController();
+    }
+
+    return soundController;
   }
 
   private SoundController soundController;

@@ -114,6 +114,11 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   //  must not access member variables!
   protected abstract void setSizeFromPower(BreathNode.Power power);
 
+  public Vec3 getCurrentPosition()
+  {
+    return new Vec3(posX, posY, posZ);
+  }
+
   @Override
   public void onUpdate() {
     BlockPos entityTilePos = new BlockPos(this);

@@ -1,6 +1,5 @@
 package info.ata4.minecraft.dragon.client.sound;
 
-import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.util.ResourceLocation;
 
 /**
@@ -24,5 +23,5 @@ public class ComponentSoundSilent extends ComponentSound
     setDonePlaying();
   }
 
-  static private ResourceLocation SILENCE = new ResourceLocation(SoundEffectNames.SILENCE.getJsonName());
+  static private ResourceLocation SILENCE = new ResourceLocation(SoundEffectName.SILENCE.getJsonName());
 }

@@ -2,7 +2,6 @@ package info.ata4.minecraft.dragon.client.sound;
 
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -72,47 +71,62 @@ public abstract class SoundEffectProjectile
     soundSettings.playerDistanceToEpicentre =
               (float) projectileSoundInfo.location.distanceTo(entityPlayerSP.getPositionVector());
 
-    final int STARTUP_TICKS = 40;
-    final int STOPPING_TICKS = 60;
+//    final int STARTUP_TICKS = 40;
+//    final int STOPPING_TICKS = 60;
 
     // if state has changed, stop and start component sounds appropriately
 
-    if (projectileSoundInfo.breathingState != currentProjectileState) {
-      switch (projectileSoundInfo.breathingState) {
+    if (projectileSoundInfo.projectileState != currentProjectileState) {
+      switch (projectileSoundInfo.projectileState) {
         case NOT_CREATED: {
           stopAllProjectileSounds();
           break;
         }
         case IN_FLIGHT: {
           stopAllProjectileSounds();
-          ComponentSound preloadLoop =
-                  ComponentSound.createComponentSoundPreload(projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage));
+
+          float initialVolume = ComponentSound.volumeAdjustmentForDistance(soundSettings.playerDistanceToEpicentre);
+
+          SoundEffectName spawnSoundEffectName = projectileSound(SoundPart.SPAWN, projectileSoundInfo.lifeStage);
+          ComponentSound spawnSoundEffect = ComponentSound.createComponentSound(spawnSoundEffectName,
+                  initialVolume, ComponentSound.RepeatType.NO_REPEAT,
+                  soundSettings);
+          soundController.playSound(spawnSoundEffect);
+
+          CREATE A SETTINGS WITH DRAGON HEAD AS EPICENTRE
+
+          SoundEffectName startSoundEffectName = projectileSound(SoundPart.START, projectileSoundInfo.lifeStage);
+          SoundEffectName loopSoundEffectName = projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage);
+          SoundEffectName stopSoundEffectName = projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage);
+
+          ComponentSound preloadLoop = ComponentSound.createComponentSoundPreload(loopSoundEffectName);
           soundController.playSound(preloadLoop);
-          ComponentSound preLoadStop =
-                  ComponentSound.createComponentSoundPreload(projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage));
+          ComponentSound preLoadStop = ComponentSound.createComponentSoundPreload(stopSoundEffectName);
           soundController.playSound(preLoadStop);
-          startupSound = ComponentSound.createComponentSound(projectileSound(SoundPart.START, projectileSoundInfo.lifeStage),
+          startupSound = ComponentSound.createComponentSound(startSoundEffectName,
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                   soundSettings);
-          startupSound.setPlayCountdown(STARTUP_TICKS);
+          startupSound.setPlayCountdown(startSoundEffectName.getDurationInTicks());
           soundController.playSound(startupSound);
+
           break;
         }
         case FINISHED: {
           stopAllProjectileSounds();
-          stoppingSound = ComponentSound.createComponentSound(projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage),
+          SoundEffectName stopSound = projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage);
+          stoppingSound = ComponentSound.createComponentSound(stopSound,
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                   soundSettings);
-          stoppingSound.setPlayCountdown(STOPPING_TICKS);
+          stoppingSound.setPlayCountdown(stopSound.getDurationInTicks());
           soundController.playSound(stoppingSound);
           break;
         }
         default: {
-          System.err.printf("Illegal projectileSoundInfo.breathingState:" + projectileSoundInfo.breathingState + " in " + this
+          System.err.printf("Illegal projectileSoundInfo.projectileState:" + projectileSoundInfo.projectileState + " in " + this
                   .getClass());
         }
       }
-      currentProjectileState = projectileSoundInfo.breathingState;
+      currentProjectileState = projectileSoundInfo.projectileState;
     }
 
     // update component sound settings based on weapon info and elapsed time
@@ -124,7 +138,8 @@ public abstract class SoundEffectProjectile
       case IN_FLIGHT: {
         if (startupSound != null && startupSound.getPlayCountdown() <= 0) {
           stopAllProjectileSounds();
-          loopSound = ComponentSound.createComponentSound(projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage),
+          SoundEffectName loopSoundEffectName = projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage);
+          loopSound = ComponentSound.createComponentSound(loopSoundEffectName,
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.REPEAT, soundSettings);
           soundController.playSound(loopSound);
         }
@@ -197,13 +212,13 @@ public abstract class SoundEffectProjectile
   public static class ProjectileSoundInfo
   {
     public enum State {NOT_CREATED, IN_FLIGHT, FINISHED}
-    public State breathingState = State.NOT_CREATED;
+    public State projectileState = State.NOT_CREATED;
     public Vec3 location;  // location of the projectile
     public float relativeVolume; // 0 to 1
     public DragonLifeStage lifeStage;
   }
 
-  protected enum SoundPart {START, LOOP, STOP}
+  protected enum SoundPart {SPAWN, START, LOOP, STOP}
 
   /**
    * Returns the sound of the projectile for the given breed, lifestage, and sound part
@@ -211,6 +226,6 @@ public abstract class SoundEffectProjectile
    * @param lifeStage how old is the dragon?
    * @return the resourcelocation corresponding to the desired sound.  null for none.
    */
-  abstract protected ResourceLocation projectileSound(SoundPart soundPart, DragonLifeStage lifeStage);
+  abstract protected SoundEffectName projectileSound(SoundPart soundPart, DragonLifeStage lifeStage);
 
 }

@@ -80,6 +80,17 @@
     "sounds": [
       "mob/enderdragon/breathweapon/hatchlingbreathefirestop"
     ]
+  },
+  "mob.enderdragon.breathweapon.breathenetherspawn": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/breathenetherspawn"
+    ]
+  },
+  "mob.enderdragon.breathweapon.projectilenetherloop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/projectilenetherloop"
+    ]
   }
-
 }
