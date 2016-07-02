@@ -63,13 +63,19 @@ public abstract class SoundEffectProjectile
       setAllStopFlags();
       return;
     }
-    checkNotNull(projectileSoundInfo.location);
-    soundSettings.playing = true;
-    soundSettings.masterVolume = projectileSoundInfo.relativeVolume;
-    soundSettings.soundEpicentre = projectileSoundInfo.location;
+    checkNotNull(projectileSoundInfo.projectileLocation);
+    soundProjectileSettings.playing = true;
+    soundProjectileSettings.masterVolume = projectileSoundInfo.relativeVolume;
+    soundProjectileSettings.soundEpicentre = projectileSoundInfo.projectileLocation;
 
-    soundSettings.playerDistanceToEpicentre =
-              (float) projectileSoundInfo.location.distanceTo(entityPlayerSP.getPositionVector());
+    soundProjectileSettings.playerDistanceToEpicentre =
+              (float) projectileSoundInfo.projectileLocation.distanceTo(entityPlayerSP.getPositionVector());
+
+    soundMouthSettings.playing = true;
+    soundMouthSettings.masterVolume = projectileSoundInfo.relativeVolume;
+    soundMouthSettings.soundEpicentre = projectileSoundInfo.dragonMouthLocation;
+    soundMouthSettings.playerDistanceToEpicentre =
+            (float) projectileSoundInfo.dragonMouthLocation.distanceTo(entityPlayerSP.getPositionVector());
 
 //    final int STARTUP_TICKS = 40;
 //    final int STOPPING_TICKS = 60;
@@ -85,15 +91,12 @@ public abstract class SoundEffectProjectile
         case IN_FLIGHT: {
           stopAllProjectileSounds();
 
-          float initialVolume = ComponentSound.volumeAdjustmentForDistance(soundSettings.playerDistanceToEpicentre);
+          float initialVolume = ComponentSound.volumeAdjustmentForDistance(soundProjectileSettings.playerDistanceToEpicentre);
 
           SoundEffectName spawnSoundEffectName = projectileSound(SoundPart.SPAWN, projectileSoundInfo.lifeStage);
           ComponentSound spawnSoundEffect = ComponentSound.createComponentSound(spawnSoundEffectName,
-                  initialVolume, ComponentSound.RepeatType.NO_REPEAT,
-                  soundSettings);
+                  initialVolume, ComponentSound.RepeatType.NO_REPEAT, soundMouthSettings);
           soundController.playSound(spawnSoundEffect);
-
-          CREATE A SETTINGS WITH DRAGON HEAD AS EPICENTRE
 
           SoundEffectName startSoundEffectName = projectileSound(SoundPart.START, projectileSoundInfo.lifeStage);
           SoundEffectName loopSoundEffectName = projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage);
@@ -105,7 +108,7 @@ public abstract class SoundEffectProjectile
           soundController.playSound(preLoadStop);
           startupSound = ComponentSound.createComponentSound(startSoundEffectName,
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
-                  soundSettings);
+                                                             soundProjectileSettings);
           startupSound.setPlayCountdown(startSoundEffectName.getDurationInTicks());
           soundController.playSound(startupSound);
 
@@ -116,7 +119,7 @@ public abstract class SoundEffectProjectile
           SoundEffectName stopSound = projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage);
           stoppingSound = ComponentSound.createComponentSound(stopSound,
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
-                  soundSettings);
+                                                              soundProjectileSettings);
           stoppingSound.setPlayCountdown(stopSound.getDurationInTicks());
           soundController.playSound(stoppingSound);
           break;
@@ -140,7 +143,7 @@ public abstract class SoundEffectProjectile
           stopAllProjectileSounds();
           SoundEffectName loopSoundEffectName = projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage);
           loopSound = ComponentSound.createComponentSound(loopSoundEffectName,
-                  PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.REPEAT, soundSettings);
+                  PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.REPEAT, soundProjectileSettings);
           soundController.playSound(loopSound);
         }
 
@@ -188,11 +191,13 @@ public abstract class SoundEffectProjectile
     if (startupSound != null) { startupSound.setDonePlaying();}
     if (loopSound != null) { loopSound.setDonePlaying();}
     if (stoppingSound != null) { stoppingSound.setDonePlaying();}
+
   }
 
   private ProjectileSoundInfo.State currentProjectileState = ProjectileSoundInfo.State.NOT_CREATED;
 
-  private ComponentSound.ComponentSoundSettings soundSettings = new ComponentSound.ComponentSoundSettings(1.0F);
+  private ComponentSound.ComponentSoundSettings soundProjectileSettings = new ComponentSound.ComponentSoundSettings(1.0F);
+  private ComponentSound.ComponentSoundSettings soundMouthSettings = new ComponentSound.ComponentSoundSettings(1.0F);
 
   private ComponentSound startupSound;
   private ComponentSound loopSound;
@@ -213,10 +218,16 @@ public abstract class SoundEffectProjectile
   {
     public enum State {NOT_CREATED, IN_FLIGHT, FINISHED}
     public State projectileState = State.NOT_CREATED;
-    public Vec3 location;  // location of the projectile
+    public Vec3 projectileLocation;  // location of the projectile
     public float relativeVolume; // 0 to 1
+    public Vec3 dragonMouthLocation;
     public DragonLifeStage lifeStage;
   }
+
+  // SPAWN is the sound made at the mouth when the projectile is created.  it continues even if the projectile
+  //  is destroyed.
+  // For the projectile itself: START is played initially, followed by LOOP repeating as long as the projectile is
+  //  living, followed by STOP when its destroyed.
 
   protected enum SoundPart {SPAWN, START, LOOP, STOP}
 

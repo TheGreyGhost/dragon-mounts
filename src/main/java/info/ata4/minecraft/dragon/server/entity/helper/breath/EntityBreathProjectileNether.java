@@ -81,7 +81,7 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
       infoToUpdate.projectileState = (ticksToLive > 0 && !isDead)
                 ? SoundEffectProjectile.ProjectileSoundInfo.State.IN_FLIGHT
                 : SoundEffectProjectile.ProjectileSoundInfo.State.FINISHED;
-      infoToUpdate.location = EntityBreathProjectileNether.this.getCurrentPosition();
+      infoToUpdate.projectileLocation = EntityBreathProjectileNether.this.getCurrentPosition();
       infoToUpdate.relativeVolume = 1.0F;
       infoToUpdate.lifeStage = EntityBreathProjectileNether.this.parentDragon.getLifeStageHelper().getLifeStage();
       return true;
