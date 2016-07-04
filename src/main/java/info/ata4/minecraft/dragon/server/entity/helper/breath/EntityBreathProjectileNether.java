@@ -56,12 +56,15 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
       this.setDead();
     }
 
-    if (soundEffectProjectile == null && parentDragon != null) {
-      SoundController soundController = parentDragon.getBreathHelper().getSoundController();
-      soundEffectProjectile = new SoundEffectProjectileNether(soundController, new SoundUpdateLink());
-    }
-    if (soundEffectProjectile != null) {
-      soundEffectProjectile.performTick(Minecraft.getMinecraft().thePlayer);
+    if (this.worldObj.isRemote) {
+      ERROR IS HERE, parentDragon NULL on client side
+      if (soundEffectProjectile == null && parentDragon != null) {
+        SoundController soundController = parentDragon.getBreathHelper().getSoundController();
+        soundEffectProjectile = new SoundEffectProjectileNether(soundController, new SoundUpdateLink());
+      }
+      if (soundEffectProjectile != null) {
+        soundEffectProjectile.performTick(Minecraft.getMinecraft().thePlayer);
+      }
     }
   }
 
@@ -82,6 +85,7 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
                 ? SoundEffectProjectile.ProjectileSoundInfo.State.IN_FLIGHT
                 : SoundEffectProjectile.ProjectileSoundInfo.State.FINISHED;
       infoToUpdate.projectileLocation = EntityBreathProjectileNether.this.getCurrentPosition();
+      infoToUpdate.dragonMouthLocation = EntityBreathProjectileNether.this.parentDragon.getPositionVector();
       infoToUpdate.relativeVolume = 1.0F;
       infoToUpdate.lifeStage = EntityBreathProjectileNether.this.parentDragon.getLifeStageHelper().getLifeStage();
       return true;

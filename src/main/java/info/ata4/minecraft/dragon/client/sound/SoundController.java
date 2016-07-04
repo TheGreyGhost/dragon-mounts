@@ -16,6 +16,8 @@ public class SoundController
 {
   public void playSound(PositionedSound sound)
   {
+    Thread thr = Thread.currentThread();
+    System.out.println("SoundController.playSound in thread:" + thr.getName()); //todo remove
     Minecraft.getMinecraft().getSoundHandler().playSound(sound);
   }
 
@@ -27,6 +29,8 @@ public class SoundController
 
   public void stopSound(PositionedSound sound)
   {
+    Thread thr = Thread.currentThread();
+    System.out.println("SoundController.stopSound in thread:" + thr.getName()); //todo remove
     Minecraft.getMinecraft().getSoundHandler().stopSound(sound);
     soundEffectsToTick.remove(sound);
   }

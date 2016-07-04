@@ -21,8 +21,7 @@ public class SoundEffectProjectileNether extends SoundEffectProjectile
   protected SoundEffectName projectileSound(SoundPart soundPart, DragonLifeStage lifeStage)
   {
     if (soundPart == SoundPart.SPAWN) return SoundEffectName.BREATHE_NETHER_SPAWN;
+    if (soundPart == SoundPart.LOOP) return SoundEffectName.NETHER_PROJECTILE_LOOP;
     return SoundEffectName.SILENCE;
-//    if (soundPart != SoundPart.LOOP) return SoundEffectName.SILENCE;    //todo restore
-//    return SoundEffectName.NETHER_PROJECTILE_LOOP;
   }
 }
