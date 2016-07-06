@@ -1,5 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
@@ -40,12 +41,14 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     this.setSize(1.0F, 1.0F);
     power = BreathNode.Power.SMALL;  // default
     ticksToLive = getLifeTimeTicks(power);
+    parentDragon = null;
   }
 
-  public EntityBreathProjectile(World worldIn, EntityLivingBase shooter,
+  public EntityBreathProjectile(World worldIn, EntityTameableDragon shooter,
                                 Vec3 i_origin, Vec3 i_destination, BreathNode.Power i_power) {
     super(worldIn);
     this.shootingEntity = shooter;
+    parentDragon = shooter;
     origin = i_origin;
     destination = i_destination;
     power = i_power;
@@ -381,6 +384,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     buffer.writeDouble(destination.xCoord);
     buffer.writeDouble(destination.yCoord);
     buffer.writeDouble(destination.zCoord);
+    buffer.writeInt(parentDragon.getEntityId());
   }
 
   /**
@@ -411,6 +415,8 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     double destinationZ = additionalData.readDouble();
     origin = new Vec3(originX, originY, originZ);
     destination = new Vec3(destinationX, destinationY, destinationZ);
+
+    parentDragonID = additionalData.readInt();
   }
 
   /**
@@ -466,6 +472,21 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   }
 
   /**
+   * Returns the dragon which spawned this projectile
+   * @return the dragon, or null if invalid or doesn't exist.
+   */
+  public EntityTameableDragon getParentDragon()
+  {
+    if (parentDragon != null) return parentDragon;
+    if (parentDragonID == null) throw new IllegalStateException("parentDragonID not initialised yet");
+    Entity entityFromID = this.worldObj.getEntityByID(parentDragonID);
+    if (entityFromID instanceof EntityTameableDragon) {
+      parentDragon = (EntityTameableDragon)entityFromID;
+    }
+    return parentDragon;
+  }
+
+  /**
    * Gets how bright this entity is.
    */
   public float getBrightness(float p_70013_1_) {
@@ -479,5 +500,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 
   protected BreathNode.Power power;
   protected int ticksToLive;
+  private EntityTameableDragon parentDragon;
+  private Integer parentDragonID = null;
 
 }

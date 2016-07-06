@@ -47,7 +47,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
    * @param power the power of the lightning
    * @param objectStruck the entity or block which was struck (not null!)
    */
-  public EntityBreathProjectileGhost(World worldIn, EntityLivingBase shooter,
+  public EntityBreathProjectileGhost(World worldIn, EntityTameableDragon shooter,
                                      Vec3 origin, Vec3 destination, BreathNode.Power power,
                                      BreathWeaponTarget objectStruck)
   {
@@ -66,7 +66,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
    * @param destination the endpoint position of the lightning strike (the end of the ray)
    * @param power the power of the lightning
    */
-  public EntityBreathProjectileGhost(World worldIn, EntityLivingBase shooter,
+  public EntityBreathProjectileGhost(World worldIn, EntityTameableDragon shooter,
                                      Vec3 origin, Vec3 destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);

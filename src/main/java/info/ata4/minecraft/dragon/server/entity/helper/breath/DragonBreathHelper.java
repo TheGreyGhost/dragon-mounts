@@ -9,11 +9,13 @@ import info.ata4.minecraft.dragon.server.entity.helper.DragonHelper;
 import info.ata4.minecraft.dragon.server.network.BreathWeaponTarget;
 import info.ata4.minecraft.dragon.server.network.DragonOrbTargets;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -89,7 +91,7 @@ public class DragonBreathHelper extends DragonHelper
 
   public void refreshBreedClientOnly(EntityTameableDragon dragon)
   {
-    soundEffectBreathWeapon = dragon.getBreed().getSoundEffectBreathWeapon(getSoundController(), weaponInfoLink);
+    soundEffectBreathWeapon = dragon.getBreed().getSoundEffectBreathWeapon(getSoundController(dragon.getEntityWorld()), weaponInfoLink);
   }
 
 
@@ -382,10 +384,13 @@ public class DragonBreathHelper extends DragonHelper
     soundEffectBreathWeapon.performTick(Minecraft.getMinecraft().thePlayer);
   }
 
-  public SoundController getSoundController()
+  public SoundController getSoundController(World world)
   {
+    if (!world.isRemote) {
+      throw new IllegalArgumentException("getSoundController() only valid for WorldClient");
+    }
     if (soundController == null) {
-      soundController = new SoundController();
+      soundController = new SoundController((WorldClient)world);
     }
 
     return soundController;

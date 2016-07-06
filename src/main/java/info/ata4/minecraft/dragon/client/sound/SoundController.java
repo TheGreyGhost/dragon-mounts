@@ -2,6 +2,8 @@ package info.ata4.minecraft.dragon.client.sound;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSound;
+import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.world.World;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,10 +16,13 @@ import java.util.Map;
 */
 public class SoundController
 {
+  public SoundController(WorldClient i_world)
+  {
+    worldClient = i_world;
+  }
+
   public void playSound(PositionedSound sound)
   {
-    Thread thr = Thread.currentThread();
-    System.out.println("SoundController.playSound in thread:" + thr.getName()); //todo remove
     Minecraft.getMinecraft().getSoundHandler().playSound(sound);
   }
 
@@ -29,8 +34,6 @@ public class SoundController
 
   public void stopSound(PositionedSound sound)
   {
-    Thread thr = Thread.currentThread();
-    System.out.println("SoundController.stopSound in thread:" + thr.getName()); //todo remove
     Minecraft.getMinecraft().getSoundHandler().stopSound(sound);
     soundEffectsToTick.remove(sound);
   }
@@ -81,4 +84,6 @@ public class SoundController
 //    public  void startSound() {};
 //    public  void stopSound() {};
 //  }
+
+  private WorldClient worldClient;
 }

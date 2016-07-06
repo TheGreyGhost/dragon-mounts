@@ -5,6 +5,7 @@ import info.ata4.minecraft.dragon.client.sound.SoundController;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectile;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectileNether;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
@@ -21,14 +22,12 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
                                       Vec3 origin, Vec3 destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);
-    parentDragon = shooter;
   }
 
   // used by some spawn code under circumstances I don't fully understand yet
   public EntityBreathProjectileNether(World worldIn)
   {
     super(worldIn);
-    parentDragon = null;
   }
 
   @Override
@@ -57,9 +56,9 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
     }
 
     if (this.worldObj.isRemote) {
-      ERROR IS HERE, parentDragon NULL on client side
+      EntityTameableDragon parentDragon = getParentDragon();
       if (soundEffectProjectile == null && parentDragon != null) {
-        SoundController soundController = parentDragon.getBreathHelper().getSoundController();
+        SoundController soundController = parentDragon.getBreathHelper().getSoundController(parentDragon.getEntityWorld());
         soundEffectProjectile = new SoundEffectProjectileNether(soundController, new SoundUpdateLink());
       }
       if (soundEffectProjectile != null) {
@@ -81,13 +80,20 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
   {
     public boolean refreshSoundInfo(SoundEffectProjectile.ProjectileSoundInfo infoToUpdate)
     {
+
       infoToUpdate.projectileState = (ticksToLive > 0 && !isDead)
                 ? SoundEffectProjectile.ProjectileSoundInfo.State.IN_FLIGHT
                 : SoundEffectProjectile.ProjectileSoundInfo.State.FINISHED;
       infoToUpdate.projectileLocation = EntityBreathProjectileNether.this.getCurrentPosition();
-      infoToUpdate.dragonMouthLocation = EntityBreathProjectileNether.this.parentDragon.getPositionVector();
       infoToUpdate.relativeVolume = 1.0F;
-      infoToUpdate.lifeStage = EntityBreathProjectileNether.this.parentDragon.getLifeStageHelper().getLifeStage();
+      EntityTameableDragon parentDragon = getParentDragon();
+      if (parentDragon != null) {
+        infoToUpdate.dragonMouthLocation = parentDragon.getPositionVector();
+        infoToUpdate.lifeStage = parentDragon.getLifeStageHelper().getLifeStage();
+      } else {
+        infoToUpdate.dragonMouthLocation = new Vec3(0,0,0);     //arbitrary fall-back values
+        infoToUpdate.lifeStage = DragonLifeStage.HATCHLING;
+      }
       return true;
     }
   }
@@ -232,6 +238,5 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
   }
 
   private SoundEffectProjectile soundEffectProjectile;
-  private EntityTameableDragon parentDragon;
 
 }

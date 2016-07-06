@@ -20,7 +20,7 @@ import java.util.Random;
  */
 public class EntityBreathProjectileEnder extends EntityBreathProjectile {
 
-  public EntityBreathProjectileEnder(World worldIn, EntityLivingBase shooter,
+  public EntityBreathProjectileEnder(World worldIn, EntityTameableDragon shooter,
                                      Vec3 origin, Vec3 destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);

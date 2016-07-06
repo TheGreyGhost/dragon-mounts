@@ -27,64 +27,6 @@ public class BreathEntityRendererGhost extends Render
 
   public void doRender(EntityBreathGhost entity, double x, double y, double z, float yaw, float partialTicks)
   {
-    //todo delete from here
-//    GlStateManager.pushMatrix();
-//    this.bindEntityTexture(entity);
-//    GlStateManager.translate((float) x, (float) y, (float) z);
-//    GlStateManager.enableRescaleNormal();
-//    float f2 = 1.0F;
-//    GlStateManager.scale(f2 / 1.0F, f2 / 1.0F, f2 / 1.0F);
-//    Tessellator tessellator = Tessellator.getInstance();
-//    WorldRenderer worldrenderer = tessellator.getWorldRenderer();
-//    double uMin = 0.0F;
-//    double uMax = 1.0F;
-//    double vMin = 0.0F;
-//    double vMax = 1.0F;
-//    double xSize = entity.width;
-//    double ySize = entity.height;
-//    double xOffset = xSize / 2;
-//    double yOffset = ySize / 2;
-//    GlStateManager.rotate(180.0F - this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
-//    GlStateManager.rotate(-this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
-//    worldrenderer.startDrawingQuads();
-//    worldrenderer.setNormal(0.0F, 1.0F, 0.0F);
-//    worldrenderer.addVertexWithUV((0.0 - xOffset), (0.0 - yOffset), 0.0D, uMin, vMax);
-//    worldrenderer.addVertexWithUV((xSize - xOffset), (0.0 - yOffset), 0.0D, uMax, vMax);
-//    worldrenderer.addVertexWithUV( (xSize - xOffset),  (ySize - yOffset), 0.0D,  uMax, vMin);
-//    worldrenderer.addVertexWithUV( (0.0 - xOffset),  (ySize - yOffset), 0.0D,  uMin, vMin);
-//    tessellator.draw();
-//
-//    GlStateManager.disableLighting();
-//    TextureMap texturemap = Minecraft.getMinecraft().getTextureMapBlocks();
-//    TextureAtlasSprite fireLayer0 = texturemap.getAtlasSprite("minecraft:blocks/fire_layer_0");
-//    TextureAtlasSprite fireLayer1 = texturemap.getAtlasSprite("minecraft:blocks/fire_layer_1");
-//    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-//
-//    worldrenderer.startDrawingQuads();
-//
-//    this.bindTexture(TextureMap.locationBlocksTexture);
-//    float fireLayer0MinU = fireLayer0.getMinU();
-//    float fireLayer0MinV = fireLayer0.getMinV();
-//    float fireLayer0MaxU = fireLayer0.getMaxU();
-//    float fireLayer0MaxV = fireLayer0.getMaxV();
-//
-//    final float Z_NUDGE = -0.01F;
-//    yOffset -= ySize / 2;  // draw flame from midpt of ball
-//    worldrenderer.addVertexWithUV((0.0 - xOffset), (0.0 - yOffset), Z_NUDGE, fireLayer0MaxU, fireLayer0MaxV);
-//    worldrenderer.addVertexWithUV((xSize - xOffset), (0.0 - yOffset), Z_NUDGE, fireLayer0MinU, fireLayer0MaxV);
-//    worldrenderer.addVertexWithUV((xSize - xOffset), (ySize - yOffset), Z_NUDGE, fireLayer0MinU, fireLayer0MinV);
-//    worldrenderer.addVertexWithUV((0.0 - xOffset),  (ySize - yOffset), Z_NUDGE, fireLayer0MaxU, fireLayer0MinV);
-//
-//    tessellator.draw();
-//
-//    GlStateManager.enableLighting();
-//
-//    GlStateManager.disableRescaleNormal();
-//    GlStateManager.popMatrix();
-//    super.doRender(entity, x, y, z, yaw, partialTicks);
-   // down to here
-
-
     // render the lightning from the origin (mouth of the dragon) to the current location
     // Based on vanilla lightning render:
     // multiple strands per strike.  One reaches all the way from top to bottom.  The others start part way
