@@ -59,7 +59,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 
     this.setLocationAndAngles(origin.xCoord, origin.yCoord, origin.zCoord,
             (float)yaw, (float)pitch);
-//    this.setPosition(this.posX, this.posY, this.posZ);
     this.motionX = this.motionY = this.motionZ = 0.0D;
 
     final double ACCELERATION_BLOCKS_PER_TICK_SQ = 0.2;
@@ -70,9 +69,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.zCoord;
 
     ticksToLive = getLifeTimeTicks(power);
-
-//    projectileNumber =  ++projectilesFired;
-//    ticksTillFreeze = 10 - projectilesFired;
   }
 
   protected void entityInit() {
@@ -96,23 +92,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     return distance < d1 * d1;
   }
 
-//  public EntityBreathProjectile(World worldIn, double x, double y, double z, double accelX, double accelY,
-//                                double accelZ) {
-//    super(worldIn);
-//    this.setSize(1.0F, 1.0F);
-//    this.setLocationAndAngles(x, y, z, this.rotationYaw, this.rotationPitch);
-//    this.setPosition(x, y, z);
-//    double d6 = (double) MathHelper.sqrt_double(accelX * accelX + accelY * accelY + accelZ * accelZ);
-//    this.accelerationX = accelX / d6 * 0.1D;
-//    this.accelerationY = accelY / d6 * 0.1D;
-//    this.accelerationZ = accelZ / d6 * 0.1D;
-//  }
-
-
-//  private static int projectilesFired = 0;  //todo remove
-//  private int ticksTillFreeze; //todo remove
-//  private int projectileNumber; //todo remove
-
   // used during initialisation to calculate the entity size based on the power.
   //  must not access member variables!
   protected abstract void setSizeFromPower(BreathNode.Power power);
@@ -125,13 +104,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   @Override
   public void onUpdate() {
     BlockPos entityTilePos = new BlockPos(this);
-//    if (--ticksTillFreeze == 0) {
-//      motionX = 0; motionY = 0; motionZ = 0;
-//      accelerationX = 0; accelerationY = 0; accelerationZ = 0;
-//      if (!this.worldObj.isRemote) {
-//        System.out.format("%d stop at [%f, %f, %f]\n", projectileNumber, posX, posY, posZ);
-//      }
-//    }
 
     if (!this.worldObj.isRemote && !this.worldObj.isBlockLoaded(entityTilePos)) {
       this.setDead();
@@ -168,9 +140,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
       MovingObjectPosition movingobjectposition = this.worldObj.rayTraceBlocks(startPos, endPos,
                                                     STOP_ON_LIQUID_FALSE, IGNORE_BLOCK_WITHOUT_BOUNDING_BOX_TRUE,
                                                     RETURN_LAST_UNCOLLIDABLE_BLOCK_FALSE);
-
-//      startPos = new Vec3(this.posX, this.posY, this.posZ);
-//      endPos = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
       if (movingobjectposition != null) {
         endPos = new Vec3(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord,
@@ -214,11 +183,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
       this.posY += this.motionY;
       this.posZ += this.motionZ;
       float motionLength = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
-//      final float THRESHOLD_SPEED = 0.01F; // minimum speed in blocks per tick - if less than this, die
-//      if (motionLength < THRESHOLD_SPEED) {
-//        float accelerationLength = MathHelper.sqrt_double(this.accelerationX * this.motionX + this.motionZ * this.motionZ);
-//        this.setDead();
-//      }
       this.rotationYaw = (float) (Math.atan2(this.motionZ, this.motionX) * 180.0D / Math.PI) + 90.0F;
 
       for (this.rotationPitch = (float) (Math.atan2((double) motionLength, this.motionY) * 180.0D / Math.PI) - 90.0F;
@@ -262,12 +226,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
       this.motionZ *= (double) motionFactor;
 
       this.setPosition(this.posX, this.posY, this.posZ);
-//      if (!this.worldObj.isRemote) {
-//        System.out.format("%s Pos: [%f, %f, %f] motion:[%f, %f, %f]\n",
-//                          this.worldObj.isRemote ? "client" : "server",
-//                          this.posX, this.posY, this.posZ,
-//                          this.motionX, this.motionY, this.motionZ);  //todo remove
-//      }
     }
   }
 
@@ -344,13 +302,11 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     this.accelerationY = tagCompound.getDouble("accelerationY");
     this.accelerationZ = tagCompound.getDouble("accelerationZ");
 
-//    System.err.println("NBT read power:"+ power); // todo remove
     power = BreathNode.Power.SMALL;  // default
     if (tagCompound.hasKey("ProjectilePower", 99)) {
       int powerIndex = tagCompound.getInteger("ProjectilePower");
       if (powerIndex >= 0 && powerIndex < BreathNode.Power.values().length) {
         this.power = BreathNode.Power.values()[powerIndex];
-//        System.err.println("NBT power:"+ power); // todo remove
       }
     }
     ticksToLive = tagCompound.getInteger("ticksToLive");
@@ -403,7 +359,6 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 
     if (powerOrdinal >= 0 && powerOrdinal < BreathNode.Power.values().length) {
       this.power = BreathNode.Power.values()[powerOrdinal];
-//      System.err.println("NBT power readSpawnData:"+ power); // todo remove
     }
     this.setSizeFromPower(power);
 
@@ -435,40 +390,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
    */
   public boolean attackEntityFrom(DamageSource source, float amount) {
     return false;
-//      if (this.isEntityInvulnerable(source))
-//      {
-//        return false;
-//      }
-//      else
-//      {
-//        this.setBeenAttacked();
-//
-//        if (source.getEntity() != null)
-//        {
-//          Vec3 vec3 = source.getEntity().getLookVec();
-//
-//          if (vec3 != null)
-//          {
-//            this.motionX = vec3.xCoord;
-//            this.motionY = vec3.yCoord;
-//            this.motionZ = vec3.zCoord;
-//            this.accelerationX = this.motionX * 0.1D;
-//            this.accelerationY = this.motionY * 0.1D;
-//            this.accelerationZ = this.motionZ * 0.1D;
-//          }
-//
-//          if (source.getEntity() instanceof EntityLivingBase)
-//          {
-//            this.shootingEntity = (EntityLivingBase)source.getEntity();
-//          }
-//
-//          return true;
-//        }
-//        else
-//        {
-//          return false;
-//        }
-//      }
+
   }
 
   /**

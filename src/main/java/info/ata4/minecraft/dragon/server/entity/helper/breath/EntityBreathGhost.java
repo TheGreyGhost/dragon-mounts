@@ -30,7 +30,6 @@ public class EntityBreathGhost extends EntityWeatherEffect
     startPoint = i_startPoint;
     endPoint = i_endPoint;
     randomSeed = System.currentTimeMillis();
-//    randomSeed = 15125;  //todo remove
     power = i_power;
     this.setLocationAndAngles(startPoint.xCoord, startPoint.yCoord, startPoint.zCoord, 0.0F, 0.0F);
   }
