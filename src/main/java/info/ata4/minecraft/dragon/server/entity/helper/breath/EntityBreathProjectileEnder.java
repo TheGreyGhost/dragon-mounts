@@ -3,6 +3,10 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.render.CustomEntityFXTypes;
 import info.ata4.minecraft.dragon.client.render.EntityFXEnderTrail;
+import info.ata4.minecraft.dragon.client.sound.SoundController;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectile;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectileEnder;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectileNether;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -68,6 +72,17 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
                 new int[0]);
       }
       this.setDead();
+    }
+
+    if (this.worldObj.isRemote) {
+      EntityTameableDragon parentDragon = getParentDragon();
+      if (soundEffectProjectile == null && parentDragon != null) {
+        SoundController soundController = parentDragon.getBreathHelper().getSoundController(parentDragon.getEntityWorld());
+        soundEffectProjectile = new SoundEffectProjectileEnder(soundController, new SoundUpdateLink());
+      }
+      if (soundEffectProjectile != null) {
+        soundEffectProjectile.performTick(Minecraft.getMinecraft().thePlayer);
+      }
     }
 
   }
@@ -197,6 +212,16 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
     }
   }
 
+  @Override
+  public void setDead()
+  {
+    super.setDead();
+    if (getEntityWorld().isRemote && soundEffectProjectile != null) {
+      soundEffectProjectile.performTick(Minecraft.getMinecraft().thePlayer);
+    }
+  }
+
+
   /**
    * teleport an entity.  copied from EntityEnderman teleportTo
    * @param entityToTeleport
@@ -246,5 +271,7 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
     private int coolDownTimerTicks = 0;
     private boolean mouthHasBeenClosed = false;
   }
+
+  private SoundEffectProjectile soundEffectProjectile;
 
 }

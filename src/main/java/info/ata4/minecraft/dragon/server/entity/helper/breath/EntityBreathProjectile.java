@@ -1,6 +1,8 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectile;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
@@ -392,6 +394,30 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     return false;
 
   }
+
+  public class SoundUpdateLink implements SoundEffectProjectile.ProjectileSoundUpdateLink
+  {
+    public boolean refreshSoundInfo(SoundEffectProjectile.ProjectileSoundInfo infoToUpdate)
+    {
+
+      infoToUpdate.projectileState = (ticksToLive > 0 && !isDead)
+              ? SoundEffectProjectile.ProjectileSoundInfo.State.IN_FLIGHT
+              : SoundEffectProjectile.ProjectileSoundInfo.State.FINISHED;
+      infoToUpdate.projectileLocation = EntityBreathProjectile.this.getCurrentPosition();
+      infoToUpdate.relativeVolume = 1.0F;
+      EntityTameableDragon parentDragon = getParentDragon();
+      if (parentDragon != null) {
+        infoToUpdate.dragonMouthLocation = parentDragon.getPositionVector();
+        infoToUpdate.lifeStage = parentDragon.getLifeStageHelper().getLifeStage();
+      } else {
+        infoToUpdate.dragonMouthLocation = new Vec3(0,0,0);     //arbitrary fall-back values
+        infoToUpdate.lifeStage = DragonLifeStage.HATCHLING;
+      }
+      return true;
+    }
+  }
+
+
 
   /**
    * Returns the dragon which spawned this projectile
