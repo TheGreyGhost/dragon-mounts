@@ -11,6 +11,10 @@ package info.ata4.minecraft.dragon.server.entity.breeds;
 
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterForest;
+import info.ata4.minecraft.dragon.client.sound.SoundController;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeapon;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponForest;
+import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponIce;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import net.minecraft.block.Block;
@@ -113,10 +117,12 @@ public class DragonBreedForest extends DragonBreed {
   @Override
   public BreathNodeFactory getBreathNodeFactory(EntityTameableDragon dragon)
   {
-//    DragonBreathMode breathMode = dragon.getBreathHelper().getBreathMode();
-//    return (breathMode.equals(DragonBreathMode.FOREST_BURNING)) ? new BreathNodeForest.BreathNodeForestFactoryBurning()
-//                                                                : new BreathNodeForest.BreathNodeForestFactory();
     return new BreathNodeForest.BreathNodeForestFactory();
+  }
+  @Override
+  public SoundEffectBreathWeapon getSoundEffectBreathWeapon(SoundController i_soundController,
+                                                            SoundEffectBreathWeapon.WeaponSoundUpdateLink i_weaponSoundUpdateLink) {
+    return new SoundEffectBreathWeaponForest(i_soundController, i_weaponSoundUpdateLink);
   }
 
 }

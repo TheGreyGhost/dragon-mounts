@@ -21,6 +21,14 @@ public enum SoundEffectName
   HATCHLING_BREATHE_FIRE_LOOP("mob.enderdragon.breathweapon.fire.hatchlingbreathefireloop", 5.336),
   HATCHLING_BREATHE_FIRE_STOP("mob.enderdragon.breathweapon.fire.hatchlingbreathefirestop", 1.0),
 
+  BREATHE_ICE_START("mob.enderdragon.breathweapon.ice.breatheicestart", 1.7),
+  BREATHE_ICE_LOOP("mob.enderdragon.breathweapon.ice.breatheiceloop", 7.663),
+  BREATHE_ICE_STOP("mob.enderdragon.breathweapon.ice.breatheicestop", 1.2),
+
+  BREATHE_FOREST_START("mob.enderdragon.breathweapon.forest.breatheforeststart", 0.929),
+  BREATHE_FOREST_LOOP("mob.enderdragon.breathweapon.forest.breatheforestloop", 1.936),
+  BREATHE_FOREST_STOP("mob.enderdragon.breathweapon.forest.breatheforeststop", 0.708),
+
   BREATHE_NETHER_SPAWN("mob.enderdragon.breathweapon.nether.breathenetherspawn", 2.0),
   NETHER_PROJECTILE_LOOP("mob.enderdragon.breathweapon.nether.projectilenetherloop", 3.4),
 

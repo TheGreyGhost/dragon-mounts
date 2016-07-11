@@ -81,6 +81,42 @@
       "mob/enderdragon/breathweapon/fire/hatchlingbreathefirestop"
     ]
   },
+  "mob.enderdragon.breathweapon.ice.breatheicestart": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/ice/breatheicestart"
+    ]
+  },
+  "mob.enderdragon.breathweapon.ice.breatheiceloop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/ice/breatheiceloop"
+    ]
+  },
+  "mob.enderdragon.breathweapon.ice.breatheicestop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/ice/breatheicestop"
+    ]
+  },
+  "mob.enderdragon.breathweapon.forest.breatheforeststart": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/forest/breatheforeststart"
+    ]
+  },
+  "mob.enderdragon.breathweapon.forest.breatheforestloop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/forest/breatheforestloop"
+    ]
+  },
+  "mob.enderdragon.breathweapon.forest.breatheforeststop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/forest/breatheforeststop"
+    ]
+  },
   "mob.enderdragon.breathweapon.ender.breatheenderspawn": {
     "category": "neutral",
     "sounds": [
