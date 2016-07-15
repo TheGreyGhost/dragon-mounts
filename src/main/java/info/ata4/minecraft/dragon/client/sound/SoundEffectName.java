@@ -29,6 +29,14 @@ public enum SoundEffectName
   BREATHE_FOREST_LOOP("mob.enderdragon.breathweapon.forest.breatheforestloop", 1.936),
   BREATHE_FOREST_STOP("mob.enderdragon.breathweapon.forest.breatheforeststop", 0.708),
 
+  BREATHE_AIR_START("mob.enderdragon.breathweapon.air.breatheairstart", 1.5),
+  BREATHE_AIR_LOOP("mob.enderdragon.breathweapon.air.breatheairloop", 7.407),
+  BREATHE_AIR_STOP("mob.enderdragon.breathweapon.air.breatheairstop", 1.317),
+
+  BREATHE_WATER_START("mob.enderdragon.breathweapon.water.breathewaterstart", 0.733),
+  BREATHE_WATER_LOOP("mob.enderdragon.breathweapon.water.breathewaterloop", 4.949),
+  BREATHE_WATER_STOP("mob.enderdragon.breathweapon.water.breathewaterstop", 3.536),
+
   BREATHE_NETHER_SPAWN("mob.enderdragon.breathweapon.nether.breathenetherspawn", 2.0),
   NETHER_PROJECTILE_LOOP("mob.enderdragon.breathweapon.nether.projectilenetherloop", 3.4),
 

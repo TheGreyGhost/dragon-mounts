@@ -117,6 +117,42 @@
       "mob/enderdragon/breathweapon/forest/breatheforeststop"
     ]
   },
+  "mob.enderdragon.breathweapon.water.breathewaterstart": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/water/breathewaterstart"
+    ]
+  },
+  "mob.enderdragon.breathweapon.water.breathewaterloop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/water/breathewaterloop"
+    ]
+  },
+  "mob.enderdragon.breathweapon.water.breathewaterstop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/water/breathewaterstop"
+    ]
+  },
+  "mob.enderdragon.breathweapon.air.breatheairstart": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/air/breatheairstart"
+    ]
+  },
+  "mob.enderdragon.breathweapon.air.breatheairloop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/air/breatheairloop"
+    ]
+  },
+  "mob.enderdragon.breathweapon.air.breatheairstop": {
+    "category": "neutral",
+    "sounds": [
+      "mob/enderdragon/breathweapon/air/breatheairstop"
+    ]
+  },
   "mob.enderdragon.breathweapon.ender.breatheenderspawn": {
     "category": "neutral",
     "sounds": [
