@@ -34,7 +34,6 @@ Pretty much all the other changes to the code are related to making sure the bre
 bugs:
 OK dragon breed command doesn't alter the breath weapon
 
-
 Still to do:
 OK document code structure
 OK strip out debugging
@@ -55,12 +54,12 @@ OK? hatchling repeatedly opens & closes mouth when trying to breathe
 OK HeadPositionNumbers on client & server don't match up.
 
 later
-- different breath types
+OK different breath types
 - dragon can fly around without rider
 OK change to configuration screen
 OK visual targeting indication
 OK breath immunity for player holding orb? for rider
-- add flying motion vector to breath vector?
+OK add flying motion vector to breath vector?
 - aiming is awkward when riding the dragon.
 - make dragon partially transparent when being ridden
 - bug fix: dragon doesn't swim
