@@ -9,6 +9,7 @@
  */
 package info.ata4.minecraft.dragon.server.entity.breeds;
 
+import info.ata4.minecraft.dragon.DragonMountsSoundEvents;
 import com.google.common.collect.Table;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitter;
@@ -16,6 +17,9 @@ import info.ata4.minecraft.dragon.client.sound.SoundController;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeapon;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponNull;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFactory;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathProjectileFactory;
@@ -23,8 +27,14 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
 import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureAttribute;
+import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.item.Item;
 import net.minecraft.util.DamageSource;
-import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,15 +47,14 @@ import java.util.Set;
  */
 public abstract class DragonBreed {
     
-    private final String name;
     private final String skin;
     private final int color;
-    private Set<String> immunities = new HashSet<String>();
-    private Set<Block> breedBlocks = new HashSet<Block>();
-    private Set<BiomeGenBase> biomes = new HashSet<BiomeGenBase>();
+    private final Set<String> immunities = new HashSet<>();
+    private final Set<Block> breedBlocks = new HashSet<>();
+    private final Set<Biome> biomes = new HashSet<>();
+    protected final Random rand = new Random();
     
-    public DragonBreed(String name, String skin, int color) {
-        this.name = name;
+    DragonBreed(String skin, int color) {
         this.skin = skin;
         this.color = color;
         
@@ -55,10 +64,9 @@ public abstract class DragonBreed {
         
         // assume that cactus needles don't do much damage to animals with horned scales
         addImmunity(DamageSource.cactus);
-    }
-    
-    public String getName() {
-        return name;
+        
+        // ignore damage from vanilla ender dragon
+        addImmunity(DamageSource.dragonBreath);
     }
 
     public String getSkin() {
@@ -85,7 +93,7 @@ public abstract class DragonBreed {
         return (color & 0xFF) / 255f;
     }
     
-    protected void addImmunity(DamageSource dmg) {
+    protected final void addImmunity(DamageSource dmg) {
         immunities.add(dmg.damageType);
     }
     
@@ -97,7 +105,7 @@ public abstract class DragonBreed {
         return immunities.contains(dmg.damageType);
     }
     
-    public void addHabitatBlock(Block block) {
+    protected final void addHabitatBlock(Block block) {
         breedBlocks.add(block);
     }
     
@@ -105,11 +113,11 @@ public abstract class DragonBreed {
         return breedBlocks.contains(block);
     }
     
-    public void addHabitatBiome(BiomeGenBase biome) {
+    protected final void addHabitatBiome(Biome biome) {
         biomes.add(biome);
     }
     
-    public boolean isHabitatBiome(BiomeGenBase biome) {
+    public boolean isHabitatBiome(Biome biome) {
         return biomes.contains(biome);
     }
     
@@ -117,37 +125,105 @@ public abstract class DragonBreed {
         return false;
     }
     
-    public void onEnable(EntityTameableDragon dragon) {
+    public Item[] getFoodItems() {
+        return new Item[] { Items.PORKCHOP, Items.BEEF, Items.CHICKEN };
     }
     
-    public void onDisable(EntityTameableDragon dragon) {
+    public Item getBreedingItem() {
+        return Items.FISH;
     }
     
     public void onUpdate(EntityTameableDragon dragon) {
+        placeFootprintBlocks(dragon);
     }
     
-    public void onDeath(EntityTameableDragon dragon) {
-    }
-    
-    public String getLivingSound(EntityTameableDragon dragon) {
-        if (dragon.getRNG().nextInt(3) == 0) {
-            return "mob.enderdragon.growl";
-        } else {
-            return DragonMounts.AID + ":mob.enderdragon.breathe";
+    protected void placeFootprintBlocks(EntityTameableDragon dragon) {
+        // only apply on server
+        if (!dragon.isServer()) {
+            return;
+        }
+        
+        // only apply on adult dragons that don't fly
+        if (!dragon.isAdult() || dragon.isFlying()) {
+            return;
+        }
+        
+        // only apply if footprints are enabled
+        float footprintChance = getFootprintChance();
+        if (footprintChance == 0) {
+            return;
+        }
+        
+        // footprint loop, from EntitySnowman.onLivingUpdate with slight tweaks
+        World world = dragon.worldObj;
+        for (int i = 0; i < 4; i++) {
+            // place only if randomly selected
+            if (world.rand.nextFloat() > footprintChance) {
+                continue;
+            }
+
+            // get footprint position
+            double bx = dragon.posX + (i % 2 * 2 - 1) * 0.25;
+            double by = dragon.posY + 0.5;
+            double bz = dragon.posZ + (i / 2 % 2 * 2 - 1) * 0.25;
+            BlockPos pos = new BlockPos(bx, by, bz);
+
+            // footprints can only be placed on empty space
+            if (world.isAirBlock(pos)) {
+                continue;
+            }
+
+            placeFootprintBlock(dragon, pos);
         }
     }
     
-    public String getHurtSound(EntityTameableDragon dragon) {
-        return "mob.enderdragon.hit";
+    protected void placeFootprintBlock(EntityTameableDragon dragon, BlockPos blockPos) {
     }
     
-    public String getDeathSound(EntityTameableDragon dragon) {
-        return DragonMounts.AID + ":mob.enderdragon.death";
+    protected float getFootprintChance() {
+        return 0;
+    }
+    
+    public abstract void onEnable(EntityTameableDragon dragon);
+    
+    public abstract void onDisable(EntityTameableDragon dragon);
+    
+    public abstract void onDeath(EntityTameableDragon dragon);
+    
+    public SoundEvent getLivingSound() {
+        if (rand.nextInt(3) == 0) {
+            return SoundEvents.ENTITY_ENDERDRAGON_GROWL;
+        } else {
+            return DragonMountsSoundEvents.ENTITY_DRAGON_MOUNT_BREATHE;
+        }
+    }
+    
+    public SoundEvent getHurtSound() {
+        return SoundEvents.ENTITY_ENDERDRAGON_HURT;
+    }
+    
+    public SoundEvent getDeathSound() {
+        return DragonMountsSoundEvents.ENTITY_DRAGON_MOUNT_DEATH;
+    }
+    
+    public SoundEvent getWingsSound() {
+        return SoundEvents.ENTITY_ENDERDRAGON_FLAP;
+    }
+    
+    public SoundEvent getStepSound() {
+        return DragonMountsSoundEvents.ENTITY_DRAGON_MOUNT_STEP;
+    }
+    
+    public SoundEvent getEatSound() {
+        return SoundEvents.ENTITY_GENERIC_EAT;
+    }
+    
+    public SoundEvent getAttackSound() {
+        return SoundEvents.ENTITY_GENERIC_EAT;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public float getSoundPitch(SoundEvent sound) {
+        return 1;
     }
 
     public int getNumberOfNeckSegments() {return 7;}
@@ -238,5 +314,8 @@ public abstract class DragonBreed {
         }
       }
       return new Pair<Float, Float>(minAttackRange, maxAttackRange);
+    }
+    public float getSoundVolume(SoundEvent sound) {
+        return 1;
     }
 }

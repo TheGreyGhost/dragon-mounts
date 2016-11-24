@@ -9,11 +9,9 @@
  */
 package info.ata4.minecraft.dragon.server.entity.ai.ground;
 
+import info.ata4.minecraft.dragon.server.entity.ai.EntityAIDragonBase;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
-import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.world.World;
+import info.ata4.minecraft.dragon.server.entity.helper.EnumDragonLifeStage;
 
 import java.util.List;
 
@@ -23,18 +21,15 @@ import java.util.List;
  * 
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  */
-public class EntityAIDragonMate extends EntityAIBase {
+public class EntityAIDragonMate extends EntityAIDragonBase {
 
-    private EntityTameableDragon dragon;
     private EntityTameableDragon dragonMate;
-    private World theWorld;
     private int spawnBabyDelay = 0;
     private double speed;
 
     public EntityAIDragonMate(EntityTameableDragon dragon, double speed) {
-        this.dragon = dragon;
+        super(dragon);
         this.speed = speed;
-        theWorld = dragon.worldObj;
         setMutexBits(3);
     }
 
@@ -73,7 +68,7 @@ public class EntityAIDragonMate extends EntityAIBase {
      */
     @Override
     public void updateTask() {
-        dragon.getLookHelper().setLookPositionWithEntity(dragonMate, dragon.getHeadYawSpeed(), dragon.getHeadPitchSpeed());
+        dragon.getLookHelper().setLookPositionWithEntity(dragonMate, 10.0F, (float) dragon.getVerticalFaceSpeed());
         dragon.getNavigator().tryMoveToEntityLiving(dragonMate, speed);
         
         ++spawnBabyDelay;
@@ -88,12 +83,13 @@ public class EntityAIDragonMate extends EntityAIBase {
      * that can be mated with. Returns the first valid mate found.
      */
     private EntityTameableDragon getNearbyMate() {
-        double range = 12;
-        List<Entity> nearbyEntities = theWorld.getEntitiesWithinAABB(EntityTameableDragon.class,
-                dragon.getEntityBoundingBox().expand(range, range, range));
+        double followRange = getFollowRange();
+        List<EntityTameableDragon> nearbyDragons = world.getEntitiesWithinAABB(
+            EntityTameableDragon.class,
+            dragon.getEntityBoundingBox().expand(followRange, followRange, followRange)
+        );
         
-        for (Entity entity : nearbyEntities) {
-            EntityTameableDragon nearbyDragon = (EntityTameableDragon) entity;
+        for (EntityTameableDragon nearbyDragon : nearbyDragons) {
             if (dragon.canMateWith(nearbyDragon)) {
                 return nearbyDragon;
             }
@@ -116,10 +112,11 @@ public class EntityAIDragonMate extends EntityAIBase {
             dragonMate.resetInLove();
             
             dragonBaby.setLocationAndAngles(dragon.posX, dragon.posY, dragon.posZ, 0, 0);
-            dragonBaby.getLifeStageHelper().setLifeStage(DragonLifeStage.EGG);
+            dragonBaby.getLifeStageHelper().setLifeStage(EnumDragonLifeStage.EGG);
             
-            theWorld.spawnEntityInWorld(dragonBaby);
+            world.spawnEntityInWorld(dragonBaby);
 
+            // TODO: particles for the clients?
         }
     }
 }

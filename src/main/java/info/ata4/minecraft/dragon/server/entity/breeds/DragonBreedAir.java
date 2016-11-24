@@ -18,11 +18,10 @@ import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponIce;
 import info.ata4.minecraft.dragon.server.entity.EntityFlyingTameable;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.util.DamageSource;
-import net.minecraft.world.biome.BiomeGenBase;
-
 import java.util.UUID;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.init.Biomes;
+import net.minecraft.util.DamageSource;
 
 /**
  *
@@ -33,12 +32,12 @@ public class DragonBreedAir extends DragonBreed {
     public static final UUID MODIFIER_ID = UUID.fromString("60be8770-29f2-4bbe-bb8c-7a41143c9974");
     public static final AttributeModifier MODIFIER = new AttributeModifier(MODIFIER_ID, "Air dragon speed bonus", 0.2, 2).setSaved(false);
 
-    public DragonBreedAir() {
-        super("air", "aether", 0x1dc4f3);
+    DragonBreedAir() {
+        super("aether", 0x1dc4f3);
         
         addImmunity(DamageSource.magic);
         
-        addHabitatBiome(BiomeGenBase.extremeHills);
+        addHabitatBiome(Biomes.EXTREME_HILLS);
     }
 
     @Override
@@ -49,12 +48,16 @@ public class DragonBreedAir extends DragonBreed {
 
     @Override
     public void onEnable(EntityTameableDragon dragon) {
-        dragon.getAttributeMap().getAttributeInstance(EntityFlyingTameable.MOVE_SPEED_AIR).applyModifier(MODIFIER);
+        dragon.getAttributeMap().getAttributeInstance(EntityTameableDragon.MOVEMENT_SPEED_AIR).applyModifier(MODIFIER);
     }
 
     @Override
     public void onDisable(EntityTameableDragon dragon) {
-        dragon.getAttributeMap().getAttributeInstance(EntityFlyingTameable.MOVE_SPEED_AIR).removeModifier(MODIFIER);
+        dragon.getAttributeMap().getAttributeInstance(EntityTameableDragon.MOVEMENT_SPEED_AIR).removeModifier(MODIFIER);
+    }
+
+    @Override
+    public void onDeath(EntityTameableDragon dragon) {
     }
 
   @Override

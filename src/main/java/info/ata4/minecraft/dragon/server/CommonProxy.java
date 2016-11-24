@@ -11,6 +11,7 @@ package info.ata4.minecraft.dragon.server;
 
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.render.CustomEntityFXTypes;
+import info.ata4.minecraft.dragon.server.block.BlockDragonBreedEgg;
 import info.ata4.minecraft.dragon.server.cmd.CommandDragon;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileEnder;
@@ -22,25 +23,20 @@ import info.ata4.minecraft.dragon.server.network.DragonControlMessageHandler;
 import info.ata4.minecraft.dragon.server.network.DragonTargetMessage;
 import info.ata4.minecraft.dragon.server.network.DragonTargetMessageHandlerServer;
 import info.ata4.minecraft.dragon.test.StartupCommon;
+import info.ata4.minecraft.dragon.server.item.ItemDragonBreedEgg;
 import net.minecraft.command.ServerCommandManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.event.*;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.server.FMLServerHandler;
-
-import java.io.File;
 
 /**
  *
@@ -62,7 +58,6 @@ public class CommonProxy {
         itemDragonOrb = (ItemDragonOrb) (new ItemDragonOrb().setUnlocalizedName("dragonorb"));
         GameRegistry.registerItem(itemDragonOrb, "dragonorb");
 //    MinecraftForge.EVENT_BUS.register(new EntitySpawnSuppressor());
-      StartupCommon.preInitCommon();
     }
 
     public void onInit(FMLInitializationEvent evt) {
@@ -93,39 +88,22 @@ public class CommonProxy {
         });
       StartupCommon.postInitCommon();
     }
-
-    public void onServerStarted(FMLServerStartedEvent evt) {
-        MinecraftServer server = MinecraftServer.getServer();
-        ServerCommandManager cmdman = (ServerCommandManager) server.getCommandManager();
+    
+    public void onServerStarting(FMLServerStartingEvent evt) {
+        MinecraftServer server = evt.getServer();
+        ServerCommandManager cmdman = (ServerCommandManager) server.getCommandManager(); 
         cmdman.registerCommand(new CommandDragon());
     }
-
+    
     public void onServerStopped(FMLServerStoppedEvent evt) {
     }
 
-    private void registerEntities()
-    {
+    private void registerEntities() {
         final int TRACKING_RANGE = 80;
         final int UPDATE_FREQUENCY = 3;
         final int DRAGON_ENTITY_ID = 26;
         EntityRegistry.registerModEntity(EntityTameableDragon.class, "DragonMount", DRAGON_ENTITY_ID,
                 DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
-
-        final int PROJECTILE_NETHER_ENTITY_ID = 27;
-        EntityRegistry.registerModEntity(EntityBreathProjectileNether.class, "NetherFireball", PROJECTILE_NETHER_ENTITY_ID,
-                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
-
-        final int PROJECTILE_ENDER_ENTITY_ID = 28;
-        EntityRegistry.registerModEntity(EntityBreathProjectileEnder.class, "EnderGlobe", PROJECTILE_ENDER_ENTITY_ID,
-                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
-
-        final int PROJECTILE_GHOST_ENTITY_ID = 29;
-        EntityRegistry.registerModEntity(EntityBreathProjectileGhost.class, "GhostEntity", PROJECTILE_GHOST_ENTITY_ID,
-                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
-        final int WEATHER_EFFECT_GHOST_ENTITY_ID = 30;
-        EntityRegistry.registerModEntity(EntityBreathProjectileGhost.class, "GhostWeatherEntity", WEATHER_EFFECT_GHOST_ENTITY_ID,
-                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
-
     }
 
     public void registerChestItems() {

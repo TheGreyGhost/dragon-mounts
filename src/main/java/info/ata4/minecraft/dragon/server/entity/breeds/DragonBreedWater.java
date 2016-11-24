@@ -17,9 +17,10 @@ import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponAir;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponWater;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
+import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
-import net.minecraft.world.biome.BiomeGenBase;
 
 /**
  *
@@ -27,17 +28,31 @@ import net.minecraft.world.biome.BiomeGenBase;
  */
 public class DragonBreedWater extends DragonBreed {
 
-    public DragonBreedWater() {
-        super("water", "sylphid", 0x4f69a8);
+    DragonBreedWater() {
+        super("sylphid", 0x4f69a8);
         
         addImmunity(DamageSource.drown);
         
-        addHabitatBlock(Blocks.water);
-        addHabitatBlock(Blocks.flowing_water);
+        addHabitatBlock(Blocks.WATER);
+        addHabitatBlock(Blocks.FLOWING_WATER);
+        addHabitatBlock(Blocks.PRISMARINE);
+        addHabitatBlock(Blocks.SEA_LANTERN);
         
-        addHabitatBiome(BiomeGenBase.ocean);
-        addHabitatBiome(BiomeGenBase.river);
-        addHabitatBiome(BiomeGenBase.swampland);
+        addHabitatBiome(Biomes.OCEAN);
+        addHabitatBiome(Biomes.RIVER);
+        addHabitatBiome(Biomes.SWAMPLAND);
+    }
+
+    @Override
+    public void onEnable(EntityTameableDragon dragon) {
+    }
+
+    @Override
+    public void onDisable(EntityTameableDragon dragon) {
+    }
+
+    @Override
+    public void onDeath(EntityTameableDragon dragon) {
     }
 
 

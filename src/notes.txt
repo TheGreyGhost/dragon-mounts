@@ -54,45 +54,13 @@ OK? hatchling repeatedly opens & closes mouth when trying to breathe
 OK HeadPositionNumbers on client & server don't match up.
 
 later
-OK different breath types
+- different breath types
 - dragon can fly around without rider
 OK change to configuration screen
 OK visual targeting indication
 OK breath immunity for player holding orb? for rider
-OK add flying motion vector to breath vector?
+- add flying motion vector to breath vector?
 - aiming is awkward when riding the dragon.
-- make dragon partially transparent when being ridden
-- bug fix: dragon doesn't swim
-OK bug fix: dragon disappears when still inside field of view
-
----------------
-BreathWeapon types:
-#Air-
-Gusts of strong wind to buffet mobs and shred scenery (make it fly away?). blow away items the player is holding
-
-Ender-
-Purple fireball as per Xbox version?
-
-#Fire-
-Already done
-
-#Forest-
-Acidic gas cloud green
-
-Ghost-
-Electricity
-
-#Ice-
-Ice shards / similar to sleet in game
-
-#Water
-Generates water - washes player with; generates water
-
-Nether
-Fireballs as per ghast
-
-
-----------
 
 ** have to exclude test sources in order to build properly - tests won't execute during build.
 
@@ -308,76 +276,8 @@ looking is handled by movement AI.
 
 
 
-    tests:
-        canBlockStay-multiple Block.cactus; Block.reeds
-        canPlaceBlockOnSide Blocks.vine
-        canBlockStay - tallgrass (grass, fern); flowers
-        canPlaceBlockAt - waterlily, double plant (various)
-
-    place:
-        setBlockState-multiple Block.cactus, Block.reeds
-        setBlockState with custom state
-        setBlockState - tallgrass (grass, fern), waterlily, flowers
-        placeAt - doubleplant
-
-When one of the blocks is ignited, change all nodes to burning and make dragon breathe fire until stopped.
-client: burning dissipates rapidly once stopped.  use fire gfx
-server: tell when dragon burn stops.  explosion centred on fire
-
-How to implement?
-BreathNodeForest - including factory
-BreathWeaponForest
-How does client know that dragon is breathing fire or breathing gas?
-BreathWeaponFXEmitterForest
-BreathFXForest
-
-Use an EntityWatcher for breath mode
-
-Explode all at once?
-On server -
-(1) when flammable is detected:
-  a) set breath mode of parent dragon
-  b) flip the mode of all spawned nodes?
-  c) reset breath mode when breathing stopped?
-
-  EntityBreathNode:
-    - creates breathnode from factory
-    - breathnode.updateage
-
-    - need to track the parent dragon? no; updateage
 
 
-
-
-
-(2) client side:
-  a) when breath mode detected - flip mode of all spawned nodes
-  b)
-
-  burning affects:
-    lifetime; appearance
-
-  factory could keep track of
-
-  BreathFXForest can easily track nodes created in a given breath
-
-  client side: detect change in breath mode and search for adjacents?
-
-  server side:
-  BreathAffectedArea contains all the nodes
-  implement a breathmode change method on all the nodes?
-  BreathAffectedArea.updateTick could be provided with breathmode
-
-  client side:
-  DragonBreathHelper BreathWeaponFXEmitter spawnBreathParticles
-
-  The BreathWeaponFXEmitter could track them all
-    change mode method
-    add a getBreathNode method to each BreathFX
-    the emitter uses it to track.
-    Cull dead ones periodically.
-
-Dragons which fire projectiles
 
 
 

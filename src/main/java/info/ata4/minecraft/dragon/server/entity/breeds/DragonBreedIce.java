@@ -18,59 +18,65 @@ import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponIce;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
+import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
 
 /**
  *
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  */
 public class DragonBreedIce extends DragonBreed {
-
-    private static final Block FOOTPRINT = Blocks.snow_layer;
-    private static final float FOOTPRINT_CHANCE = 0.2f;
-
-    public DragonBreedIce() {
-        super("ice", "ice", 0x6fc3ff);
-
+    
+    DragonBreedIce() {
+        super("ice", 0x6fc3ff);
+        
         addImmunity(DamageSource.magic);
-
-        addHabitatBlock(Blocks.snow);
-        addHabitatBlock(Blocks.snow_layer);
-        addHabitatBlock(Blocks.ice);
-
-        addHabitatBiome(BiomeGenBase.frozenOcean);
-        addHabitatBiome(BiomeGenBase.frozenRiver);
-        addHabitatBiome(BiomeGenBase.iceMountains);
-        addHabitatBiome(BiomeGenBase.icePlains);
+        
+        addHabitatBlock(Blocks.SNOW);
+        addHabitatBlock(Blocks.SNOW_LAYER);
+        addHabitatBlock(Blocks.ICE);
+        
+        addHabitatBiome(Biomes.FROZEN_OCEAN);
+        addHabitatBiome(Biomes.FROZEN_RIVER);
+        addHabitatBiome(Biomes.ICE_MOUNTAINS);
+        addHabitatBiome(Biomes.ICE_PLAINS);
+    }
+    
+    @Override
+    protected float getFootprintChance() {
+        return 0.1f;
+    }
+    
+    @Override
+    protected void placeFootprintBlock(EntityTameableDragon dragon, BlockPos blockPos) {
+        // place snow layer blocks, but only if the biome is cold enough
+        World world = dragon.worldObj;
+        
+        if (world.getBiome(blockPos).getFloatTemperature(blockPos) > 0.8f) {
+            return;
+        }
+        
+        Block footprint = Blocks.SNOW_LAYER;
+        if (!footprint.canPlaceBlockAt(world, blockPos)) {
+            return;
+        }
+        
+        world.setBlockState(blockPos, footprint.getDefaultState());
     }
 
     @Override
-    public void onUpdate(EntityTameableDragon dragon) {
-        // place some snow footprints where the dragon walks
-        if (dragon.isAdult() && !dragon.isFlying()) {
-            World world = dragon.worldObj;
-            for (int i = 0; i < 4; i++) {
-                if (world.rand.nextFloat() < FOOTPRINT_CHANCE) {
-                    continue;
-                }
+    public void onEnable(EntityTameableDragon dragon) {
+    }
 
-                double bx = dragon.posX + (i % 2 * 2 - 1) * 0.25;
-                double by = dragon.posY + 0.5;
-                double bz = dragon.posZ + (i / 2 % 2 * 2 - 1) * 0.25;
-                BlockPos blockPos = new BlockPos(bx, by, bz);
-                // from EntitySnowman.onLivingUpdate, with slight tweaks
-                if (world.getBlockState(blockPos).getBlock().getMaterial() == Material.air
-                        && world.getBiomeGenForCoords(blockPos).getFloatTemperature(blockPos) <= 0.8F
-                        && FOOTPRINT.canPlaceBlockAt(world, blockPos)) {
-                    world.setBlockState(blockPos, FOOTPRINT.getDefaultState());
-                }
-            }
-        }
+    @Override
+    public void onDisable(EntityTameableDragon dragon) {
+    }
+
+    @Override
+    public void onDeath(EntityTameableDragon dragon) {
     }
 
   /** return a new fire breathweapon FX emitter

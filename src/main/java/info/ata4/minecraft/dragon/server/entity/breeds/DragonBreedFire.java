@@ -20,9 +20,9 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFactory;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeFire;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeaponFire;
+import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
-import net.minecraft.world.biome.BiomeGenBase;
 
 /**
  *
@@ -30,30 +30,34 @@ import net.minecraft.world.biome.BiomeGenBase;
  */
 public class DragonBreedFire extends DragonBreed {
 
-    public DragonBreedFire() {
-        super("fire", "fire", 0x960b0f);
+    DragonBreedFire() {
+        super("fire", 0x960b0f);
         
         addImmunity(DamageSource.inFire);
         addImmunity(DamageSource.onFire);
         addImmunity(DamageSource.lava);
         
-        addHabitatBlock(Blocks.lava);
-        addHabitatBlock(Blocks.flowing_lava);
-        addHabitatBlock(Blocks.fire);
-        addHabitatBlock(Blocks.lit_furnace);
+        addHabitatBlock(Blocks.LAVA);
+        addHabitatBlock(Blocks.FLOWING_LAVA);
+        addHabitatBlock(Blocks.FIRE);
+        addHabitatBlock(Blocks.LIT_FURNACE);
         
-        addHabitatBiome(BiomeGenBase.desert);
-        addHabitatBiome(BiomeGenBase.desertHills);
+        addHabitatBiome(Biomes.DESERT);
+        addHabitatBiome(Biomes.DESERT_HILLS);
     }
 
     @Override
     public void onEnable(EntityTameableDragon dragon) {
-      dragon.setDragonAvoidWater(true);
+        dragon.getBrain().setAvoidsWater(true);
     }
 
     @Override
     public void onDisable(EntityTameableDragon dragon) {
-      dragon.setDragonAvoidWater(false);
+        dragon.getBrain().setAvoidsWater(false);
+    }
+
+    @Override
+    public void onDeath(EntityTameableDragon dragon) {
     }
 
     /** return a new fire breathweapon FX emitter

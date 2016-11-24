@@ -13,9 +13,10 @@ import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import info.ata4.minecraft.dragon.util.Pair;
+import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
-import net.minecraft.world.biome.BiomeGenBase;
 
 /**
  *
@@ -23,14 +24,28 @@ import net.minecraft.world.biome.BiomeGenBase;
  */
 public class DragonBreedEnd extends DragonBreed {
 
-    public DragonBreedEnd() {
-        super("end", "ender", 0xab39be);
+    DragonBreedEnd() {
+        super("ender", 0xab39be);
         
         addImmunity(DamageSource.magic);
         
-        addHabitatBlock(Blocks.end_stone);
-        addHabitatBlock(Blocks.obsidian);
-        addHabitatBiome(BiomeGenBase.sky);
+        addHabitatBlock(Blocks.END_STONE);
+        addHabitatBlock(Blocks.OBSIDIAN);
+        addHabitatBlock(Blocks.END_BRICKS);
+        
+        addHabitatBiome(Biomes.SKY);
+    }
+
+    @Override
+    public void onEnable(EntityTameableDragon dragon) {
+    }
+
+    @Override
+    public void onDisable(EntityTameableDragon dragon) {
+    }
+
+    @Override
+    public void onDeath(EntityTameableDragon dragon) {
     }
 
     @Override

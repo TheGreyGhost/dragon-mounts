@@ -16,9 +16,9 @@ import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import info.ata4.minecraft.dragon.util.Pair;
+import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
-import net.minecraft.world.biome.BiomeGenBase;
 
 /**
  *
@@ -26,33 +26,37 @@ import net.minecraft.world.biome.BiomeGenBase;
  */
 public class DragonBreedNether extends DragonBreed {
 
-    public DragonBreedNether() {
-        super("nether", "nether", 0x793838);
-
+    DragonBreedNether() {
+        super("nether", 0x793838);
+        
         addImmunity(DamageSource.inFire);
         addImmunity(DamageSource.onFire);
         addImmunity(DamageSource.lava);
-
-        addHabitatBlock(Blocks.netherrack);
-        addHabitatBlock(Blocks.soul_sand);
-        addHabitatBlock(Blocks.nether_brick);
-        addHabitatBlock(Blocks.nether_brick_fence);
-        addHabitatBlock(Blocks.nether_brick_stairs);
-        addHabitatBlock(Blocks.nether_wart);
-        addHabitatBlock(Blocks.glowstone);
-        addHabitatBlock(Blocks.quartz_ore);
-
-        addHabitatBiome(BiomeGenBase.hell);
+        
+        addHabitatBlock(Blocks.NETHERRACK);
+        addHabitatBlock(Blocks.SOUL_SAND);
+        addHabitatBlock(Blocks.NETHER_BRICK);
+        addHabitatBlock(Blocks.NETHER_BRICK_FENCE);
+        addHabitatBlock(Blocks.NETHER_BRICK_STAIRS);
+        addHabitatBlock(Blocks.NETHER_WART);
+        addHabitatBlock(Blocks.GLOWSTONE);
+        addHabitatBlock(Blocks.QUARTZ_ORE);
+        
+        addHabitatBiome(Biomes.HELL);
     }
 
     @Override
     public void onEnable(EntityTameableDragon dragon) {
-        dragon.setDragonAvoidWater(true);
+        dragon.getBrain().setAvoidsWater(true);
     }
 
     @Override
     public void onDisable(EntityTameableDragon dragon) {
-        dragon.setDragonAvoidWater(false);
+        dragon.getBrain().setAvoidsWater(false);
+    }
+
+    @Override
+    public void onDeath(EntityTameableDragon dragon) {
     }
 
   @Override

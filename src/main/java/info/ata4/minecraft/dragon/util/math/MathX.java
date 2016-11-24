@@ -24,8 +24,7 @@ public class MathX {
 
     public static final double PI_D = Math.PI;
     public static final float PI_F = (float) Math.PI;
-    public static boolean useLUT = true;
-    
+
     /**
      * You no take constructor!
      */
@@ -34,11 +33,7 @@ public class MathX {
 
     // float sine function, may use LUT
     public static float sin(float a) {
-        if (useLUT) {
-            return MathHelper.sin(a);
-        } else {
-            return (float) Math.sin(a);
-        }
+        return (float) Math.sin(a);
     }
 
     /** return a random value from a truncated gaussian distribution with
@@ -71,11 +66,7 @@ public class MathX {
 
     // float cosine function, may use LUT
     public static float cos(float a) {
-        if (useLUT) {
-            return MathHelper.cos(a);
-        } else {
-            return (float) Math.cos(a);
-        }
+        return (float) Math.cos(a);
     }
 
     // float tangent function

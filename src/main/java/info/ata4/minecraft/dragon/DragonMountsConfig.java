@@ -51,8 +51,7 @@ public class DragonMountsConfig {
     public static final String CATEGORY_NAME_DEBUG = "category_debug";
 
     // config properties
-    private boolean eggsInChests = false;
-    private int dragonEntityID = -1;
+    private boolean disableBlockOverride = false;
     private boolean debug = false;
     private boolean orbTargetAutoLock = true;
     private boolean orbHighlightTarget = true;
@@ -69,14 +68,6 @@ public class DragonMountsConfig {
         // creates an instance of the static class ConfigEventHandler and has it listen
         // on the FML bus (see Notes and ConfigEventHandler for more information)
         FMLCommonHandler.instance().bus().register(new ConfigEventHandler());
-    }
-
-    public boolean isEggsInChests() {
-        return eggsInChests;
-    }
-
-    public int getDragonEntityID() {
-        return dragonEntityID;
     }
 
     public boolean isDebug() {
@@ -279,5 +270,7 @@ public class DragonMountsConfig {
                 }
             }
         }
+    public boolean isDisableBlockOverride() {
+        return disableBlockOverride;
     }
 }

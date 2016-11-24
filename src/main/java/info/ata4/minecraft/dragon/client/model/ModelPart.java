@@ -11,10 +11,11 @@ package info.ata4.minecraft.dragon.client.model;
 
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GLAllocation;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -83,11 +84,10 @@ public class ModelPart extends ModelRenderer {
     }
     
     private void compileDisplayList(float scale) {
+        VertexBuffer vb = Tessellator.getInstance().getBuffer();
         displayList = GLAllocation.generateDisplayLists(1);
         glNewList(displayList, GL_COMPILE);
-        for (Object obj : cubeList) {
-            ((ModelBox) obj).render(Tessellator.getInstance().getWorldRenderer(), scale);
-        }
+        cubeList.forEach(cube -> cube.render(vb, scale));
         glEndList();
         compiled = true;
     }
@@ -109,26 +109,19 @@ public class ModelPart extends ModelRenderer {
             compileDisplayList(scale);
         }
         
-        glPushMatrix();
+        GlStateManager.pushMatrix();
         
         postRender(scale);
         
-        // render axes
-        if (renderAxes) {
-//            GLUtils.renderAxes(scale * 8);
-        }
-        
         // call display list
-        glCallList(displayList);
+        GlStateManager.callList(displayList);
         
         // render child models
         if (childModels != null) {
-            for (Object obj : childModels) {
-                ((ModelRenderer) obj).render(scale);
-            }
+            childModels.forEach(obj -> obj.render(scale));
         }
         
-        glPopMatrix();
+        GlStateManager.popMatrix();
     }
     
     @Override
@@ -139,32 +132,32 @@ public class ModelPart extends ModelRenderer {
         }
 
         // translate
-        glTranslatef(rotationPointX * scale, rotationPointY * scale, rotationPointZ * scale);
+        GlStateManager.translate(rotationPointX * scale, rotationPointY * scale, rotationPointZ * scale);
         
         // rotate
         if (preRotateAngleZ != 0) {
-            glRotatef(MathX.toDegrees(preRotateAngleZ), 0, 0, 1);
+            GlStateManager.rotate(MathX.toDegrees(preRotateAngleZ), 0, 0, 1);
         }
         if (preRotateAngleY != 0) {
-            glRotatef(MathX.toDegrees(preRotateAngleY), 0, 1, 0);
+            GlStateManager.rotate(MathX.toDegrees(preRotateAngleY), 0, 1, 0);
         }
         if (preRotateAngleX != 0) {
-            glRotatef(MathX.toDegrees(preRotateAngleX), 1, 0, 0);
+            GlStateManager.rotate(MathX.toDegrees(preRotateAngleX), 1, 0, 0);
         }
         
         if (rotateAngleZ != 0) {
-            glRotatef(MathX.toDegrees(rotateAngleZ), 0, 0, 1);
+            GlStateManager.rotate(MathX.toDegrees(rotateAngleZ), 0, 0, 1);
         }
         if (rotateAngleY != 0) {
-            glRotatef(MathX.toDegrees(rotateAngleY), 0, 1, 0);
+            GlStateManager.rotate(MathX.toDegrees(rotateAngleY), 0, 1, 0);
         }
         if (rotateAngleX != 0) {
-            glRotatef(MathX.toDegrees(rotateAngleX), 1, 0, 0);
+            GlStateManager.rotate(MathX.toDegrees(rotateAngleX), 1, 0, 0);
         }
 
         // scale
         if (renderScaleX != 0 || renderScaleY != 0 || renderScaleZ != 0) {
-            glScalef(renderScaleX, renderScaleY, renderScaleZ);
+            GlStateManager.scale(renderScaleX, renderScaleY, renderScaleZ);
         }
     }
 }
