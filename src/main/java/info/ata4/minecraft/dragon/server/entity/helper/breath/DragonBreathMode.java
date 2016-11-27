@@ -1,6 +1,8 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
-import net.minecraft.entity.DataWatcher;
+import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.EntityDataManager;
 
 /** The dragon breath mode - eg for forest; whether the breath is burning or not.  Not used by most breath types.
  * Created by TGG on 5/03/2016.
@@ -11,15 +13,15 @@ public class DragonBreathMode {
   public static DragonBreathMode FOREST_BURNING = new DragonBreathMode(1);
   public static DragonBreathMode DEFAULT = new DragonBreathMode(0);
 
-  public static DragonBreathMode createFromDataWatcher(DataWatcher dataWatcher, int dataWatcherIndex)
+  public static DragonBreathMode createFromDataWatcher(EntityDataManager entityDataManager, DataParameter<Integer> dataParam)
   {
-    Integer mode = dataWatcher.getWatchableObjectInt(dataWatcherIndex);
+    Integer mode = entityDataManager.get(dataParam);
     return new DragonBreathMode(mode);
   }
 
-  public void writeToDataWatcher(DataWatcher dataWatcher, int dataWatcherIndex)
+  public void writeToDataWatcher(EntityDataManager entityDataManager, DataParameter<Integer> dataParam)
   {
-    dataWatcher.updateObject(dataWatcherIndex, breathMode);
+    entityDataManager.set(dataParam, breathMode);
   }
 
   @Override
@@ -35,8 +37,6 @@ public class DragonBreathMode {
   {
     return breathMode;
   }
-
-//  public int getIntValue() {return breathMode;}
 
   private DragonBreathMode(int i_breathModeInt)
   {

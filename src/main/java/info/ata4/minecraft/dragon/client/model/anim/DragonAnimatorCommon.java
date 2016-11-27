@@ -11,13 +11,9 @@ package info.ata4.minecraft.dragon.client.model.anim;
 
 import info.ata4.minecraft.dragon.client.model.DragonModel;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
-import info.ata4.minecraft.dragon.server.entity.helper.DragonHeadPositionHelper;
-import info.ata4.minecraft.dragon.server.entity.helper.SegmentSizePositionRotation;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathHelper;
-import info.ata4.minecraft.dragon.server.util.DebugFreezeAnimator;
 import info.ata4.minecraft.dragon.util.math.MathX;
-import info.ata4.minecraft.dragon.util.math.Spline;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Animation control class to put useless reptiles in motion. Refactored to
@@ -210,7 +206,7 @@ public class DragonAnimatorCommon {
         this.lookPitch = MathX.clamp(lookPitch, -90, 90);
     }
 
-    public Vec3 getThroatPosition() {
+    public Vec3d getThroatPosition() {
         if (!haveCalculatedAnimations) {
             animate();
         }
