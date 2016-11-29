@@ -87,12 +87,14 @@ public class GuiDragonDebug extends Gui implements PrivateAccessor {
             try {
                 if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
                     renderNavigation();
+                    renderDragonOrbTargets();
                     renderAttributes();
                     renderBreedPoints();
+                } else if (Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) {
                 } else {
                     renderEntityInfo();
                     renderAITasks();
-//                    renderWatchedObjects();
+                    renderWatchedObjects();
                 }
 
                 renderProbe();
@@ -279,7 +281,19 @@ public class GuiDragonDebug extends Gui implements PrivateAccessor {
         
         text.println();
     }
-    
+
+    private void renderDragonOrbTargets() {
+        text.setColor(YELLOW);
+        text.println("Dragon Orb Target:");
+        text.setColor(WHITE);
+        BreathWeaponTarget target = DragonOrbControl.getInstance().getTarget();
+        if (target == null) {
+            text.printf("not targeting\n");
+        } else {
+            text.printf(target.toString());
+        }
+    }
+
     private void renderBreedPoints() {
         if (dragonServer == null) {
             return;
@@ -345,6 +359,61 @@ public class GuiDragonDebug extends Gui implements PrivateAccessor {
         text.setColor(YELLOW);
         text.println("AI tasks");
         text.setColor(WHITE);
+
+        renderAITasks(dragonServer.tasks, "Ground");
+        renderAITasks(dragonServer.airTasks, "Air");
+        renderAITasks(dragonServer.targetTasks, "Target");
+    }
+
+    private void renderAITasks(EntityAITasks tasks, String label) {
+        text.setColor(GREY);
+        text.println(label + ":");
+        text.setColor(WHITE);
+
+        List<EntityAITaskEntry> currentTasks = ReflectionHelper.getPrivateValue(EntityAITasks.class, tasks, PrivateFields.ENTITYAITASKS_EXECUTINGTASKENTRIES);
+
+        // create copy to avoid ConcurrentModificationException
+        currentTasks = new ArrayList<EntityAITaskEntry>(currentTasks);
+
+        if (currentTasks.isEmpty()) {
+            text.println("---");
+            return;
+        }
+
+        for (EntityAITaskEntry entry : currentTasks) {
+            String actionName = entry.action.getClass().getSimpleName();
+            int priority = entry.priority;
+            text.printf("%d - %s\n", priority, actionName);
+        }
+    }
+
+    private void renderWatchedObjects() {
+        EntityTameableDragon dragon = getSelectedDragon();
+        if (dragon == null) {
+            return;
+        }
+
+        text.setOrigin(text.getX() + 140, 8);
+
+        text.setColor(YELLOW);
+        text.println("Watched objects");
+        text.setColor(WHITE);
+
+        Map<Integer, WatchableObject> watchedObjects;
+
+        try {
+            watchedObjects = ReflectionHelper.getPrivateValue(DataWatcher.class, dragon.getDataWatcher(), PrivateFields.DATAWATCHER_WATCHEDOBJECTS);
+        } catch (Exception ex) {
+            return;
+        }
+
+        Iterator<Map.Entry<Integer, WatchableObject>> it = watchedObjects.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, WatchableObject> pairs = it.next();
+            Object object = pairs.getValue().getObject();
+            Integer index = pairs.getKey();
+            text.printf("%d = %s:%s\n", index, object.getClass().getSimpleName(), object);
+        }
     }
     
     private void renderProbe() {

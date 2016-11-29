@@ -40,14 +40,17 @@ import java.io.File;
 /**
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  */
-public class ClientProxy extends CommonProxy {
-    
+public class ClientProxy extends CommonProxy
+{
+
+  private static final int DEFAULT_ITEM_SUBTYPE = 0;
 
     @Override
     public void onPreInit(FMLPreInitializationEvent evt) {
         super.onPreInit(evt);
         DragonMounts.instance.getConfig().clientInit();
         MinecraftForge.EVENT_BUS.register(new TextureStitcherBreathFX());
+        StartupClientOnly.preInitClientOnly();
     }
 
     @Override
@@ -58,6 +61,7 @@ public class ClientProxy extends CommonProxy {
 
         Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
                 .register(itemDragonOrb, DEFAULT_ITEM_SUBTYPE, itemModelResourceLocation);
+        StartupClientOnly.initClientOnly();
     }
 
     @Override
@@ -67,17 +71,27 @@ public class ClientProxy extends CommonProxy {
             MinecraftForge.EVENT_BUS.register(new GuiDragonDebug());
         }
 
-        RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
-        RenderingRegistry.registerEntityRenderingHandler(EntityTameableDragon.class,
-                new DragonRenderer(renderManager));
+    RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
+    RenderingRegistry.registerEntityRenderingHandler(EntityTameableDragon.class,
+            new DragonRenderer(renderManager));
+    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileNether.class,
+            new BreathEntityRendererNether(renderManager, 1.0F));
+    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileEnder.class,
+            new BreathEntityRendererEnder(renderManager, 1.0F));
+    RenderingRegistry.registerEntityRenderingHandler(EntityBreathGhost.class,
+            new BreathEntityRendererGhost(renderManager));
+    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileGhost.class,         // dummy - renders blank
+            new NullEntityRenderer(renderManager));
 
-        FMLCommonHandler.instance().bus().register(new DragonControl(getNetwork()));
-        DragonOrbControl.createSingleton(getNetwork());
-        DragonOrbControl.initialiseInterceptors();
-        FMLCommonHandler.instance().bus().register(DragonOrbControl.getInstance());
-        MinecraftForge.EVENT_BUS.register(new TargetHighlighter());
-        FMLCommonHandler.instance().bus().register(new DragonEntityWatcher());
-    }
+    FMLCommonHandler.instance().bus().register(new DragonControl(getNetwork()));
+    DragonOrbControl.createSingleton(getNetwork());
+    DragonOrbControl.initialiseInterceptors();
+    FMLCommonHandler.instance().bus().register(DragonOrbControl.getInstance());
+    MinecraftForge.EVENT_BUS.register(new TargetHighlighter());
+    FMLCommonHandler.instance().bus().register(new DragonEntityWatcher());
+    StartupClientOnly.postInitClientOnly();
+
+  }
 
     /**
      * returns the EntityPlayerSP if this is the client, otherwise returns null.
@@ -93,5 +107,24 @@ public class ClientProxy extends CommonProxy {
     public File getDataDirectory() {
         return Minecraft.getMinecraft().mcDataDir;
     }
+
+  @Override
+  public void spawnCustomEntityFX(CustomEntityFXTypes entityFXtype,
+                                  World world, double x, double y, double z,
+                                  double velocityX, double velocityY, double velocityZ)
+  {
+    EntityFX entityFXToSpawn;
+    switch (entityFXtype) {
+      case ENDERTRAIL: {
+        entityFXToSpawn = new EntityFXEnderTrail(world, x, y, z, velocityX, velocityY, velocityZ);
+        break;
+      }
+      default: {
+        throw new IllegalArgumentException(entityFXtype.toString());
+      }
+    }
+
+    Minecraft.getMinecraft().effectRenderer.addEffect(entityFXToSpawn);
+  }
 
 }

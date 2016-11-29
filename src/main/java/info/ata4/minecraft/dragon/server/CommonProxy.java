@@ -58,6 +58,7 @@ public class CommonProxy {
         itemDragonOrb = (ItemDragonOrb) (new ItemDragonOrb().setUnlocalizedName("dragonorb"));
         GameRegistry.registerItem(itemDragonOrb, "dragonorb");
 //    MinecraftForge.EVENT_BUS.register(new EntitySpawnSuppressor());
+      StartupCommon.preInitCommon();
     }
 
     public void onInit(FMLInitializationEvent evt) {
@@ -104,6 +105,22 @@ public class CommonProxy {
         final int DRAGON_ENTITY_ID = 26;
         EntityRegistry.registerModEntity(EntityTameableDragon.class, "DragonMount", DRAGON_ENTITY_ID,
                 DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
+
+        final int PROJECTILE_NETHER_ENTITY_ID = 27;
+        EntityRegistry.registerModEntity(EntityBreathProjectileNether.class, "NetherFireball", PROJECTILE_NETHER_ENTITY_ID,
+                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
+
+        final int PROJECTILE_ENDER_ENTITY_ID = 28;
+        EntityRegistry.registerModEntity(EntityBreathProjectileEnder.class, "EnderGlobe", PROJECTILE_ENDER_ENTITY_ID,
+                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
+
+        final int PROJECTILE_GHOST_ENTITY_ID = 29;
+        EntityRegistry.registerModEntity(EntityBreathProjectileGhost.class, "GhostEntity", PROJECTILE_GHOST_ENTITY_ID,
+                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
+        final int WEATHER_EFFECT_GHOST_ENTITY_ID = 30;
+        EntityRegistry.registerModEntity(EntityBreathProjectileGhost.class, "GhostWeatherEntity", WEATHER_EFFECT_GHOST_ENTITY_ID,
+                DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
+
     }
 
     public void registerChestItems() {

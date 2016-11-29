@@ -10,6 +10,7 @@
 package info.ata4.minecraft.dragon.server.entity;
 
 import com.google.common.base.Optional;
+import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.model.anim.DragonAnimator;
 import info.ata4.minecraft.dragon.client.model.anim.DragonAnimatorCommon;
 import info.ata4.minecraft.dragon.server.entity.ai.path.PathNavigateFlying;
@@ -20,6 +21,9 @@ import info.ata4.minecraft.dragon.server.entity.helper.*;
 import java.util.*;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathHelper;
+import info.ata4.minecraft.dragon.server.util.DebugFreezeAnimator;
+import info.ata4.minecraft.dragon.server.util.ItemUtils;
+import info.ata4.minecraft.dragon.util.reflection.PrivateFields;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
@@ -155,7 +159,6 @@ public class EntityTameableDragon extends EntityTameable {
     @Override
     protected void entityInit() {
         super.entityInit();
-        dataWatcher.addObject(INDEX_SADDLED, (byte) 0);
 
         addHelper(new DragonBreedHelper(this, INDEX_BREED));
         addHelper(new DragonLifeStageHelper(this, INDEX_TICKS_SINCE_CREATION));

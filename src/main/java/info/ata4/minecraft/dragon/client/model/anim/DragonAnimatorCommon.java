@@ -11,7 +11,10 @@ package info.ata4.minecraft.dragon.client.model.anim;
 
 import info.ata4.minecraft.dragon.client.model.DragonModel;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonHeadPositionHelper;
+import info.ata4.minecraft.dragon.server.entity.helper.SegmentSizePositionRotation;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathHelper;
+import info.ata4.minecraft.dragon.server.util.DebugFreezeAnimator;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.util.math.Vec3d;
 

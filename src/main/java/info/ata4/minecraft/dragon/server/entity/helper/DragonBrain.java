@@ -113,6 +113,10 @@ public class DragonBrain extends DragonHelper {
             tasks.addTask(2, new EntityAISwimming(dragon)); // mutex 4
             tasks.addTask(4, dragon.getAISit()); // mutex 4+1
 
+            EntityAIMoveToOptimalDistance movementAI = new EntityAIMoveToOptimalDistance(dragon, 1, minAttackRange, (minAttackRange + maxAttackRange) / 2, maxAttackRange);
+            tasks.addTask(3, movementAI); // mutex 1 + 2
+
+
             tasks.addTask(6, new EntityAITempt(dragon, 0.75, dragon.getBreed().getBreedingItem(), false)); // mutex 2+1
             tasks.addTask(7, new EntityAIAttackMelee(dragon, 1, true)); // mutex 2+1
 
@@ -129,6 +133,10 @@ public class DragonBrain extends DragonHelper {
                         EntityRabbit.class
                 )
             )); // mutex 1
+
+            EntityAIRangedBreathAttack breathAttack = new EntityAIRangedBreathAttack(dragon, minAttackRange, (minAttackRange + maxAttackRange) / 2, maxAttackRange);
+            targetTasks.addTask(1, breathAttack); // mutex 1
+
 
             if (dragon.isHatchling()) {
                 tasks.addTask(8, new EntityAIFollowParent(dragon, 0.8)); // mutex 2+1
