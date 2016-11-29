@@ -10,6 +10,8 @@
 package info.ata4.minecraft.dragon.client.model.anim;
 
 import info.ata4.minecraft.dragon.util.math.Interpolation;
+import info.ata4.minecraft.dragon.util.math.MathX;
+
 import java.util.Arrays;
 
 import static com.google.common.base.Preconditions.checkArgument;

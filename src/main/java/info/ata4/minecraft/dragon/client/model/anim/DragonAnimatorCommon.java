@@ -16,6 +16,7 @@ import info.ata4.minecraft.dragon.server.entity.helper.SegmentSizePositionRotati
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathHelper;
 import info.ata4.minecraft.dragon.server.util.DebugFreezeAnimator;
 import info.ata4.minecraft.dragon.util.math.MathX;
+import info.ata4.minecraft.dragon.util.math.Spline;
 import net.minecraft.util.math.Vec3d;
 
 /**

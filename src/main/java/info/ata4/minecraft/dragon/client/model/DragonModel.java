@@ -15,11 +15,15 @@ import info.ata4.minecraft.dragon.client.model.anim.DragonAnimatorCommon;
 import info.ata4.minecraft.dragon.client.render.DragonRenderer;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonHeadPositionHelper;
+import info.ata4.minecraft.dragon.server.entity.helper.SegmentSizePositionRotation;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
+
 import static org.lwjgl.opengl.GL11.*;
 
 /**
