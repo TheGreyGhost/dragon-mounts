@@ -32,6 +32,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -105,7 +106,7 @@ public class DragonRenderer extends RenderLiving<EntityTameableDragon> {
         float death = dragon.getDeathTime() / (float) dragon.getMaxDeathTime();
 
         if (death > 0) {
-            glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+            GL11.glPushAttrib(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);  // glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); is buggy
             
             GlStateManager.depthFunc(GL_LEQUAL);
             GlStateManager.enableAlpha();
@@ -121,7 +122,7 @@ public class DragonRenderer extends RenderLiving<EntityTameableDragon> {
         super.renderModel(dragon, moveTime, moveSpeed, ticksExisted, lookYaw, lookPitch, scale);
         
         if (death > 0) {
-            GlStateManager.popAttrib();
+            GL11.glPopAttrib();  // GlStateManager.popAttrib(); is buggy
         }
     }
 

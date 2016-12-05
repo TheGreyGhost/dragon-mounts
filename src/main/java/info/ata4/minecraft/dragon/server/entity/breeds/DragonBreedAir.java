@@ -14,8 +14,6 @@ import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterAir;
 import info.ata4.minecraft.dragon.client.sound.SoundController;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeapon;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponAir;
-import info.ata4.minecraft.dragon.client.sound.SoundEffectBreathWeaponIce;
-import info.ata4.minecraft.dragon.server.entity.EntityFlyingTameable;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.*;
 import java.util.UUID;

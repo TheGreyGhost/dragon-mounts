@@ -70,6 +70,14 @@ public class DragonMountsConfig {
         FMLCommonHandler.instance().bus().register(new ConfigEventHandler());
     }
 
+    public boolean isEggsInChests() {
+        return eggsInChests;
+    }
+
+    public int getDragonEntityID() {
+        return dragonEntityID;
+    }
+
     public boolean isDebug() {
         return debug;
     }

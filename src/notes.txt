@@ -274,7 +274,10 @@ EntityAIRangedBreathAttack as targeting AI
 looking is handled by movement AI.
 ----------------------
 
+Integration with master 1.1.10
 
+DragonModel:
+some changes in renderModel
 
 
 

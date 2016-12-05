@@ -7,10 +7,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityLookHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Arrays;
@@ -38,7 +38,7 @@ public class BreathWeaponTarget
 {
   public enum TypeOfTarget {LOCATION, ENTITY, DIRECTION}
 
-  public static BreathWeaponTarget targetLocation(Vec3 location) {
+  public static BreathWeaponTarget targetLocation(Vec3d location) {
     BreathWeaponTarget retval = new BreathWeaponTarget(TypeOfTarget.LOCATION);
     retval.coordinates = location;
     return retval;
@@ -56,7 +56,7 @@ public class BreathWeaponTarget
     return retval;
   }
 
-  public static BreathWeaponTarget targetDirection(Vec3 direction) {
+  public static BreathWeaponTarget targetDirection(Vec3d direction) {
     BreathWeaponTarget retval = new BreathWeaponTarget(TypeOfTarget.DIRECTION);
     retval.coordinates = direction.normalize();
     return retval;
@@ -73,14 +73,14 @@ public class BreathWeaponTarget
     return world.getEntityByID(entityID);
   }
 
-  public Vec3 getTargetedLocation()
+  public Vec3d getTargetedLocation()
   {
-    return new Vec3(coordinates.xCoord, coordinates.yCoord, coordinates.zCoord);
+    return new Vec3d(coordinates.xCoord, coordinates.yCoord, coordinates.zCoord);
   }
 
-  public Vec3 getTargetedDirection()
+  public Vec3d getTargetedDirection()
   {
-    return new Vec3(coordinates.xCoord, coordinates.yCoord, coordinates.zCoord);
+    return new Vec3d(coordinates.xCoord, coordinates.yCoord, coordinates.zCoord);
   }
 
   // create a BreathWeaponTarget from a ByteBuf
@@ -97,14 +97,14 @@ public class BreathWeaponTarget
         double x = buf.readDouble();
         double y = buf.readDouble();
         double z = buf.readDouble();
-        breathWeaponTarget = BreathWeaponTarget.targetDirection(new Vec3(x, y, z));
+        breathWeaponTarget = BreathWeaponTarget.targetDirection(new Vec3d(x, y, z));
         break;
       }
       case LOCATION: {
         double x = buf.readDouble();
         double y = buf.readDouble();
         double z = buf.readDouble();
-        breathWeaponTarget = BreathWeaponTarget.targetLocation(new Vec3(x, y, z));
+        breathWeaponTarget = BreathWeaponTarget.targetLocation(new Vec3d(x, y, z));
         break;
       }
       case ENTITY: {
@@ -125,7 +125,7 @@ public class BreathWeaponTarget
    * @param entityPlayer can be null
    * @return null if not possible
    */
-  public static BreathWeaponTarget fromMovingObjectPosition(MovingObjectPosition movingObjectPosition, EntityPlayer entityPlayer)
+  public static BreathWeaponTarget fromMovingObjectPosition(RayTraceResult movingObjectPosition, EntityPlayer entityPlayer)
   {
     if (movingObjectPosition == null) {
       return (entityPlayer == null) ? null : targetDirection(entityPlayer.getLook(1.0F));
@@ -169,7 +169,7 @@ public class BreathWeaponTarget
    * @param pitchSpeed speed of head pitch change
    */
   public void setEntityLook(World world, EntityLookHelper entityLookHelper,
-                            Vec3 origin, float yawSpeed, float pitchSpeed)
+                            Vec3d origin, float yawSpeed, float pitchSpeed)
   {
     switch (typeOfTarget) {
       case LOCATION: {
@@ -239,9 +239,9 @@ public class BreathWeaponTarget
    * @param pathNavigate
    * @param moveSpeed
    */
-  public void setNavigationPathAvoid(World world, PathNavigate pathNavigate, Vec3 currentPosition, double moveSpeed, double desiredDistance)
+  public void setNavigationPathAvoid(World world, PathNavigate pathNavigate, Vec3d currentPosition, double moveSpeed, double desiredDistance)
   {
-    Vec3 target;
+    Vec3d target;
 
     switch (typeOfTarget) {
       case LOCATION: {
@@ -308,7 +308,7 @@ public class BreathWeaponTarget
    * @param world
    * @return distance squared to the target, or -ve number if not relevant (eg target type DIRECTION)
    */
-  public double distanceSQtoTarget(World world, Vec3 startPoint)
+  public double distanceSQtoTarget(World world, Vec3d startPoint)
   {
     switch (typeOfTarget) {
       case LOCATION: {
@@ -339,8 +339,8 @@ public class BreathWeaponTarget
    * @param origin the origin of the breath weapon (dragon's throat)
    * @return an [x,y,z] to fire the beam at; or null if none
    */
-  public Vec3 getTargetedPoint(World world, Vec3 origin) {
-    Vec3 destination = null;
+  public Vec3d getTargetedPoint(World world, Vec3d origin) {
+    Vec3d destination = null;
     switch (typeOfTarget) {
       case LOCATION: {
         destination = getTargetedLocation();
@@ -498,21 +498,6 @@ public class BreathWeaponTarget
     }
   }
 
-//  public double getYawAngle(Vec3 dragonPosition)
-//  {
-//    double d0 = this.posX - this.entity.posX;
-//    double d1 = this.posY - (this.entity.posY + (double)this.entity.getEyeHeight());
-//    double d2 = this.posZ - this.entity.posZ;
-//    double d3 = (double)MathHelper.sqrt_double(d0 * d0 + d2 * d2);
-//    float f = (float)(Math.atan2(d2, d0) * 180.0D / Math.PI) - 90.0F;
-//    float f1 = (float)(-(Math.atan2(d1, d3) * 180.0D / Math.PI));
-//    this.entity.rotationPitch = this.constrainAngle(this.entity.rotationPitch, f1, this.deltaLookPitch);
-//    this.entity.rotationYawHead = this.constrainAngle(this.entity.rotationYawHead, f, this.deltaLookYaw);
-//
-//  }
-//
-
-
   @Override
   public String toString()
   {
@@ -532,7 +517,7 @@ public class BreathWeaponTarget
   }
 
   private TypeOfTarget typeOfTarget;
-  private Vec3 coordinates;
+  private Vec3d coordinates;
   private int entityID;
 
 }

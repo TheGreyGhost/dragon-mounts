@@ -4,7 +4,7 @@ import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.client.audio.ITickableSound;
 import net.minecraft.client.audio.PositionedSound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -135,7 +135,7 @@ class ComponentSound extends PositionedSound implements ITickableSound
       masterVolume = i_volume;
     }
     public float masterVolume;  // multiplier for the volume = 0 .. 1
-    public Vec3 soundEpicentre;
+    public Vec3d soundEpicentre;
     public float playerDistanceToEpicentre;
     public boolean playing;
   }

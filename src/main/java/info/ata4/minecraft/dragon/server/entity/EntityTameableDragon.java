@@ -10,15 +10,20 @@
 package info.ata4.minecraft.dragon.server.entity;
 
 import com.google.common.base.Optional;
+import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.client.model.anim.DragonAnimator;
+import info.ata4.minecraft.dragon.client.model.anim.DragonAnimatorCommon;
 import info.ata4.minecraft.dragon.server.entity.ai.path.PathNavigateFlying;
 import info.ata4.minecraft.dragon.server.entity.breeds.DragonBreed;
 import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
 import info.ata4.minecraft.dragon.server.entity.helper.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
+import java.util.*;
+
+import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathHelper;
+import info.ata4.minecraft.dragon.server.util.DebugFreezeAnimator;
+import info.ata4.minecraft.dragon.server.util.ItemUtils;
+import info.ata4.minecraft.dragon.util.reflection.PrivateFields;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
@@ -77,13 +82,13 @@ public class EntityTameableDragon extends EntityTameable {
     public static final double ALTITUDE_FLYING_THRESHOLD = 2;
 
     // data value IDs
-    private static final int INDEX_SADDLED = 20;
-    private static final int INDEX_BREEDER = 21;
-    private static final int INDEX_BREED = 22;
-    private static final int INDEX_REPRO_COUNT = 23;
-    private static final int INDEX_TICKS_SINCE_CREATION = 24;
-    private static final int INDEX_BREATH_WEAPON_TARGET = 25;
-    private static final int INDEX_BREATH_MODE = 26;  // used by some dragons for the current mode of the breath
+//    private static final int INDEX_SADDLED = 20;
+//    private static final int INDEX_BREEDER = 21;
+//    private static final int INDEX_BREED = 22;
+//    private static final int INDEX_REPRO_COUNT = 23;
+//    private static final int INDEX_TICKS_SINCE_CREATION = 24;
+//    private static final int INDEX_BREATH_WEAPON_TARGET = 25;
+//    private static final int INDEX_BREATH_MODE = 26;  // used by some dragons for the current mode of the breath
 
     private static final DataParameter<Boolean> DATA_FLYING =
             EntityDataManager.<Boolean>createKey(EntityTameableDragon.class, DataSerializers.BOOLEAN);
@@ -97,7 +102,11 @@ public class EntityTameableDragon extends EntityTameable {
             EntityDataManager.<Integer>createKey(EntityTameableDragon.class, DataSerializers.VARINT);
     private static final DataParameter<Integer> DATA_TICKS_SINCE_CREATION =
             EntityDataManager.<Integer>createKey(EntityTameableDragon.class, DataSerializers.VARINT);
-    
+    private static final DataParameter<String> DATA_BREATH_WEAPON_TARGET =
+            EntityDataManager.<String>createKey(EntityTameableDragon.class, DataSerializers.STRING);
+    private static final DataParameter<Integer> DATA_BREATH_WEAPON_MODE =
+            EntityDataManager.<Integer>createKey(EntityTameableDragon.class, DataSerializers.VARINT);
+
     // data NBT IDs
     private static final String NBT_SADDLED = "Saddle";
 
@@ -150,7 +159,6 @@ public class EntityTameableDragon extends EntityTameable {
     @Override
     protected void entityInit() {
         super.entityInit();
-        dataWatcher.addObject(INDEX_SADDLED, (byte) 0);
 
         addHelper(new DragonBreedHelper(this, INDEX_BREED));
         addHelper(new DragonLifeStageHelper(this, INDEX_TICKS_SINCE_CREATION));
@@ -301,10 +309,8 @@ public class EntityTameableDragon extends EntityTameable {
     public void onLivingUpdate() {
 //        System.out.format("motionY: %.2f\n", motionY);
         if (!DebugFreezeAnimator.isFrozen()) {
-            for (DragonHelper helper : helpers.values()) {
-                helper.onLivingUpdate();
-        helpers.values().forEach(DragonHelper::onLivingUpdate);
-        
+            helpers.values().forEach(DragonHelper::onLivingUpdate);
+        }
         if (isServer()) {
             // set home position near owner when tamed
             if (isTamed()) {
@@ -699,21 +705,22 @@ public class EntityTameableDragon extends EntityTameable {
     }
 
     public DragonBreathHelper getBreathHelper() {
-      if (isEgg()) {  // can't breathe yet; makes no sense to ask for BreathHelper.  Breed may still change,
-        throw new IllegalStateException("Asked for DragonBreathHelper but dragon is still egg stage");
-      }
+        if (isEgg()) {  // can't breathe yet; makes no sense to ask for BreathHelper.  Breed may still change,
+            throw new IllegalStateException("Asked for DragonBreathHelper but dragon is still egg stage");
+        }
 
-      DragonBreathHelper dragonHelper = getHelper(DragonBreathHelper.class);
-      if (dragonHelper == null) { // lazy initialisation
-          dragonHelper = new DragonBreathHelper(this, INDEX_BREATH_WEAPON_TARGET, INDEX_BREATH_MODE);
-        addHelper(dragonHelper);
-      }
+        DragonBreathHelper dragonHelper = getHelper(DragonBreathHelper.class);
+        if (dragonHelper == null) { // lazy initialisation
+            dragonHelper = new DragonBreathHelper(this, DATA_BREATH_WEAPON_TARGET, DATA_BREATH_WEAPON_MODE);
+            addHelper(dragonHelper);
+        }
 
         return dragonHelper;
-    
-    public DragonAnimator getAnimator() {
-        return getHelper(DragonAnimator.class);
     }
+
+//    public DragonAnimator getAnimator() {  //todo I commented this out - was it the correct one?
+//        return getHelper(DragonAnimator.class);
+//    }
     
     public DragonSoundManager getSoundManager() {
         return getHelper(DragonSoundManager.class);
@@ -985,6 +992,26 @@ public class EntityTameableDragon extends EntityTameable {
     @Override
     public int getVerticalFaceSpeed() {
         return (int) getHeadPitchSpeed();
+    }
+
+    /**
+     * Checks if this entity is running on a client.
+     *
+     * Required since MCP's isClientWorld returns the exact opposite...
+     *
+     * @return true if the entity runs on a client or false if it runs on a server
+     */
+    public final boolean isClient() {
+        return worldObj.isRemote;
+    }
+
+    /**
+     * Checks if this entity is running on a server.
+     *
+     * @return true if the entity runs on a server or false if it runs on a client
+     */
+    public final boolean isServer() {
+        return !worldObj.isRemote;
     }
 
 }
