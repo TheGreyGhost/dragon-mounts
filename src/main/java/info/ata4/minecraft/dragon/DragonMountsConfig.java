@@ -88,7 +88,9 @@ public class DragonMountsConfig {
 
     public boolean isBreathAffectsBlocks() {return breathAffectsBlocks;}
 
-  public Configuration getConfig() {
+    public boolean isDisableBlockOverride() {return disableBlockOverride;}
+
+    public Configuration getConfig() {
         return config;
     }
 
@@ -161,45 +163,51 @@ public class DragonMountsConfig {
         //   their name, type, default / min / max values, a comment.  These affect what is displayed on the GUI.
         // If the file already exists, the property values will already have been read from the file, otherwise they
         //  will be assigned the default value.
-        final boolean DEFAULT_EGGS_IN_CHEST = true;
-        Property propEggsInChests = config.get(CATEGORY_NAME_OPTIONS, "eggsInChests", DEFAULT_EGGS_IN_CHEST);
-        propEggsInChests.comment = "Spawns dragon eggs in generated chests when enabled";
-        propEggsInChests.setLanguageKey("gui.config.options.eggs_in_chest");
+//        final boolean DEFAULT_EGGS_IN_CHEST = true;
+//        Property propEggsInChests = config.get(CATEGORY_NAME_OPTIONS, "eggsInChests", DEFAULT_EGGS_IN_CHEST);
+//        propEggsInChests.setComment("Spawns dragon eggs in generated chests when enabled");
+//        propEggsInChests.setLanguageKey("gui.config.options.eggs_in_chest");
 
         final boolean DEFAULT_AUTOLOCK = true;
         Property propOrbTargetAutoLock = config.get(CATEGORY_NAME_OPTIONS, "orbTargetAutoLock", DEFAULT_AUTOLOCK);
-        propOrbTargetAutoLock.comment = "Clicking the dragon orb locks on to the target until released";
+        propOrbTargetAutoLock.setComment("Clicking the dragon orb locks on to the target until released");
         propOrbTargetAutoLock.setLanguageKey("gui.config.options.orb_target_auto_lock");
 
         final boolean DEFAULT_HIGHLIGHT = true;
         Property propOrbHighlightTarget = config.get(CATEGORY_NAME_OPTIONS, "orbHighlightTarget", DEFAULT_HIGHLIGHT);
-        propOrbHighlightTarget.comment = "Should the dragon orb show a highlight around the target?";
+        propOrbHighlightTarget.setComment("Should the dragon orb show a highlight around the target?");
         propOrbHighlightTarget.setLanguageKey("gui.config.options.orb_highlight_target");
 
         final boolean DEFAULT_IMMUNE = true;
         Property propOrbHolderImmune = config.get(CATEGORY_NAME_OPTIONS, "orbHolderImmune", DEFAULT_IMMUNE);
-        propOrbHolderImmune.comment = "Is the orb holder immune to dragon breath?";
+        propOrbHolderImmune.setComment("Is the orb holder immune to dragon breath?");
         propOrbHolderImmune.setLanguageKey("gui.config.options.orb_holder_immune");
 
         final boolean DEFAULT_AFFECTS_BLOCKS = true;
         Property propBreathAffectsBlocks = config.get(CATEGORY_NAME_OPTIONS, "breathAffectsBlocks", DEFAULT_AFFECTS_BLOCKS);
-        propBreathAffectsBlocks.comment = "Does dragon breath affect blocks?";
+        propBreathAffectsBlocks.setComment("Does dragon breath affect blocks?");
         propBreathAffectsBlocks.setLanguageKey("gui.config.options.breath_affects_blocks");
 
-      final int DEFAULT_ENTITY_ID_AUTOASSIGN = -1;
-        final int MIN_ENTITY_ID = -1;
-        final int MAX_ENTITY_ID = 255;
-        String ENTITY_ID_COMMENT = "Overrides the entity ID for dragons to fix problems with manual IDs from "
-                + "other mods.\nSet to -1 for automatic assignment (recommended).\n"
-                + "Warning: wrong values may cause crashes and loss of data!";
+      final boolean DEFAULT_DISABLE_BLOCK_OVERRIDE = false;
+      String DISABLE_BLOCK_OVERRIDE_COMMENT = "Disables right-click override on the vanilla dragon egg block. "
+              + "May help to fix issues with other mods.\n";
+      Property propDisableBlockOverride = config.get(CATEGORY_NAME_OPTIONS, "disableBlockOverride", DEFAULT_DISABLE_BLOCK_OVERRIDE);
+      propDisableBlockOverride.setComment(DISABLE_BLOCK_OVERRIDE_COMMENT);
+      propDisableBlockOverride.setLanguageKey("gui.config.options.disable_block_override");
 
-        Property propDragonEntityID = config.get(CATEGORY_NAME_DEBUG, "dragonEntityID", DEFAULT_ENTITY_ID_AUTOASSIGN,
-                ENTITY_ID_COMMENT, MIN_ENTITY_ID, MAX_ENTITY_ID);
-        propDragonEntityID.setLanguageKey("gui.config.debug.dragon_entity_id");
+//      final int DEFAULT_ENTITY_ID_AUTOASSIGN = -1;
+//        final int MIN_ENTITY_ID = -1;
+//        final int MAX_ENTITY_ID = 255;
+//        String ENTITY_ID_COMMENT = "Overrides the entity ID for dragons to fix problems with manual IDs from "
+//                + "other mods.\nSet to -1 for automatic assignment (recommended).\n"
+//                + "Warning: wrong values may cause crashes and loss of data!";
+//        Property propDragonEntityID = config.get(CATEGORY_NAME_DEBUG, "dragonEntityID", DEFAULT_ENTITY_ID_AUTOASSIGN,
+//                ENTITY_ID_COMMENT, MIN_ENTITY_ID, MAX_ENTITY_ID);
+//        propDragonEntityID.setLanguageKey("gui.config.debug.dragon_entity_id");
 
         final boolean DEFAULT_DEBUG = false;
         Property propDebug = config.get(CATEGORY_NAME_DEBUG, "debug", DEFAULT_DEBUG);
-        propDebug.comment = "Debug mode. Unless you're a developer or are told to activate it, you don't want to set this to true.";
+        propDebug.setComment("Debug mode. Unless you're a developer or are told to activate it, you don't want to set this to true.");
         propDebug.setLanguageKey("gui.config.debug.debug");
 
         //By defining a property order we can control the order of the properties in the config file and GUI
@@ -209,11 +217,12 @@ public class DragonMountsConfig {
         propOrderOptions.add(propOrbTargetAutoLock.getName());
         propOrderOptions.add(propOrbHolderImmune.getName());
         propOrderOptions.add(propBreathAffectsBlocks.getName());
-        propOrderOptions.add(propEggsInChests.getName());
+//        propOrderOptions.add(propEggsInChests.getName());
+        propOrderOptions.add(propDisableBlockOverride.getName());
         config.setCategoryPropertyOrder(CATEGORY_NAME_OPTIONS, propOrderOptions);
 
         List<String> propOrderDebug = new ArrayList<String>();
-        propOrderDebug.add(propDragonEntityID.getName());
+//        propOrderDebug.add(propDragonEntityID.getName());
         propOrderDebug.add(propDebug.getName());
         config.setCategoryPropertyOrder(CATEGORY_NAME_DEBUG, propOrderDebug);
 
@@ -225,27 +234,29 @@ public class DragonMountsConfig {
             //If getInt cannot get an integer value from the config file value of myInteger (e.g. corrupted file)
             // it will set it to the default value passed to the function
 
-            eggsInChests = propEggsInChests.getBoolean(DEFAULT_EGGS_IN_CHEST);
+//            eggsInChests = propEggsInChests.getBoolean(DEFAULT_EGGS_IN_CHEST);
             orbTargetAutoLock = propOrbTargetAutoLock.getBoolean(DEFAULT_AUTOLOCK);
             orbHighlightTarget = propOrbHighlightTarget.getBoolean(DEFAULT_HIGHLIGHT);
             orbHolderImmune = propOrbHolderImmune.getBoolean(DEFAULT_IMMUNE);
           breathAffectsBlocks = propBreathAffectsBlocks.getBoolean(DEFAULT_AFFECTS_BLOCKS);
-            dragonEntityID = propDragonEntityID.getInt(DEFAULT_ENTITY_ID_AUTOASSIGN);
-            if (dragonEntityID > MAX_ENTITY_ID || dragonEntityID < MIN_ENTITY_ID) {
-                dragonEntityID = DEFAULT_ENTITY_ID_AUTOASSIGN;
-            }
+          disableBlockOverride = propDisableBlockOverride.getBoolean(DEFAULT_DISABLE_BLOCK_OVERRIDE);
+//            dragonEntityID = propDragonEntityID.getInt(DEFAULT_ENTITY_ID_AUTOASSIGN);
+//            if (dragonEntityID > MAX_ENTITY_ID || dragonEntityID < MIN_ENTITY_ID) {
+//                dragonEntityID = DEFAULT_ENTITY_ID_AUTOASSIGN;
+//            }
             debug = propDebug.getBoolean(DEFAULT_DEBUG);
         }
 
         // ---- step 4 - write the class's variables back into the config properties and save to disk -------------------
         //  This is done even for a loadFromFile==true, because some of the properties may have been assigned default
         //    values if the file was empty or corrupt.
-        propEggsInChests.set(eggsInChests);
+//        propEggsInChests.set(eggsInChests);
         propOrbTargetAutoLock.set(orbTargetAutoLock);
         propOrbHighlightTarget.set(orbHighlightTarget);
         propOrbHolderImmune.set(orbHolderImmune);
         propBreathAffectsBlocks.set(breathAffectsBlocks);
-        propDragonEntityID.set(dragonEntityID);
+        propDisableBlockOverride.set(disableBlockOverride);
+//        propDragonEntityID.set(dragonEntityID);
         propDebug.set(debug);
 
         if (config.hasChanged()) {
@@ -257,20 +268,22 @@ public class DragonMountsConfig {
     private Configuration config = null;
 
     public class ConfigEventHandler {
-        /*
-         * This class, when instantiated as an object, will listen on the FML
-         *  event bus for an OnConfigChangedEvent
-         */
-        @SubscribeEvent(priority = EventPriority.NORMAL)
-        public void onEvent(ConfigChangedEvent.OnConfigChangedEvent event) {
-            if (DragonMounts.ID.equals(event.modID)
-                    && !event.isWorldRunning) {
-                if (event.configID.equals(CATEGORY_NAME_OPTIONS) || event.configID.equals(CATEGORY_NAME_DEBUG)) {
-                    syncFromGUI();
-                }
-            }
+      /*
+       * This class, when instantiated as an object, will listen on the FML
+       *  event bus for an OnConfigChangedEvent
+       */
+      @SubscribeEvent(priority = EventPriority.NORMAL)
+      public void onEvent(ConfigChangedEvent.OnConfigChangedEvent event) {
+        if (DragonMounts.ID.equals(event.getModID())
+                && !event.isWorldRunning()) {
+          if (event.getConfigID().equals(CATEGORY_NAME_OPTIONS) || event.getConfigID().equals(CATEGORY_NAME_DEBUG)) {
+            syncFromGUI();
+          }
         }
-    public boolean isDisableBlockOverride() {
+      }
+
+      public boolean isDisableBlockOverride() {
         return disableBlockOverride;
+      }
     }
 }
