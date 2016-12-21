@@ -18,13 +18,14 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 
-public class BreathEntityRendererGhost extends Render
+public class BreathEntityRendererGhost extends Render<EntityBreathGhost>
 {
   public BreathEntityRendererGhost(RenderManager renderManager)
   {
     super(renderManager);
   }
 
+  @Override
   public void doRender(EntityBreathGhost entity, double x, double y, double z, float yaw, float partialTicks)
   {
     // render the lightning from the origin (mouth of the dragon) to the current location
@@ -440,27 +441,9 @@ public class BreathEntityRendererGhost extends Render
   /**
    * Returns the location of an entity's texture. Doesn't seem to be called unless you call Render.bindEntityTexture.
    */
-  protected ResourceLocation getEntityTexture(EntityBreathProjectileGhost entity)
+  @Override
+  protected ResourceLocation getEntityTexture(EntityBreathGhost entity)
   {
     return null;
-  }
-
-  /**
-   * Returns the location of an entity's texture. Doesn't seem to be called unless you call Render.bindEntityTexture.
-   */
-  protected ResourceLocation getEntityTexture(Entity entity)
-  {
-    return this.getEntityTexture((EntityBreathProjectileGhost) entity);
-  }
-
-  /**
-   * Actually renders the given argument. This is a synthetic bridge method, always casting down its argument and then
-   * handing it off to a worker function which does the actual work. In all probabilty, the class Render is generic
-   * (Render<T extends Entity>) and this method has signature public void func_76986_a(T entity, double d, double d1,
-   * double d2, float f, float f1). But JAD is pre 1.5 so doe
-   */
-  public void doRender(Entity entity, double x, double y, double z, float yaw, float partialTicks)
-  {
-    this.doRender((EntityBreathGhost) entity, x, y, z, yaw, partialTicks);
   }
 }

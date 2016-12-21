@@ -1,7 +1,7 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 /**
@@ -12,6 +12,6 @@ import net.minecraft.world.World;
  * 2) updateTick(...) every tick, to keep the factory synchronised (eg cooldown timer)
  */
 public interface BreathProjectileFactory {
-  boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power i_power);
+  boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3d origin, Vec3d target, BreathNode.Power i_power);
   void updateTick(DragonBreathHelper.BreathState breathState);
 }

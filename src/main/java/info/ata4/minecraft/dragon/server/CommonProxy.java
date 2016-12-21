@@ -25,18 +25,26 @@ import info.ata4.minecraft.dragon.server.network.DragonTargetMessageHandlerServe
 import info.ata4.minecraft.dragon.test.StartupCommon;
 import info.ata4.minecraft.dragon.server.item.ItemDragonBreedEgg;
 import net.minecraft.command.ServerCommandManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.server.FMLServerHandler;
+
+import java.io.File;
 
 /**
  *
@@ -91,8 +99,8 @@ public class CommonProxy {
             ".E.",
             ".B.",
             ".B.",
-            'E', Items.ender_eye,
-            'B', Items.blaze_rod
+            'E', Items.ENDER_EYE,
+            'B', Items.BLAZE_ROD
         });
       StartupCommon.postInitCommon();
     }
@@ -137,24 +145,25 @@ public class CommonProxy {
     }
 
     public void registerChestItems() {
-        ChestGenHooks chestGenHooksDungeon = ChestGenHooks.getInfo(ChestGenHooks.DUNGEON_CHEST);
-        chestGenHooksDungeon.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.dragon_egg), 1, 1, 70));
-        // chance < saddle (1/16, ca. 6%, in max 8 slots -> 40% at least 1 egg, 0.48 eggs per chest): I think that's okay
-
-        ChestGenHooks chestGenHooksMineshaft = ChestGenHooks.getInfo(ChestGenHooks.MINESHAFT_CORRIDOR);
-        chestGenHooksMineshaft.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.dragon_egg), 1, 1, 5));
-        // chance == gold ingot (1/18, ca. 6%, in 3-6 slots -> 23% at least 1 egg, 0.27 eggs per chest):
-        // exploring a random mine shaft in creative mode yielded 2 eggs out of about 10 chests in 1 hour
-
-        ChestGenHooks chestGenHooksJungleChest = ChestGenHooks.getInfo(ChestGenHooks.PYRAMID_JUNGLE_CHEST);
-        chestGenHooksJungleChest.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.dragon_egg), 1, 1, 15));
-        // chance == gold ingot (15/81, ca. 18%, in 2-5 slots -> 51% at least 1 egg, 0.65 eggs per chest, 1.3 eggs per temple):
-        // jungle temples are so rare, it should be rewarded
-
-        ChestGenHooks chestGenHooksDesertChest = ChestGenHooks.getInfo(ChestGenHooks.PYRAMID_DESERT_CHEST);
-        chestGenHooksDesertChest.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.dragon_egg), 1, 1, 10));
-        // chance == iron ingot (10/76, ca. 13%, in 2-5 slots -> 39% at least 1 egg, 0.46 eggs per chest, 1.8 eggs per temple):
-        // desert temples are so rare, it should be rewarded
+      //todo replace ChestGenHooks
+//        ChestGenHooks chestGenHooksDungeon = ChestGenHooks.getInfo(ChestGenHooks.DUNGEON_CHEST);
+//        chestGenHooksDungeon.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.DRAGON_EGG), 1, 1, 70));
+//        // chance < saddle (1/16, ca. 6%, in max 8 slots -> 40% at least 1 egg, 0.48 eggs per chest): I think that's okay
+//
+//        ChestGenHooks chestGenHooksMineshaft = ChestGenHooks.getInfo(ChestGenHooks.MINESHAFT_CORRIDOR);
+//        chestGenHooksMineshaft.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.DRAGON_EGG), 1, 1, 5));
+//        // chance == gold ingot (1/18, ca. 6%, in 3-6 slots -> 23% at least 1 egg, 0.27 eggs per chest):
+//        // exploring a random mine shaft in creative mode yielded 2 eggs out of about 10 chests in 1 hour
+//
+//        ChestGenHooks chestGenHooksJungleChest = ChestGenHooks.getInfo(ChestGenHooks.PYRAMID_JUNGLE_CHEST);
+//        chestGenHooksJungleChest.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.DRAGON_EGG), 1, 1, 15));
+//        // chance == gold ingot (15/81, ca. 18%, in 2-5 slots -> 51% at least 1 egg, 0.65 eggs per chest, 1.3 eggs per temple):
+//        // jungle temples are so rare, it should be rewarded
+//
+//        ChestGenHooks chestGenHooksDesertChest = ChestGenHooks.getInfo(ChestGenHooks.PYRAMID_DESERT_CHEST);
+//        chestGenHooksDesertChest.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.DRAGON_EGG), 1, 1, 10));
+//        // chance == iron ingot (10/76, ca. 13%, in 2-5 slots -> 39% at least 1 egg, 0.46 eggs per chest, 1.8 eggs per temple):
+//        // desert temples are so rare, it should be rewarded
     }
 
     /**

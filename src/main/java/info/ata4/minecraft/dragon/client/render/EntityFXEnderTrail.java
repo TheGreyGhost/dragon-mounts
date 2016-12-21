@@ -1,18 +1,15 @@
 package info.ata4.minecraft.dragon.client.render;
 
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.particle.IParticleFactory;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Based on the Portal FX, makes it appear more quickly (instantly)
  */
 
-public class EntityFXEnderTrail extends EntityFX
+public class EntityFXEnderTrail extends Particle
 {
   private float portalParticleScale;
   private double portalPosX;
@@ -37,7 +34,7 @@ public class EntityFXEnderTrail extends EntityFX
     this.particleGreen *= 0.3F;
     this.particleRed *= 0.9F;
     this.particleMaxAge = (int)(Math.random() * 10.0D) + 40;
-    this.noClip = true;
+//    this.noClip = true;
     this.setParticleTextureIndex((int)(Math.random() * 8.0D));
   }
 
@@ -72,7 +69,7 @@ public class EntityFXEnderTrail extends EntityFX
    * @param edgeUDdirectionZ edgeUDdirection[XYZ] is the vector direction pointing up-down on the player's screen
    */
   @Override
-  public void func_180434_a(WorldRenderer worldRenderer, Entity entity, float partialTick,
+  public void renderParticle(VertexBuffer worldRenderer, Entity entity, float partialTick,
                             float edgeLRdirectionX, float edgeUDdirectionY, float edgeLRdirectionZ,
                             float edgeUDdirectionX, float edgeUDdirectionZ)
   {
@@ -82,7 +79,7 @@ public class EntityFXEnderTrail extends EntityFX
     fractionalAge *= fractionalAge;
     fractionalAge = 1.0F - fractionalAge;
     this.particleScale = this.portalParticleScale * fractionalAge;
-    super.func_180434_a(worldRenderer, entity, partialTick, edgeLRdirectionX, edgeUDdirectionY, edgeLRdirectionZ,
+    super.renderParticle(worldRenderer, entity, partialTick, edgeLRdirectionX, edgeUDdirectionY, edgeLRdirectionZ,
             edgeUDdirectionX, edgeUDdirectionZ);
   }
 
@@ -104,16 +101,16 @@ public class EntityFXEnderTrail extends EntityFX
     return j | k << 16;
   }
 
-  /**
-   * Gets how bright this entity is.
-   */
-  public float getBrightness(float partialTick)
-  {
-    float f1 = super.getBrightness(partialTick);
-    float fractionalAge = acceleratedAgeFraction(partialTick);
-    fractionalAge = fractionalAge * fractionalAge * fractionalAge * fractionalAge;
-    return f1 * (1.0F - fractionalAge) + fractionalAge;
-  }
+//  /**
+//   * Gets how bright this entity is.
+//   */
+//  public float getBrightness(float partialTick)
+//  {
+//    float f1 = super.getBrightness(partialTick);
+//    float fractionalAge = acceleratedAgeFraction(partialTick);
+//    fractionalAge = fractionalAge * fractionalAge * fractionalAge * fractionalAge;
+//    return f1 * (1.0F - fractionalAge) + fractionalAge;
+//  }
 
   /**
    * Called to update the entity's position/logic.
@@ -132,7 +129,7 @@ public class EntityFXEnderTrail extends EntityFX
     this.posZ = this.portalPosZ + this.motionZ * fractionalAge;
 
     if (this.particleAge++ >= this.particleMaxAge) {
-      this.setDead();
+      this.setExpired();
     }
   }
 

@@ -16,6 +16,7 @@ import info.ata4.minecraft.dragon.client.handler.*;
 import info.ata4.minecraft.dragon.client.render.*;
 import info.ata4.minecraft.dragon.server.CommonProxy;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathGhost;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileEnder;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileGhost;
@@ -23,17 +24,20 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjec
 import info.ata4.minecraft.dragon.test.StartupClientOnly;
 import info.ata4.minecraft.dragon.test.StartupCommon;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EntityFX;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 
 import java.io.File;
 
@@ -41,8 +45,6 @@ import java.io.File;
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  */
 public class ClientProxy extends CommonProxy {
-    
-
   private static final int DEFAULT_ITEM_SUBTYPE = 0;
 
     @Override
@@ -63,18 +65,26 @@ public class ClientProxy extends CommonProxy {
         ModelLoader.setCustomModelResourceLocation(itemBlockDragonEgg, meta, eggModelLoc);
       });
 
-        StartupClientOnly.preInitClientOnly();
+      RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileNether.class,
+                                                       new BreathEntityRendererNether.BERNetherFactory(1.0F));
+      RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileEnder.class,
+              new BreathEntityRendererEnder.BEREnderFactory(1.0F));
+      RenderingRegistry.registerEntityRenderingHandler(EntityBreathGhost.class,
+              BreathEntityRendererGhost::new);
+      RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileGhost.class,         // dummy - renders blank
+              NullEntityRenderer::new);
+
+      StartupClientOnly.preInitClientOnly();
     }
 
     @Override
     public void onInit(FMLInitializationEvent evt) {
-        super.onInit(evt);
-        ModelResourceLocation itemModelResourceLocation =
-                new ModelResourceLocation("dragonmounts:dragonorb", "inventory");
+      super.onInit(evt);
+      ModelResourceLocation itemModelResourceLocation =
+              new ModelResourceLocation("dragonmounts:dragonorb", "inventory");
+      ModelLoader.setCustomModelResourceLocation(itemDragonOrb, DEFAULT_ITEM_SUBTYPE, itemModelResourceLocation);
 
-        Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
-                .register(itemDragonOrb, DEFAULT_ITEM_SUBTYPE, itemModelResourceLocation);
-        StartupClientOnly.initClientOnly();
+      StartupClientOnly.initClientOnly();
     }
 
     @Override
@@ -83,18 +93,6 @@ public class ClientProxy extends CommonProxy {
         if (DragonMounts.instance.getConfig().isDebug()) {
             MinecraftForge.EVENT_BUS.register(new GuiDragonDebug());
         }
-
-    RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
-    RenderingRegistry.registerEntityRenderingHandler(EntityTameableDragon.class,
-            new DragonRenderer(renderManager));
-    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileNether.class,
-            new BreathEntityRendererNether(renderManager, 1.0F));
-    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileEnder.class,
-            new BreathEntityRendererEnder(renderManager, 1.0F));
-    RenderingRegistry.registerEntityRenderingHandler(EntityBreathGhost.class,
-            new BreathEntityRendererGhost(renderManager));
-    RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileGhost.class,         // dummy - renders blank
-            new NullEntityRenderer(renderManager));
 
     FMLCommonHandler.instance().bus().register(new DragonControl(getNetwork()));
     DragonOrbControl.createSingleton(getNetwork());
@@ -126,7 +124,7 @@ public class ClientProxy extends CommonProxy {
                                   World world, double x, double y, double z,
                                   double velocityX, double velocityY, double velocityZ)
   {
-    EntityFX entityFXToSpawn;
+    Particle entityFXToSpawn;
     switch (entityFXtype) {
       case ENDERTRAIL: {
         entityFXToSpawn = new EntityFXEnderTrail(world, x, y, z, velocityX, velocityY, velocityZ);

@@ -14,6 +14,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.EntityFireball;
 import net.minecraft.init.Items;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -21,7 +22,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * Created by TGG on 26/03/2016.
  */
 @SideOnly(Side.CLIENT)
-public class BreathEntityRendererNether extends Render {
+public class BreathEntityRendererNether extends Render<EntityBreathProjectileNether> {
   private float scale;
 
   private ResourceLocation fireballTextureRL;
@@ -33,6 +34,7 @@ public class BreathEntityRendererNether extends Render {
     fireballTextureRL = new ResourceLocation(DragonMounts.AID, TEX_BASE + "breath_nether.png");
   }
 
+  @Override
   public void doRender(EntityBreathProjectileNether entity, double x, double y, double z, float yaw, float partialTicks) {
     GlStateManager.pushMatrix();
     this.bindEntityTexture(entity);
@@ -90,19 +92,22 @@ public class BreathEntityRendererNether extends Render {
     super.doRender(entity, x, y, z, yaw, partialTicks);
   }
 
-  protected ResourceLocation getEntityTexture(Entity entity) {
+  @Override
+  protected ResourceLocation getEntityTexture(EntityBreathProjectileNether entity) {
     return fireballTextureRL;
   }
 
-  /**
-   * Actually renders the given argument. This is a synthetic bridge method, always casting down its argument and then
-   * handing it off to a worker function which does the actual work. In all probabilty, the class Render is generic
-   * (Render<T extends Entity>) and this method has signature public void func_76986_a(T entity, double d, double d1,
-   * double d2, float f, float f1). But JAD is pre 1.5 so doe
-   */
-  @Override
-  public void doRender(Entity entity, double x, double y, double z, float p_76986_8_, float partialTicks) {
-    this.doRender((EntityBreathProjectileNether)entity, x, y, z, p_76986_8_, partialTicks);
-  }
+  static public class BERNetherFactory implements IRenderFactory<EntityBreathProjectileNether>
+  {
+    public BERNetherFactory(float i_scale)
+    {
+      scale = i_scale;
+    }
 
+    public Render<EntityBreathProjectileNether> createRenderFor(RenderManager manager)
+    {
+      return new BreathEntityRendererNether(manager, scale);
+    }
+    final private float scale;
+  }
 }

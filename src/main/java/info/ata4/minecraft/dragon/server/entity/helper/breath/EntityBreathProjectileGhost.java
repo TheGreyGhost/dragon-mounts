@@ -19,6 +19,8 @@ import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.lwjgl.Sys;
 
@@ -48,7 +50,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
    * @param objectStruck the entity or block which was struck (not null!)
    */
   public EntityBreathProjectileGhost(World worldIn, EntityTameableDragon shooter,
-                                     Vec3 origin, Vec3 destination, BreathNode.Power power,
+                                     Vec3d origin, Vec3d destination, BreathNode.Power power,
                                      BreathWeaponTarget objectStruck)
   {
     super(worldIn, shooter, origin, destination, power);
@@ -67,7 +69,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
    * @param power the power of the lightning
    */
   public EntityBreathProjectileGhost(World worldIn, EntityTameableDragon shooter,
-                                     Vec3 origin, Vec3 destination, BreathNode.Power power)
+                                     Vec3d origin, Vec3d destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);
 //    randomSeed = System.currentTimeMillis();
@@ -105,7 +107,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
       switch (lifeStage) {
         case STRIKE: {
           if (this.worldObj.isRemote) {
-            Vec3 targetPoint = (breathWeaponTarget.getTypeOfTarget() == BreathWeaponTarget.TypeOfTarget.DIRECTION)
+            Vec3d targetPoint = (breathWeaponTarget.getTypeOfTarget() == BreathWeaponTarget.TypeOfTarget.DIRECTION)
                     ? destination
                     : breathWeaponTarget.getTargetedPoint(worldObj, origin);
             EntityBreathGhost entityBreathGhost = new EntityBreathGhost(worldObj, origin, targetPoint, power);
@@ -117,7 +119,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
         case POSTSTRIKE: {
           // code copied from EntityLightningBolt.onUpdate()
           if (objectWasStruck) {
-            Vec3 impactPoint = breathWeaponTarget.getTargetedPoint(worldObj, origin);
+            Vec3d impactPoint = breathWeaponTarget.getTargetedPoint(worldObj, origin);
             float effectRadius = 1.0F;
             switch (power) {
               case SMALL: {effectRadius = 1.0F; break; }
@@ -140,7 +142,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   // ignite all flammable blocks within the given radius of the impact point
   // (or more strictly: for each air block within the effect radius (its centre is within effectRadius of the impactPoint)
   //   , check all adjacent blocks for a face which is flammable
-  private void igniteBlock(World world, Vec3 impactPoint, float effectRadius)
+  private void igniteBlock(World world, Vec3d impactPoint, float effectRadius)
   {
     BlockPos blockPosCentre = new BlockPos(impactPoint);
     if (world.isRemote
@@ -186,7 +188,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
     }
   }
 
-  private void strikeEntities(World world, Vec3 impactPoint, float effectRadius)
+  private void strikeEntities(World world, Vec3d impactPoint, float effectRadius)
   {
     EntityLightningBolt entityLightningBolt = new EntityLightningBolt(world,
             impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord);
@@ -304,7 +306,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   boolean objectWasStruck = false;
 
   public static class BreathProjectileFactoryGhost implements BreathProjectileFactory {
-    public boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
+    public boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3d origin, Vec3d target, BreathNode.Power power)
     {
       if (coolDownTimerTicks > 0 || !mouthHasBeenClosed) return false;
 
@@ -313,8 +315,8 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
       float maxDistance = ranges.getSecond();
 
       Set<Entity> entitiesToIgnore = Collections.emptySet();
-      Vec3 direction = target.subtract(origin).normalize();
-      MovingObjectPosition hitPoint = RayTraceServer.rayTraceServer(world, origin, direction, maxDistance, dragon, entitiesToIgnore);
+      Vec3d direction = target.subtract(origin).normalize();
+      RayTraceResult hitPoint = RayTraceServer.rayTraceServer(world, origin, direction, maxDistance, dragon, entitiesToIgnore);
 
       BreathWeaponTarget objectStruck = BreathWeaponTarget.fromMovingObjectPosition(hitPoint, null);
 

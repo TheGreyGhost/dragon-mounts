@@ -2,15 +2,18 @@ package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileEnder;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileNether;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
@@ -21,7 +24,7 @@ import java.util.Random;
  * Created by TGG on 26/03/2016.
  */
 @SideOnly(Side.CLIENT)
-public class BreathEntityRendererEnder extends Render {
+public class BreathEntityRendererEnder extends Render<EntityBreathProjectileEnder> {
   private float scale;
 
   private ResourceLocation enderGlobeTextureRL;
@@ -35,6 +38,7 @@ public class BreathEntityRendererEnder extends Render {
     enderAuraTextureRL = new ResourceLocation(DragonMounts.AID, TEX_BASE + "breath_ender_halo.png");
   }
 
+  @Override
   public void doRender(EntityBreathProjectileEnder entity, double x, double y, double z, float yaw, float partialTicks) {
     GlStateManager.pushMatrix();
     this.bindEntityTexture(entity);
@@ -43,7 +47,7 @@ public class BreathEntityRendererEnder extends Render {
     float f2 = this.scale;
     GlStateManager.scale(f2 / 1.0F, f2 / 1.0F, f2 / 1.0F);
     Tessellator tessellator = Tessellator.getInstance();
-    WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+    VertexBuffer worldrenderer = tessellator.getBuffer();
     {
       double uMin = 0.0F;
       double uMax = 1.0F;
@@ -59,9 +63,10 @@ public class BreathEntityRendererEnder extends Render {
       final long ROTATION_PERIOD_MS = 500;
       float rotationFraction = (timeMS % ROTATION_PERIOD_MS) / (float)ROTATION_PERIOD_MS;
       GlStateManager.rotate(rotationFraction * 360, 0, 0, 1.0F);
+      worldrenderer.pos((0.0 - xOffset), (0.0 - yOffset), 0.0D).tex(uMin, vMax).normal(0.0F, 1.0F, 0.0F).endVertex();
       worldrenderer.startDrawingQuads();
       worldrenderer.setNormal(0.0F, 1.0F, 0.0F);
-      worldrenderer.addVertexWithUV((0.0 - xOffset), (0.0 - yOffset), 0.0D, uMin, vMax);
+      worldrenderer.addVertexWithUV(, );
       worldrenderer.addVertexWithUV((xSize - xOffset), (0.0 - yOffset), 0.0D, uMax, vMax);
       worldrenderer.addVertexWithUV((xSize - xOffset), (ySize - yOffset), 0.0D, uMax, vMin);
       worldrenderer.addVertexWithUV((0.0 - xOffset), (ySize - yOffset), 0.0D, uMin, vMin);
@@ -123,19 +128,24 @@ public class BreathEntityRendererEnder extends Render {
     super.doRender(entity, x, y, z, yaw, partialTicks);
   }
 
-  protected ResourceLocation getEntityTexture(Entity entity) {
+  @Override
+  protected ResourceLocation getEntityTexture(EntityBreathProjectileEnder entity) {
     return enderGlobeTextureRL;
   }
 
-  /**
-   * Actually renders the given argument. This is a synthetic bridge method, always casting down its argument and then
-   * handing it off to a worker function which does the actual work. In all probabilty, the class Render is generic
-   * (Render<T extends Entity>) and this method has signature public void func_76986_a(T entity, double d, double d1,
-   * double d2, float f, float f1). But JAD is pre 1.5 so doe
-   */
-  @Override
-  public void doRender(Entity entity, double x, double y, double z, float p_76986_8_, float partialTicks) {
-    this.doRender((EntityBreathProjectileEnder)entity, x, y, z, p_76986_8_, partialTicks);
+  static public class BEREnderFactory implements IRenderFactory<EntityBreathProjectileEnder>
+  {
+    public BEREnderFactory(float i_scale)
+    {
+      scale = i_scale;
+    }
+
+    public Render<EntityBreathProjectileEnder> createRenderFor(RenderManager manager)
+    {
+      return new BreathEntityRendererEnder(manager, scale);
+    }
+    final private float scale;
   }
+
 
 }

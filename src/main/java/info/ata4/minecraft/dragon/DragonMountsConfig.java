@@ -57,6 +57,7 @@ public class DragonMountsConfig {
     private boolean orbHighlightTarget = true;
     private boolean orbHolderImmune = true;
     private boolean breathAffectsBlocks = true;
+    private boolean eggsInChests = true;
 
     public DragonMountsConfig(Configuration i_config) {
         config = i_config;
@@ -72,10 +73,6 @@ public class DragonMountsConfig {
 
     public boolean isEggsInChests() {
         return eggsInChests;
-    }
-
-    public int getDragonEntityID() {
-        return dragonEntityID;
     }
 
     public boolean isDebug() {
@@ -171,10 +168,10 @@ public class DragonMountsConfig {
         //   their name, type, default / min / max values, a comment.  These affect what is displayed on the GUI.
         // If the file already exists, the property values will already have been read from the file, otherwise they
         //  will be assigned the default value.
-//        final boolean DEFAULT_EGGS_IN_CHEST = true;
-//        Property propEggsInChests = config.get(CATEGORY_NAME_OPTIONS, "eggsInChests", DEFAULT_EGGS_IN_CHEST);
-//        propEggsInChests.setComment("Spawns dragon eggs in generated chests when enabled");
-//        propEggsInChests.setLanguageKey("gui.config.options.eggs_in_chest");
+        final boolean DEFAULT_EGGS_IN_CHEST = true;
+        Property propEggsInChests = config.get(CATEGORY_NAME_OPTIONS, "eggsInChests", DEFAULT_EGGS_IN_CHEST);
+        propEggsInChests.setComment("Spawns dragon eggs in generated chests when enabled");
+        propEggsInChests.setLanguageKey("gui.config.options.eggs_in_chest");
 
         final boolean DEFAULT_AUTOLOCK = true;
         Property propOrbTargetAutoLock = config.get(CATEGORY_NAME_OPTIONS, "orbTargetAutoLock", DEFAULT_AUTOLOCK);
@@ -225,7 +222,7 @@ public class DragonMountsConfig {
         propOrderOptions.add(propOrbTargetAutoLock.getName());
         propOrderOptions.add(propOrbHolderImmune.getName());
         propOrderOptions.add(propBreathAffectsBlocks.getName());
-//        propOrderOptions.add(propEggsInChests.getName());
+        propOrderOptions.add(propEggsInChests.getName());
         propOrderOptions.add(propDisableBlockOverride.getName());
         config.setCategoryPropertyOrder(CATEGORY_NAME_OPTIONS, propOrderOptions);
 
@@ -242,7 +239,7 @@ public class DragonMountsConfig {
             //If getInt cannot get an integer value from the config file value of myInteger (e.g. corrupted file)
             // it will set it to the default value passed to the function
 
-//            eggsInChests = propEggsInChests.getBoolean(DEFAULT_EGGS_IN_CHEST);
+            eggsInChests = propEggsInChests.getBoolean(DEFAULT_EGGS_IN_CHEST);
             orbTargetAutoLock = propOrbTargetAutoLock.getBoolean(DEFAULT_AUTOLOCK);
             orbHighlightTarget = propOrbHighlightTarget.getBoolean(DEFAULT_HIGHLIGHT);
             orbHolderImmune = propOrbHolderImmune.getBoolean(DEFAULT_IMMUNE);

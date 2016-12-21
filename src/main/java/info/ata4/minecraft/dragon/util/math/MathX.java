@@ -9,9 +9,9 @@
  */
 package info.ata4.minecraft.dragon.util.math;
 
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Random;
 
@@ -57,10 +57,10 @@ public class MathX {
      * @param radius radius of the sphere
      * @return The point on the sphere
      */
-    public static Vec3 getRandomPointOnSphere(Random rand, double radius)
+    public static Vec3d getRandomPointOnSphere(Random rand, double radius)
     {
-      Vec3 raw = new Vec3(rand.nextGaussian(), rand.nextGaussian(), rand.nextGaussian());
-      Vec3 result = MathX.multiply(raw.normalize(), radius);
+      Vec3d raw = new Vec3d(rand.nextGaussian(), rand.nextGaussian(), rand.nextGaussian());
+      Vec3d result = MathX.multiply(raw.normalize(), radius);
       return result;
     }
 
@@ -227,9 +227,9 @@ public class MathX {
         return centreAngle + clamp(normDeg(targetAngle - centreAngle), -maximumDifference, maximumDifference);
     }
 
-    public static Vec3 multiply(Vec3 source, double multiplier)
+    public static Vec3d multiply(Vec3d source, double multiplier)
     {
-      return new Vec3(source.xCoord * multiplier, source.yCoord * multiplier, source.zCoord * multiplier);
+      return new Vec3d(source.xCoord * multiplier, source.yCoord * multiplier, source.zCoord * multiplier);
     }
 
     public final static double MINIMUM_SIGNIFICANT_DIFFERENCE = 1e-3;
@@ -255,7 +255,7 @@ public class MathX {
 
   // calculate the yaw from the given direction
   // returns from -180 to +180
-  public static double calculateYaw(Vec3 direction)
+  public static double calculateYaw(Vec3d direction)
   {
     double yaw = (Math.atan2(direction.zCoord, direction.xCoord) * 180.0D / Math.PI) - 90.0F;
     yaw = MathX.normDeg(yaw);
@@ -264,7 +264,7 @@ public class MathX {
 
     // calculate the pitch from the given direction
     // returns from -90 to +90
-    public static double calculatePitch(Vec3 direction)
+    public static double calculatePitch(Vec3d direction)
     {
         double xz_norm = MathHelper.sqrt_double(direction.xCoord * direction.xCoord + direction.zCoord * direction.zCoord);
         double pitch = -(Math.atan2(direction.yCoord, xz_norm) * 180.0D / Math.PI);
@@ -301,7 +301,7 @@ public class MathX {
      * @param point the point to be measured to
      * @return the distance squared
      */
-    public static double getClosestDistanceSQ(AxisAlignedBB aabb, Vec3 point)
+    public static double getClosestDistanceSQ(AxisAlignedBB aabb, Vec3d point)
     {
       // because the aabb is aligned, we just need to figure out the distance in each cardinal axis and then
       //  add them together

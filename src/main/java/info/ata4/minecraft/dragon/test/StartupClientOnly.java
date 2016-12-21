@@ -1,7 +1,7 @@
 package info.ata4.minecraft.dragon.test;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 
 /**
  * User: The Grey Ghost
