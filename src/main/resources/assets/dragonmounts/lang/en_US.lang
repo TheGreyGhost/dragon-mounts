@@ -49,6 +49,9 @@ gui.config.options.orb_highlight_target.tooltip=The dragon orb shows a highlight
 gui.config.options.orb_holder_immune=Orb Holder Immune
 gui.config.options.orb_holder_immune.tooltip=Is the orb holder immune to dragon breath?
 
+gui.config.options.disable_block_override=Disable Block Override
+gui.config.options.disable_block_override.tooltip=Disables right-click override on the vanilla dragon egg block.
+
 gui.config.debug.dragon_entity_id=EntityID
 gui.config.debug.dragon_entity_id.tooltip=Overrides the entity ID for dragons to fix problems with manual IDs from other mods.  -1 = auto.
 
@@ -57,5 +60,4 @@ gui.config.options.breath_affects_blocks.tooltip=Does the dragon breath cause da
 
 gui.config.debug.debug=Debug Mode
 gui.config.debug.debug.tooltip=Debug mode. Unless you're a developer or are told to activate it, you don't want to set this to true.
-
 

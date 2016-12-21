@@ -48,6 +48,11 @@ public class CommonProxy {
     public final byte DCM_DISCRIMINATOR_ID = 35;  // arbitrary non-zero ID (non-zero makes troubleshooting easier)
     public final byte DOT_DISCRIMINATOR_ID = 73;  // arbitrary non-zero ID (non-zero makes troubleshooting easier)
 
+  private final int ENTITY_TRACKING_RANGE = 80;
+  private final int ENTITY_UPDATE_FREQ = 3;
+  private final int ENTITY_ID = 0;
+  private final boolean ENTITY_SEND_VELO_UPDATES = true;
+
     public SimpleNetworkWrapper getNetwork() {
         return network;
     }
@@ -57,6 +62,8 @@ public class CommonProxy {
     public void onPreInit(FMLPreInitializationEvent evt) {
         itemDragonOrb = (ItemDragonOrb) (new ItemDragonOrb().setUnlocalizedName("dragonorb"));
         GameRegistry.registerItem(itemDragonOrb, "dragonorb");
+      GameRegistry.register(BlockDragonBreedEgg.INSTANCE.setRegistryName("dragon_egg"));
+      GameRegistry.register(ItemDragonBreedEgg.INSTANCE.setRegistryName("dragon_egg"));
 //    MinecraftForge.EVENT_BUS.register(new EntitySpawnSuppressor());
       StartupCommon.preInitCommon();
     }
@@ -120,6 +127,12 @@ public class CommonProxy {
         final int WEATHER_EFFECT_GHOST_ENTITY_ID = 30;
         EntityRegistry.registerModEntity(EntityBreathProjectileGhost.class, "GhostWeatherEntity", WEATHER_EFFECT_GHOST_ENTITY_ID,
                 DragonMounts.instance, TRACKING_RANGE, UPDATE_FREQUENCY, true);
+
+
+
+      EntityRegistry.registerModEntity(EntityTameableDragon.class, "DragonMount",
+              ENTITY_ID, DragonMounts.instance, ENTITY_TRACKING_RANGE, ENTITY_UPDATE_FREQ,
+              ENTITY_SEND_VELO_UPDATES);
 
     }
 

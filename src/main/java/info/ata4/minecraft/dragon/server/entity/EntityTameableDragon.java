@@ -321,6 +321,30 @@ public class EntityTameableDragon extends EntityTameable {
             }
             animator.setOnGround(!isFlying());
 
+          // update flying state based on the distance to the ground
+          boolean flying = canFly() && getAltitude() > ALTITUDE_FLYING_THRESHOLD;
+          if (flying != isFlying()) {
+            // notify client
+            setFlying(flying);
+
+            // clear tasks (needs to be done before switching the navigator!)
+            getBrain().clearTasks();
+
+            // update AI follow range (needs to be updated before creating
+            // new PathNavigate!)
+            getEntityAttribute(FOLLOW_RANGE).setBaseValue(
+                    flying ? BASE_FOLLOW_RANGE_FLYING : BASE_FOLLOW_RANGE);
+
+            // update pathfinding method
+            if (flying) {
+              navigator = new PathNavigateFlying(this, worldObj);
+            } else {
+              navigator = new PathNavigateGround(this, worldObj);
+            }
+
+            // tasks need to be updated after switching modes
+            getBrain().updateAITasks();
+
             if (isServer()) {
                 final float DUMMY_MOVETIME = 0;
                 final float DUMMY_MOVESPEED = 0;
@@ -485,7 +509,7 @@ public class EntityTameableDragon extends EntityTameable {
      */
     @Override
     public int getTalkInterval() {
-        return getSoundManager().getTalkInterval();
+                return getSoundManager().getTalkInterval();
     }
     
     /**
@@ -699,8 +723,8 @@ public class EntityTameableDragon extends EntityTameable {
     public DragonReproductionHelper getReproductionHelper() {
         return getHelper(DragonReproductionHelper.class);
     }
-    
-    public DragonParticleHelper getParticleHelper() {
+
+          public DragonParticleHelper getParticleHelper() {
         return getHelper(DragonParticleHelper.class);
     }
 
