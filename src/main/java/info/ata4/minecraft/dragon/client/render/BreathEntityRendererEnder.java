@@ -8,9 +8,9 @@ import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
@@ -40,15 +40,54 @@ public class BreathEntityRendererEnder extends Render<EntityBreathProjectileEnde
 
   @Override
   public void doRender(EntityBreathProjectileEnder entity, double x, double y, double z, float yaw, float partialTicks) {
-    GlStateManager.pushMatrix();
-    this.bindEntityTexture(entity);
-    GlStateManager.translate((float) x, (float) y, (float) z);
-    GlStateManager.enableRescaleNormal();
-    float f2 = this.scale;
-    GlStateManager.scale(f2 / 1.0F, f2 / 1.0F, f2 / 1.0F);
-    Tessellator tessellator = Tessellator.getInstance();
-    VertexBuffer worldrenderer = tessellator.getBuffer();
-    {
+
+    // from RenderDragonFireball
+//    GlStateManager.pushMatrix();
+//    this.bindEntityTexture(entity);
+//    GlStateManager.translate((float)x, (float)y, (float)z);
+//    GlStateManager.enableRescaleNormal();
+//    GlStateManager.scale(2.0F, 2.0F, 2.0F);
+//    Tessellator tessellator = Tessellator.getInstance();
+//    VertexBuffer vertexbuffer = tessellator.getBuffer();
+//    float f = 1.0F;
+//    float f1 = 0.5F;
+//    float f2 = 0.25F;
+//    GlStateManager.rotate(180.0F - this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
+//    GlStateManager.rotate((float)(this.renderManager.options.thirdPersonView == 2 ? -1 : 1) * -this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
+//
+//    if (this.renderOutlines)
+//    {
+//      GlStateManager.enableColorMaterial();
+//      GlStateManager.enableOutlineMode(this.getTeamColor(entity));
+//    }
+//
+//    vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_NORMAL);
+//    vertexbuffer.pos(-0.5D, -0.25D, 0.0D).tex(0.0D, 1.0D).normal(0.0F, 1.0F, 0.0F).endVertex();
+//    vertexbuffer.pos(0.5D, -0.25D, 0.0D).tex(1.0D, 1.0D).normal(0.0F, 1.0F, 0.0F).endVertex();
+//    vertexbuffer.pos(0.5D, 0.75D, 0.0D).tex(1.0D, 0.0D).normal(0.0F, 1.0F, 0.0F).endVertex();
+//    vertexbuffer.pos(-0.5D, 0.75D, 0.0D).tex(0.0D, 0.0D).normal(0.0F, 1.0F, 0.0F).endVertex();
+//    tessellator.draw();
+//
+//    if (this.renderOutlines)
+//    {
+//      GlStateManager.disableOutlineMode();
+//      GlStateManager.disableColorMaterial();
+//    }
+//
+//    GlStateManager.disableRescaleNormal();
+//    GlStateManager.popMatrix();
+//    super.doRender(entity, x, y, z, entityYaw, partialTicks);
+
+
+    try {
+      GlStateManager.pushMatrix();
+      this.bindEntityTexture(entity);
+      GlStateManager.translate((float) x, (float) y, (float) z);
+      GlStateManager.enableRescaleNormal();
+      float f2 = this.scale;
+      GlStateManager.scale(f2 / 1.0F, f2 / 1.0F, f2 / 1.0F);
+      Tessellator tessellator = Tessellator.getInstance();
+      VertexBuffer worldrenderer = tessellator.getBuffer();
       double uMin = 0.0F;
       double uMax = 1.0F;
       double vMin = 0.0F;
@@ -63,15 +102,18 @@ public class BreathEntityRendererEnder extends Render<EntityBreathProjectileEnde
       final long ROTATION_PERIOD_MS = 500;
       float rotationFraction = (timeMS % ROTATION_PERIOD_MS) / (float)ROTATION_PERIOD_MS;
       GlStateManager.rotate(rotationFraction * 360, 0, 0, 1.0F);
+
+      worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_NORMAL);
       worldrenderer.pos((0.0 - xOffset), (0.0 - yOffset), 0.0D).tex(uMin, vMax).normal(0.0F, 1.0F, 0.0F).endVertex();
-      worldrenderer.startDrawingQuads();
-      worldrenderer.setNormal(0.0F, 1.0F, 0.0F);
-      worldrenderer.addVertexWithUV(, );
-      worldrenderer.addVertexWithUV((xSize - xOffset), (0.0 - yOffset), 0.0D, uMax, vMax);
-      worldrenderer.addVertexWithUV((xSize - xOffset), (ySize - yOffset), 0.0D, uMax, vMin);
-      worldrenderer.addVertexWithUV((0.0 - xOffset), (ySize - yOffset), 0.0D, uMin, vMin);
+      worldrenderer.pos((xSize - xOffset), (0.0 - yOffset), 0.0D).tex(uMax, vMax).normal(0.0F, 1.0F, 0.0F).endVertex();
+      worldrenderer.pos((xSize - xOffset), (ySize - yOffset), 0.0D).tex(uMax, vMin).normal(0.0F, 1.0F, 0.0F).endVertex();
+      worldrenderer.pos((0.0 - xOffset), (ySize - yOffset), 0.0D).tex(uMin, vMin).normal(0.0F, 1.0F, 0.0F).endVertex();
       tessellator.draw();
+    } finally {
+      GlStateManager.disableRescaleNormal();
+      GlStateManager.popMatrix();
     }
+    super.doRender(entity, x, y, z, yaw, partialTicks);
 
 //    {
 //      GlStateManager.disableLighting();
@@ -123,9 +165,6 @@ public class BreathEntityRendererEnder extends Render<EntityBreathProjectileEnde
 //      GlStateManager.enableLighting();
 //    }
 
-    GlStateManager.disableRescaleNormal();
-    GlStateManager.popMatrix();
-    super.doRender(entity, x, y, z, yaw, partialTicks);
   }
 
   @Override

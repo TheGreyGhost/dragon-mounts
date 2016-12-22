@@ -145,7 +145,7 @@ public class CommonProxy {
     }
 
     public void registerChestItems() {
-      //todo replace ChestGenHooks
+      //todo replace ChestGenHooks with LootTableLoadEvent
 //        ChestGenHooks chestGenHooksDungeon = ChestGenHooks.getInfo(ChestGenHooks.DUNGEON_CHEST);
 //        chestGenHooksDungeon.addItem(new WeightedRandomChestContent(new ItemStack(Blocks.DRAGON_EGG), 1, 1, 70));
 //        // chance < saddle (1/16, ca. 6%, in max 8 slots -> 40% at least 1 egg, 0.48 eggs per chest): I think that's okay

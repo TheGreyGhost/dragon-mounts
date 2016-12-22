@@ -11,7 +11,6 @@ package info.ata4.minecraft.dragon.server.entity;
 
 import com.google.common.base.Optional;
 import info.ata4.minecraft.dragon.DragonMounts;
-import info.ata4.minecraft.dragon.client.model.anim.DragonAnimator;
 import info.ata4.minecraft.dragon.client.model.anim.DragonAnimatorCommon;
 import info.ata4.minecraft.dragon.server.entity.ai.path.PathNavigateFlying;
 import info.ata4.minecraft.dragon.server.entity.breeds.DragonBreed;
@@ -115,8 +114,12 @@ public class EntityTameableDragon extends EntityTameable {
     
     // client-only delegates
     private final DragonBodyHelper bodyHelper = new DragonBodyHelper(this);
-    
-    public EntityTameableDragon(World world) {
+
+    private DragonAnimatorCommon animator;
+    protected int ticksSinceLastAttack = -1;
+
+
+  public EntityTameableDragon(World world) {
         super(world);
         
         // set base size
@@ -136,7 +139,7 @@ public class EntityTameableDragon extends EntityTameable {
         
         if (isClient()) {
             addHelper(new DragonParticleHelper(this));
-            addHelper(new DragonAnimator(this));
+//            addHelper(new DragonAnimator(this));
         } else {
             addHelper(new DragonBrain(this));
         }
@@ -160,9 +163,9 @@ public class EntityTameableDragon extends EntityTameable {
     protected void entityInit() {
         super.entityInit();
 
-        addHelper(new DragonBreedHelper(this, INDEX_BREED));
-        addHelper(new DragonLifeStageHelper(this, INDEX_TICKS_SINCE_CREATION));
-        addHelper(new DragonReproductionHelper(this, INDEX_BREEDER, INDEX_REPRO_COUNT));
+//        addHelper(new DragonBreedHelper(this, INDEX_BREED));
+//        addHelper(new DragonLifeStageHelper(this, INDEX_TICKS_SINCE_CREATION));
+//        addHelper(new DragonReproductionHelper(this, INDEX_BREEDER, INDEX_REPRO_COUNT));
         addHelper(new DragonParticleHelper(this));
 
         if (DragonMounts.instance.getConfig().isDebug()) {
@@ -305,72 +308,69 @@ public class EntityTameableDragon extends EntityTameable {
         return animator.getBodyPitch();
     }
 
-    @Override
-    public void onLivingUpdate() {
+  @Override
+  public void onLivingUpdate() {
 //        System.out.format("motionY: %.2f\n", motionY);
-        if (!DebugFreezeAnimator.isFrozen()) {
-            helpers.values().forEach(DragonHelper::onLivingUpdate);
-        }
-        if (isServer()) {
-            // set home position near owner when tamed
-            if (isTamed()) {
-                Entity owner = getOwner();
-                if (owner != null) {
-                    setHomePosAndDistance(owner.getPosition(), HOME_RADIUS);
-                }
-            }
-            animator.setOnGround(!isFlying());
-
-          // update flying state based on the distance to the ground
-          boolean flying = canFly() && getAltitude() > ALTITUDE_FLYING_THRESHOLD;
-          if (flying != isFlying()) {
-            // notify client
-            setFlying(flying);
-
-            // clear tasks (needs to be done before switching the navigator!)
-            getBrain().clearTasks();
-
-            // update AI follow range (needs to be updated before creating
-            // new PathNavigate!)
-            getEntityAttribute(FOLLOW_RANGE).setBaseValue(
-                    flying ? BASE_FOLLOW_RANGE_FLYING : BASE_FOLLOW_RANGE);
-
-            // update pathfinding method
-            if (flying) {
-              navigator = new PathNavigateFlying(this, worldObj);
-            } else {
-              navigator = new PathNavigateGround(this, worldObj);
-            }
-
-            // tasks need to be updated after switching modes
-            getBrain().updateAITasks();
-
-            if (isServer()) {
-                final float DUMMY_MOVETIME = 0;
-                final float DUMMY_MOVESPEED = 0;
-                animator.setMovement(DUMMY_MOVETIME, DUMMY_MOVESPEED);
-                float netYawHead = getRotationYawHead() - renderYawOffset;
-                animator.setLook(netYawHead, rotationPitch);
-                animator.setTicksExisted(ticksExisted);
-                animator.tickingUpdate();
-                animator.animate();
-
-        // set home position near owner when tamed
-                //  setHomeArea renamed to EntityCreature.func_175449_a()
-                if (isTamed()) {
-                    Entity owner = getOwner();
-                    if (owner != null) {
-                        BlockPos ownerPosition = new BlockPos(owner.posX, owner.posY, owner.posZ);
-                        func_175449_a(ownerPosition, HOME_RADIUS);
-                    }
-                }
-            } else {
-                animator.tickingUpdate();  // all other animator parameters are set by the model renderer
-            }
-        }
-        
-        super.onLivingUpdate();
+    if (!DebugFreezeAnimator.isFrozen()) {
+      helpers.values().forEach(DragonHelper::onLivingUpdate);
     }
+    if (isServer()) {
+      // set home position near owner when tamed
+      if (isTamed()) {
+        Entity owner = getOwner();
+        if (owner != null) {
+          setHomePosAndDistance(owner.getPosition(), HOME_RADIUS);
+        }
+      }
+      animator.setOnGround(!isFlying());
+
+      // update flying state based on the distance to the ground
+      boolean flying = canFly() && getAltitude() > ALTITUDE_FLYING_THRESHOLD;
+      if (flying != isFlying()) {
+        // notify client
+        setFlying(flying);
+
+        // clear tasks (needs to be done before switching the navigator!)
+        getBrain().clearTasks();
+
+        // update AI follow range (needs to be updated before creating
+        // new PathNavigate!)
+        getEntityAttribute(FOLLOW_RANGE).setBaseValue(
+                flying ? BASE_FOLLOW_RANGE_FLYING : BASE_FOLLOW_RANGE);
+
+        // update pathfinding method
+        if (flying) {
+          navigator = new PathNavigateFlying(this, worldObj);
+        } else {
+          navigator = new PathNavigateGround(this, worldObj);
+        }
+
+        // tasks need to be updated after switching modes
+        getBrain().updateAITasks();
+      }
+      final float DUMMY_MOVETIME = 0;
+      final float DUMMY_MOVESPEED = 0;
+      animator.setMovement(DUMMY_MOVETIME, DUMMY_MOVESPEED);
+      float netYawHead = getRotationYawHead() - renderYawOffset;
+      animator.setLook(netYawHead, rotationPitch);
+      animator.setTicksExisted(ticksExisted);
+      animator.tickingUpdate();
+      animator.animate();
+
+//        // set home position near owner when tamed
+//                //  setHomeArea renamed to EntityCreature.func_175449_a()
+//                if (isTamed()) {
+//                    Entity owner = getOwner();
+//                    if (owner != null) {
+//                        BlockPos ownerPosition = new BlockPos(owner.posX, owner.posY, owner.posZ);
+//                        func_175449_a(ownerPosition, HOME_RADIUS);
+//                    }
+//                }
+    } else {
+      animator.tickingUpdate();  // all other animator parameters are set by the model renderer
+    }
+    super.onLivingUpdate();
+  }
     
     @Override
     public void moveEntityWithHeading(float strafe, float forward) {
@@ -413,13 +413,6 @@ public class EntityTameableDragon extends EntityTameable {
     public void setDead() {
         helpers.values().forEach(DragonHelper::onDeath);
         super.setDead();
-    }
-
-    // hijack swingItem to be used for attacking (jaw animation on attack)
-    //  normally only used for swinging held items; attackEntityAsMob is overridden to send packet S0BPacketAnimation
-    @Override
-    public void swingItem() {
-        ticksSinceLastAttack = 0;
     }
 
     @Override
@@ -647,7 +640,13 @@ public class EntityTameableDragon extends EntityTameable {
         
         return attacked;
     }
-    
+
+
+//  // hijack swingItem to be used for attacking (jaw animation on attack)
+//  //  normally only used for swinging held items; attackEntityAsMob is overridden to send packet S0BPacketAnimation
+//  @Override
+//  public void swingArm(EnumHand hand) {
+//  }
     @Override
     public void swingArm(EnumHand hand) {
         // play eating sound
@@ -658,6 +657,7 @@ public class EntityTameableDragon extends EntityTameable {
             ((WorldServer) worldObj).getEntityTracker().sendToAllTrackingEntity(
                     this, new SPacketAnimation(this, 0));
         }
+      ticksSinceLastAttack = 0;
     }
     
     /**
