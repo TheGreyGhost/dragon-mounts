@@ -1,7 +1,7 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import info.ata4.minecraft.dragon.util.math.MathX;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -38,11 +38,11 @@ public class BreathAffectedEntity
    * @param beamDirection the direction that the breathweapon is travelling (need not be normalised)
    * @param increase the amount to increase the hit density by
    */
-  public void addHitDensity(Vec3 beamDirection, float increase)
+  public void addHitDensity(Vec3d beamDirection, float increase)
   {
-    Vec3 oldWeightedDirection = MathX.multiply(averageDirection.normalize(), hitDensity);
-    Vec3 addedWeightedDirection = MathX.multiply(beamDirection.normalize(), increase);
-    Vec3 newAverageDirection = oldWeightedDirection.add(addedWeightedDirection);
+    Vec3d oldWeightedDirection = MathX.multiply(averageDirection.normalize(), hitDensity);
+    Vec3d addedWeightedDirection = MathX.multiply(beamDirection.normalize(), increase);
+    Vec3d newAverageDirection = oldWeightedDirection.add(addedWeightedDirection);
     averageDirection = newAverageDirection;
 
     hitDensity += increase;
@@ -59,7 +59,7 @@ public class BreathAffectedEntity
    *   this returns the average direction the water is travelling in).
    * @return the direction with density (i.e. not normalised - magnitude equals the hitDensity)
    */
-  public Vec3 getHitDensityDirection()
+  public Vec3d getHitDensityDirection()
   {
     return averageDirection;
   }
@@ -130,7 +130,7 @@ public class BreathAffectedEntity
   private float hitDensity;
   private int timeSinceLastHit;
   private int ticksUntilDamageApplied;
-  private Vec3 averageDirection = new Vec3(0, 0, 0);
+  private Vec3d averageDirection = new Vec3d(0, 0, 0);
 
   private float entityDecayPercentagePerTick = 5.0F;
   private int ticksBeforeDecayStarts = 40;

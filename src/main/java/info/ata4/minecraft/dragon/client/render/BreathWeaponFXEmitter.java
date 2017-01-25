@@ -5,9 +5,8 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.NodeLineSegment;
 import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -26,11 +25,11 @@ import java.util.Random;
 public abstract class BreathWeaponFXEmitter
 {
 
-  protected Vec3 origin;
-  protected Vec3 direction;
+  protected Vec3d origin;
+  protected Vec3d direction;
 
-  protected Vec3 previousOrigin;
-  protected Vec3 previousDirection;
+  protected Vec3d previousOrigin;
+  protected Vec3d previousDirection;
   protected int previousTickCount;
 
   /**
@@ -39,7 +38,7 @@ public abstract class BreathWeaponFXEmitter
    * @param newOrigin the starting point of the beam (world coordinates)
    * @param newDestination the target of the beam (world coordinates)
    */
-  public void setBeamEndpoints(Vec3 newOrigin, Vec3 newDestination)
+  public void setBeamEndpoints(Vec3d newOrigin, Vec3d newDestination)
   {
     origin = newOrigin;
     direction = newDestination.subtract(newOrigin).normalize();
@@ -78,7 +77,7 @@ public abstract class BreathWeaponFXEmitter
     boolean foundLive = false;
     while (it.hasNext() && !foundLive) {
       BreathFX entity = it.next();
-      if (entity.isDead) {
+      if (!entity.isAlive()) {
         it.remove();
       } else {
         foundLive = true;
@@ -99,8 +98,8 @@ public abstract class BreathWeaponFXEmitter
     }
     for (int i = 0; i < particlesPerTick; ++i) {
       float partialTickHeadStart = (i + random.nextFloat()) / (float)particlesPerTick;   // random is for jitter to prevent aliasing
-      Vec3 interpDirection = interpolateVec(previousDirection, direction, partialTickHeadStart);
-      Vec3 interpOrigin = interpolateVec(previousOrigin, origin, partialTickHeadStart);
+      Vec3d interpDirection = interpolateVec(previousDirection, direction, partialTickHeadStart);
+      Vec3d interpOrigin = interpolateVec(previousOrigin, origin, partialTickHeadStart);
       BreathFX breathFX = createSingleParticle(world, interpOrigin, interpDirection, power, tickCount, partialTickHeadStart);
       Minecraft.getMinecraft().effectRenderer.addEffect(breathFX);
       spawnedBreathFX.add(breathFX);
@@ -111,7 +110,7 @@ public abstract class BreathWeaponFXEmitter
   }
 
 
-  protected abstract BreathFX createSingleParticle(World world, Vec3 origin, Vec3 direction, BreathNode.Power power,
+  protected abstract BreathFX createSingleParticle(World world, Vec3d origin, Vec3d direction, BreathNode.Power power,
                                                    int tickCount, float partialTickHeadStart);
 
   /**
@@ -121,9 +120,9 @@ public abstract class BreathWeaponFXEmitter
    * @param fraction 0 - 1; 0 = vector1, 1 = vector2
    * @return interpolated vector
    */
-  protected Vec3 interpolateVec(Vec3 vector1, Vec3 vector2, float fraction)
+  protected Vec3d interpolateVec(Vec3d vector1, Vec3d vector2, float fraction)
   {
-    return new Vec3(vector1.xCoord * (1-fraction) + vector2.xCoord * fraction,
+    return new Vec3d(vector1.xCoord * (1-fraction) + vector2.xCoord * fraction,
                     vector1.yCoord * (1-fraction) + vector2.yCoord * fraction,
                     vector1.zCoord * (1-fraction) + vector2.zCoord * fraction
                     );

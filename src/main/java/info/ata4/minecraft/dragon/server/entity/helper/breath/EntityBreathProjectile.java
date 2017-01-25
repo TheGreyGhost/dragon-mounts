@@ -11,6 +11,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.*;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
@@ -35,8 +36,8 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   public double accelerationX;
   public double accelerationY;
   public double accelerationZ;
-  protected Vec3 origin;
-  protected Vec3 destination;
+  protected Vec3d origin;
+  protected Vec3d destination;
 
   public EntityBreathProjectile(World worldIn) {
     super(worldIn);
@@ -47,7 +48,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   }
 
   public EntityBreathProjectile(World worldIn, EntityTameableDragon shooter,
-                                Vec3 i_origin, Vec3 i_destination, BreathNode.Power i_power) {
+                                Vec3d i_origin, Vec3d i_destination, BreathNode.Power i_power) {
     super(worldIn);
     this.shootingEntity = shooter;
     parentDragon = shooter;
@@ -55,7 +56,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     destination = i_destination;
     power = i_power;
     this.setSizeFromPower(power);
-    Vec3 offset = destination.subtract(origin);
+    Vec3d offset = destination.subtract(origin);
     double yaw = MathX.calculateYaw(offset);
     double pitch = MathX.calculatePitch(offset);
 
@@ -65,7 +66,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 
     final double ACCELERATION_BLOCKS_PER_TICK_SQ = 0.2;
 
-    Vec3 normalisedOffset = offset.normalize();
+    Vec3d normalisedOffset = offset.normalize();
     this.accelerationX = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.xCoord;
     this.accelerationY = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.yCoord;
     this.accelerationZ = ACCELERATION_BLOCKS_PER_TICK_SQ * normalisedOffset.zCoord;
@@ -98,9 +99,9 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   //  must not access member variables!
   protected abstract void setSizeFromPower(BreathNode.Power power);
 
-  public Vec3 getCurrentPosition()
+  public Vec3d getCurrentPosition()
   {
-    return new Vec3(posX, posY, posZ);
+    return new Vec3d(posX, posY, posZ);
   }
 
   @Override
@@ -133,18 +134,18 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
         ++this.ticksInAir;
       }
 
-      Vec3 startPos = new Vec3(this.posX, this.posY, this.posZ);
-      Vec3 endPos = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+      Vec3d startPos = new Vec3d(this.posX, this.posY, this.posZ);
+      Vec3d endPos = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
       final boolean STOP_ON_LIQUID_FALSE = false;
       final boolean IGNORE_BLOCK_WITHOUT_BOUNDING_BOX_TRUE = true;
       final boolean RETURN_LAST_UNCOLLIDABLE_BLOCK_FALSE = false;
-      MovingObjectPosition movingobjectposition = this.worldObj.rayTraceBlocks(startPos, endPos,
+      RayTraceResult movingobjectposition = this.worldObj.rayTraceBlocks(startPos, endPos,
                                                     STOP_ON_LIQUID_FALSE, IGNORE_BLOCK_WITHOUT_BOUNDING_BOX_TRUE,
                                                     RETURN_LAST_UNCOLLIDABLE_BLOCK_FALSE);
 
       if (movingobjectposition != null) {
-        endPos = new Vec3(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord,
+        endPos = new Vec3d(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord,
                          movingobjectposition.hitVec.zCoord);
       }
 
@@ -160,7 +161,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
              (!collidingEntity.isEntityEqual(this.shootingEntity) || this.ticksInAir >= 25)) {
           final double f = 0.3F;
           AxisAlignedBB axisalignedbb = collidingEntity.getEntityBoundingBox().expand(f, f, f);
-          MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(startPos, endPos);
+          RayTraceResult movingobjectposition1 = axisalignedbb.calculateIntercept(startPos, endPos);
 
           if (movingobjectposition1 != null) {
             double d1 = startPos.distanceTo(movingobjectposition1.hitVec);
@@ -174,7 +175,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
       }
 
       if (firstEntityStruck != null) {
-        movingobjectposition = new MovingObjectPosition(firstEntityStruck);
+        movingobjectposition = new RayTraceResult(firstEntityStruck);
       }
 
       if (movingobjectposition != null) {
@@ -247,7 +248,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
   /**
    * Called when this EntityFireball hits a block or entity.
    */
-  protected abstract void onImpact(MovingObjectPosition movingObject);
+  protected abstract void onImpact(RayTraceResult movingObject);
 
   /**
    * (abstract) Protected helper method to write subclass entity data to NBT.
@@ -257,7 +258,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     tagCompound.setShort("xTile", (short) this.xTile);
     tagCompound.setShort("yTile", (short) this.yTile);
     tagCompound.setShort("zTile", (short) this.zTile);
-    ResourceLocation resourcelocation = (ResourceLocation) Block.blockRegistry.getNameForObject(this.inTile);
+    ResourceLocation resourcelocation = (ResourceLocation) Block.REGISTRY.getNameForObject(this.inTile);
     tagCompound.setString("inTile", resourcelocation == null ? "" : resourcelocation.toString());
     tagCompound.setByte("inGround", (byte) (this.inGround ? 1 : 0));
     tagCompound.setTag("direction", this.newDoubleNBTList(new double[]{this.motionX, this.motionY, this.motionZ}));
@@ -319,8 +320,8 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     double destinationX = tagCompound.getDouble("destinationX");
     double destinationY = tagCompound.getDouble("destinationY");
     double destinationZ = tagCompound.getDouble("destinationZ");
-    origin = new Vec3(originX, originY, originZ);
-    destination = new Vec3(destinationX, destinationY, destinationZ);
+    origin = new Vec3d(originX, originY, originZ);
+    destination = new Vec3d(destinationX, destinationY, destinationZ);
   }
 
   /**
@@ -370,8 +371,8 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
     double destinationX = additionalData.readDouble();
     double destinationY = additionalData.readDouble();
     double destinationZ = additionalData.readDouble();
-    origin = new Vec3(originX, originY, originZ);
-    destination = new Vec3(destinationX, destinationY, destinationZ);
+    origin = new Vec3d(originX, originY, originZ);
+    destination = new Vec3d(destinationX, destinationY, destinationZ);
 
     parentDragonID = additionalData.readInt();
   }
@@ -410,7 +411,7 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
         infoToUpdate.dragonMouthLocation = parentDragon.getPositionVector();
         infoToUpdate.lifeStage = parentDragon.getLifeStageHelper().getLifeStage();
       } else {
-        infoToUpdate.dragonMouthLocation = new Vec3(0,0,0);     //arbitrary fall-back values
+        infoToUpdate.dragonMouthLocation = new Vec3d(0,0,0);     //arbitrary fall-back values
         infoToUpdate.lifeStage = DragonLifeStage.HATCHLING;
       }
       return true;

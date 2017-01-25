@@ -2,7 +2,7 @@ package info.ata4.minecraft.dragon.client.sound;
 
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -218,9 +218,9 @@ public abstract class SoundEffectProjectile
   {
     public enum State {NOT_CREATED, IN_FLIGHT, FINISHED}
     public State projectileState = State.NOT_CREATED;
-    public Vec3 projectileLocation;  // location of the projectile
+    public Vec3d projectileLocation;  // location of the projectile
     public float relativeVolume; // 0 to 1
-    public Vec3 dragonMouthLocation;
+    public Vec3d dragonMouthLocation;
     public DragonLifeStage lifeStage;
   }
 

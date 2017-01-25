@@ -21,8 +21,8 @@ import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Selects the appropriate target based on the DragonOrb targeting information.  Applies Autolock if requested.
@@ -123,7 +123,7 @@ public class EntityAIRangedBreathAttack extends EntityAIBase {
 
     boolean biteMode = (ticksBelowMinimumRange >= BITE_MODE_TICKS);
     if (biteMode && currentTarget.getTypeOfTarget() == BreathWeaponTarget.TypeOfTarget.ENTITY) {
-      EntityLivingBase owner = dragon.getOwnerEntity();
+      EntityLivingBase owner = dragon.getOwner();
       if (owner == null) {
         biteMode = false;
       } else {
@@ -165,8 +165,8 @@ public class EntityAIRangedBreathAttack extends EntityAIBase {
    */
   private boolean areHeadAnglesWithinTolerance()
   {
-    Vec3 origin = dragon.getAnimator().getThroatPosition();
-    Vec3 targetedPoint = currentTarget.getTargetedPoint(dragon.worldObj, origin);
+    Vec3d origin = dragon.getAnimator().getThroatPosition();
+    Vec3d targetedPoint = currentTarget.getTargetedPoint(dragon.worldObj, origin);
     if (targetedPoint == null) return false;
     double deltaX = targetedPoint.xCoord - origin.xCoord;
     double deltaY = targetedPoint.yCoord - origin.yCoord;

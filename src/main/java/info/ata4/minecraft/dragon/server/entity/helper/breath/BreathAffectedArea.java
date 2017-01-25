@@ -6,10 +6,10 @@ import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
 import java.util.*;
@@ -41,10 +41,10 @@ public class BreathAffectedArea
    * @param destination the destination of the beam, used to calculate direction
    * @param power
    */
-  public void continueBreathing(World world, Vec3 origin, Vec3 destination,
+  public void continueBreathing(World world, Vec3d origin, Vec3d destination,
                                 BreathNodeFactory breathNodeFactory,  BreathNode.Power power, DragonBreathMode breathMode)
   {
-    Vec3 direction = destination.subtract(origin).normalize();
+    Vec3d direction = destination.subtract(origin).normalize();
 
     EntityBreathNode newNode = EntityBreathNode.createEntityBreathNodeServer(
             world, origin.xCoord, origin.yCoord, origin.zCoord, direction.xCoord, direction.yCoord, direction.zCoord,
@@ -75,11 +75,11 @@ public class BreathAffectedArea
         it.remove();
       } else {
         float radius = entity.getCurrentRadius();
-        Vec3 initialPosition = entity.getPositionVector();
+        Vec3d initialPosition = entity.getPositionVector();
         entity.updateBreathMode(dragonBreathMode);
         entity.onUpdate();
         Collection<Pair<EnumFacing, AxisAlignedBB>> recentCollisions = entity.getRecentCollisions();
-        Vec3 finalPosition = entity.getPositionVector();
+        Vec3d finalPosition = entity.getPositionVector();
         segments.add(new NodeLineSegment(initialPosition, finalPosition, radius, recentCollisions));
       }
     }

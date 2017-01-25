@@ -2,8 +2,8 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Random;
 
@@ -58,12 +58,12 @@ public abstract class BreathNode
    * @param rand
    * @return the initial motion vector (speed and direction)
    */
-  public abstract Vec3 getRandomisedStartingMotion(Vec3 initialDirection, Random rand);
+  public abstract Vec3d getRandomisedStartingMotion(Vec3d initialDirection, Random rand);
 
-  protected Vec3 getRandomisedStartingMotion(Vec3 initialDirection, Random rand, double speedVariationAbsolute)
+  protected Vec3d getRandomisedStartingMotion(Vec3d initialDirection, Random rand, double speedVariationAbsolute)
   {
     float initialSpeed = getStartingSpeed();
-    Vec3 direction = initialDirection.normalize();
+    Vec3d direction = initialDirection.normalize();
 
     double actualMotionX = direction.xCoord + MathX.getTruncatedGaussian(rand, 0, speedVariationAbsolute);
     double actualMotionY = direction.yCoord + MathX.getTruncatedGaussian(rand, 0, speedVariationAbsolute);
@@ -71,7 +71,7 @@ public abstract class BreathNode
     actualMotionX *= initialSpeed;
     actualMotionY *= initialSpeed;
     actualMotionZ *= initialSpeed;
-    return new Vec3(actualMotionX, actualMotionY, actualMotionZ);
+    return new Vec3d(actualMotionX, actualMotionY, actualMotionZ);
   }
 
   public float getStartingSpeed()

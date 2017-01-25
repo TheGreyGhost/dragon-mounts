@@ -12,6 +12,8 @@ package info.ata4.minecraft.dragon.server.entity.helper;
 import info.ata4.minecraft.dragon.server.block.BlockDragonBreedEgg;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import static info.ata4.minecraft.dragon.server.entity.helper.EnumDragonLifeStage.*;
+
+import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.util.ClientServerSynchronisedTickCount;
 import info.ata4.minecraft.dragon.server.util.EntityClassPredicate;
 import info.ata4.minecraft.dragon.util.Pair;

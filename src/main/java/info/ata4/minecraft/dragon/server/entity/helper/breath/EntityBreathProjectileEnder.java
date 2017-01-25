@@ -11,8 +11,13 @@ import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.*;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -25,7 +30,7 @@ import java.util.Random;
 public class EntityBreathProjectileEnder extends EntityBreathProjectile {
 
   public EntityBreathProjectileEnder(World worldIn, EntityTameableDragon shooter,
-                                     Vec3 origin, Vec3 destination, BreathNode.Power power)
+                                     Vec3d origin, Vec3d destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);
   }
@@ -143,7 +148,8 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
   /**
    * Called when the EnderBall hits a block or entity.
    */
-  protected void onImpact(MovingObjectPosition movingObject)
+  @Override
+  protected void onImpact(RayTraceResult movingObject)
   {
     int teleportDistance = 0;
     int effectRadius = 0;
@@ -186,9 +192,9 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
         }
       }
 
-      if (movingObject.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
-        this.worldObj.playSoundEffect(this.posX, this.posY, this.posZ, "mob.endermen.portal", 1.0F, 1.0F);
-        this.playSound("mob.endermen.portal", 1.0F, 1.0F);
+      if (movingObject.typeOfHit == RayTraceResult.Type.BLOCK) {
+        this.worldObj.playSound((EntityPlayer)null, this.posX, this.posY, this.posZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, this.getSoundCategory(), 1.0F, 1.0F);
+        this.playSound(SoundEvents.ENTITY_ENDERMEN_TELEPORT, 1.0F, 1.0F);
 
         boolean mobGriefingOK = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
         if (mobGriefingOK && DragonMounts.instance.getConfig().isBreathAffectsBlocks()) {
@@ -236,19 +242,20 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
     double savedZ = this.posZ;
 
     entityToTeleport.setPositionAndUpdate(newX, newY, newZ);
-    List collisions = this.worldObj.getCollidingBoundingBoxes(entityToTeleport, entityToTeleport.getEntityBoundingBox());
+    List<AxisAlignedBB> collisions = this.worldObj.getCollisionBoxes(entityToTeleport,
+                                                                     entityToTeleport.getEntityBoundingBox());
     if (!collisions.isEmpty()) {
       entityToTeleport.setPosition(savedX, savedY, savedZ);
       return false;
     }
 
-    this.worldObj.playSoundEffect(savedX, savedY, savedZ, "mob.endermen.portal", 1.0F, 1.0F);
-    this.playSound("mob.endermen.portal", 1.0F, 1.0F);
+    this.worldObj.playSound((EntityPlayer)null, savedX, savedY, savedZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, this.getSoundCategory(), 1.0F, 1.0F);
+    this.playSound(SoundEvents.ENTITY_ENDERMEN_TELEPORT, 1.0F, 1.0F);
     return true;
   }
 
   public static class BreathProjectileFactoryEnder implements BreathProjectileFactory {
-    public boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
+    public boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3d origin, Vec3d target, BreathNode.Power power)
     {
       if (coolDownTimerTicks > 0 || !mouthHasBeenClosed) return false;
 

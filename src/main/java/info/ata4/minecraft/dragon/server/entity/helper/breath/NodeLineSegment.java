@@ -3,6 +3,7 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 import info.ata4.minecraft.dragon.util.Pair;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.util.*;
+import net.minecraft.util.math.*;
 
 import java.util.*;
 
@@ -24,12 +25,12 @@ import java.util.*;
  */
 public class NodeLineSegment
 {
-  public NodeLineSegment(Vec3 i_startPoint, Vec3 i_endPoint, float i_radius)
+  public NodeLineSegment(Vec3d i_startPoint, Vec3d i_endPoint, float i_radius)
   {
     this(i_startPoint, i_endPoint, i_radius, null);
   }
 
-  public NodeLineSegment(Vec3 i_startPoint, Vec3 i_endPoint, float i_radius,
+  public NodeLineSegment(Vec3d i_startPoint, Vec3d i_endPoint, float i_radius,
                          Collection<Pair<EnumFacing, AxisAlignedBB>> i_collisions)
   {
     startPoint = i_startPoint;
@@ -49,7 +50,7 @@ public class NodeLineSegment
   }
 
   /**
-   * Make a deep copy of the LineSegment List - i.e. will duplicate all the segments and all the Vec3
+   * Make a deep copy of the LineSegment List - i.e. will duplicate all the segments and all the Vec3d
    * @param sourceList the LineSegment list to be copied, empty ok but not null!
    * @return the new deep copy
    */
@@ -74,9 +75,9 @@ public class NodeLineSegment
   /** getChangeInValue the vector corresponding to the segment (from start point to end point)
    * @return
    */
-  public Vec3 getSegmentDirection()
+  public Vec3d getSegmentDirection()
   {
-    return new Vec3(endPoint.xCoord - startPoint.xCoord, endPoint.yCoord - startPoint.yCoord, endPoint.zCoord - startPoint.zCoord);
+    return new Vec3d(endPoint.xCoord - startPoint.xCoord, endPoint.yCoord - startPoint.yCoord, endPoint.zCoord - startPoint.zCoord);
   }
 
   /** getChangeInValue an AABB which encompasses the entire line segment including the node radius around each end
@@ -180,14 +181,14 @@ public class NodeLineSegment
     //  projection_of_u_on_v = v . ( u dot v) / length(v)^2
     // where u = vector from startpoint to test point, and v = vector from startpoint to endpoint
 
-    Vec3 deltaAxis = endPoint.subtract(startPoint);
-    Vec3 deltaPointToCheck = new Vec3(x - startPoint.xCoord, y - startPoint.yCoord, z - startPoint.zCoord);
+    Vec3d deltaAxis = endPoint.subtract(startPoint);
+    Vec3d deltaPointToCheck = new Vec3d(x - startPoint.xCoord, y - startPoint.yCoord, z - startPoint.zCoord);
     double deltaAxisLengthSq = deltaAxis.xCoord * deltaAxis.xCoord + deltaAxis.yCoord * deltaAxis.yCoord
                                + deltaAxis.zCoord * deltaAxis.zCoord;
     double dotProduct = deltaAxis.dotProduct(deltaPointToCheck);
-    Vec3 closestPoint;
+    Vec3d closestPoint;
     if (dotProduct <= 0) {
-      closestPoint = new Vec3(0,0,0);
+      closestPoint = new Vec3d(0,0,0);
     } else if (dotProduct >= deltaAxisLengthSq) {
       closestPoint = deltaAxis;
     } else {
@@ -319,11 +320,11 @@ public class NodeLineSegment
       if (aabb.maxX - aabb.minX > 2 * CONTRACTION
           && aabb.maxY - aabb.minY > 2 * CONTRACTION
           && aabb.maxZ - aabb.minZ > 2 * CONTRACTION) {
-        aabb = aabb.contract(CONTRACTION, CONTRACTION, CONTRACTION);
+        aabb = aabb.contract(CONTRACTION);
         BlockPos blockposMin = new BlockPos(aabb.minX, aabb.minY, aabb.minZ);
         BlockPos blockposMax = new BlockPos(aabb.maxX, aabb.maxY, aabb.maxZ);
 
-        Iterator<BlockPos.MutableBlockPos> iterator = BlockPos.getAllInBox(blockposMin, blockposMax).iterator();
+        Iterator<BlockPos> iterator = BlockPos.getAllInBox(blockposMin, blockposMax).iterator();
         while (iterator.hasNext()) {
           BlockPos blockpos = iterator.next();
           BreathAffectedBlock breathAffectedBlock = hitDensity.get(blockpos);
@@ -354,7 +355,7 @@ public class NodeLineSegment
     AxisAlignedBB aabb = new AxisAlignedBB(Math.floor(xHit), Math.floor(yHit), Math.floor(zHit),
             Math.ceil(xHit), Math.ceil(yHit), Math.ceil(zHit));
 
-    MovingObjectPosition mop = aabb.calculateIntercept(new Vec3(xOrigin, yOrigin, zOrigin), new Vec3(xHit, yHit, zHit));
+    RayTraceResult mop = aabb.calculateIntercept(new Vec3d(xOrigin, yOrigin, zOrigin), new Vec3d(xHit, yHit, zHit));
     if (mop == null) return null;
     return mop.sideHit;
   }
@@ -377,8 +378,8 @@ public class NodeLineSegment
   }
 
 
-  public Vec3 startPoint;
-  public Vec3 endPoint;
+  public Vec3d startPoint;
+  public Vec3d endPoint;
   public float radius;
   private Collection<Pair<EnumFacing, AxisAlignedBB>> collisions;
 }

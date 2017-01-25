@@ -2,9 +2,10 @@ package info.ata4.minecraft.dragon.util;
 
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,7 +50,7 @@ public class EntityMoveAndResizeHelper {
     AxisAlignedBB collisionZone = entityAABB.addCoord(wDXneg, wDYneg, wDZneg)
                                             .addCoord(wDXplus, wDYplus, wDZplus)
                                             .addCoord(dx, dy, dz);
-    List<AxisAlignedBB> collidingAABB = entity.worldObj.getCollidingBoundingBoxes(entity, collisionZone);
+    List<AxisAlignedBB> collidingAABB = entity.worldObj.getCollisionBoxes(entity, collisionZone);
 
     if (MathX.isSignificantlyDifferent(newHeight, entity.height)) {
       for (AxisAlignedBB aabb : collidingAABB) {

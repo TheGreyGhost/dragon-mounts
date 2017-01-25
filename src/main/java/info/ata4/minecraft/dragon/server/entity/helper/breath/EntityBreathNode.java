@@ -4,9 +4,9 @@ import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -30,18 +30,18 @@ class EntityBreathNode extends Entity
                                                               BreathNodeFactory breathNodeFactory, BreathNode.Power power,
                                                               DragonBreathMode dragonBreathMode)
   {
-    Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
+    Vec3d direction = new Vec3d(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
     BreathNode breathNode = breathNodeFactory.createBreathNode(power, dragonBreathMode);
-    Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
+    Vec3d actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
     // don't randomise the other properties (size, age) on the server.
 
     EntityBreathNode newEntity = new EntityBreathNode(world, x, y, z, actualMotion, breathNode);
     return newEntity;
   }
 
-  private EntityBreathNode(World world, double x, double y, double z, Vec3 motion, BreathNode i_breathNode)
+  private EntityBreathNode(World world, double x, double y, double z, Vec3d motion, BreathNode i_breathNode)
   {
     super(world);
     breathNode = i_breathNode;
