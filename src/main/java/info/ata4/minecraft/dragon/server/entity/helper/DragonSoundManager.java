@@ -10,6 +10,7 @@
 package info.ata4.minecraft.dragon.server.entity.helper;
 
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.init.Blocks;
@@ -31,7 +32,9 @@ public class DragonSoundManager extends DragonHelper {
      * Returns the sound this mob makes while it's alive.
      */
     public SoundEvent getLivingSound() {
-        if (dragon.isEgg() || dragon.isFlying()) {
+        if (dragon.isEgg()
+            || dragon.isFlying()
+            || dragon.getBreathHelper().getCurrentBreathState() != DragonBreathHelper.BreathState.IDLE) {
             return null;
         } else {
             return dragon.getBreed().getLivingSound();

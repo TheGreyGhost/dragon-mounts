@@ -7,9 +7,11 @@
  **    May you find forgiveness for yourself and forgive others.
  **    May you share freely, never taking more than you give.
  */
-package info.ata4.minecraft.dragon.client.model.anim;
+package info.ata4.minecraft.dragon.server.entity.helper;
 
 import info.ata4.minecraft.dragon.client.model.DragonModel;
+import info.ata4.minecraft.dragon.client.model.anim.CircularBuffer;
+import info.ata4.minecraft.dragon.client.model.anim.TickFloat;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonHeadPositionHelper;
 import info.ata4.minecraft.dragon.server.entity.helper.SegmentSizePositionRotation;
@@ -27,18 +29,20 @@ import net.minecraft.util.math.Vec3d;
  *
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  */
-public class DragonAnimatorCommon {
+public class DragonAnimatorCommon extends DragonHelper {
 
     // entity parameters
-    private final EntityTameableDragon entity;
+//    private final EntityTameableDragon entity;
     private float partialTicks;
     private float ticksExisted;
     private float moveTime;
     private float moveSpeed;
-    private float netLookYaw;  //yaw of the head relative to the body
+    private float netLookYaw;  // yaw of the head relative to the body
     private float lookPitch;
     private double prevRenderYawOffset;
     private double yawAbs;
+
+    protected int ticksSinceLastAttack = -1;
 
     // timing vars
     private float animBase;
@@ -107,8 +111,8 @@ public class DragonAnimatorCommon {
     private SegmentSizePositionRotation[] tailSegments;
     private SegmentSizePositionRotation tail = new SegmentSizePositionRotation();  //not required?  not sure.
     
-    public DragonAnimatorCommon(EntityTameableDragon dragon) {
-        this.entity = dragon;
+    public DragonAnimatorCommon(EntityTameableDragon i_dragon) {
+        super(i_dragon);
         WING_FINGERS = dragon.getBreed().getNumberOfWingFingers();
         NECK_SEGMENTS = dragon.getBreed().getNumberOfNeckSegments();
         TAIL_SEGMENTS = dragon.getBreed().getNumberOfTailSegments();
@@ -238,7 +242,7 @@ public class DragonAnimatorCommon {
         // check if the wings are moving down and trigger the event
         boolean newWingsDown = cycleOfs > 1;
         if (newWingsDown && !wingsDown && flutter != 0) {
-            entity.onWingsDown(speed);
+            dragon.getSoundManager().onWingsDown(speed);
         }
         wingsDown = newWingsDown;
 
@@ -258,21 +262,21 @@ public class DragonAnimatorCommon {
     /**
      * Updates the animation state. Called on every tick.
      */
-    public void tickingUpdate() {
+    public void onLivingUpdate() {
         if (DebugFreezeAnimator.isFrozen()) {
             return;
         }
 
         // init trails
         if (initTrails) {
-            yTrail.fill((float) entity.posY);
-            yawTrail.fill(entity.renderYawOffset);
+            yTrail.fill((float) dragon.posY);
+            yawTrail.fill(dragon.renderYawOffset);
             pitchTrail.fill(getBodyPitch());
             initTrails = false;
         }
 
         // don't move anything during death sequence
-        if (entity.getHealth() <= 0) {
+        if (dragon.getHealth() <= 0) {
             animTimer.sync();
             groundTimer.sync();
             flutterTimer.sync();
@@ -283,7 +287,7 @@ public class DragonAnimatorCommon {
         }
 
         float speedMax = 0.05f;
-        float speedEnt = (float) (entity.motionX * entity.motionX + entity.motionZ * entity.motionZ);
+        float speedEnt = (float) (dragon.motionX * dragon.motionX + dragon.motionZ * dragon.motionZ);
         float speedMulti = MathX.clamp(speedEnt / speedMax, 0, 1);
 
         // update main animation timer
@@ -307,26 +311,33 @@ public class DragonAnimatorCommon {
         groundTimer.set(groundVal);
 
         // update flutter transition
-        boolean flutterFlag = !onGround && (entity.isCollided || entity.motionY > -0.1 || speedEnt < speedMax);
+        boolean flutterFlag = !onGround && (dragon.isCollided || dragon.motionY > -0.1 || speedEnt < speedMax);
         flutterTimer.add(flutterFlag ? 0.1f : -0.1f);
 
         // update walking transition
-        boolean walkFlag = moveSpeed > 0.1 && !entity.isSitting();
+        boolean walkFlag = moveSpeed > 0.1 && !dragon.isSitting();
         float walkVal = 0.1f;
         walkTimer.add(walkFlag ? walkVal : -walkVal);
 
         // update sitting transisiton
         float sitVal = sitTimer.get();
-        sitVal += entity.isSitting() ? 0.1f : -0.1f;
+        sitVal += dragon.isSitting() ? 0.1f : -0.1f;
         sitVal *= 0.95f;
         sitTimer.set(sitVal);
 
-        if (!entity.isEgg()) {
+        if (ticksSinceLastAttack >= 0) {  // used for jaw animation
+            ++ticksSinceLastAttack;
+            if (ticksSinceLastAttack > 1000) {
+                ticksSinceLastAttack = -1;  //  reset at arbitrary large value
+            }
+        }
+
+        if (!dragon.isEgg()) {
             // update bite opening transition and breath transitions
-            DragonBreathHelper.BreathState breathState = entity.getBreathHelper().getCurrentBreathState();
+            DragonBreathHelper.BreathState breathState = dragon.getBreathHelper().getCurrentBreathState();
             switch (breathState) {
                 case IDLE: {  // breath is idle, handle bite attack
-                    int ticksSinceLastAttack = entity.getTicksSinceLastAttack();
+//                    int ticksSinceLastAttack = dragon.getTicksSinceLastAttack();
                     final int JAW_OPENING_TIME_FOR_ATTACK = 5;
                     boolean jawFlag = (ticksSinceLastAttack >= 0 && ticksSinceLastAttack < JAW_OPENING_TIME_FOR_ATTACK);
                     biteTimer.add(jawFlag ? 0.2f : -0.2f);
@@ -335,11 +346,11 @@ public class DragonAnimatorCommon {
                 }
                 case STARTING: {
                     biteTimer.set(0.0F);
-                    breathTimer.set(entity.getBreathHelper().getBreathStateFractionComplete());
+                    breathTimer.set(dragon.getBreathHelper().getBreathStateFractionComplete());
                     break;
                 }
                 case STOPPING: {
-                    float breathStateFractionComplete = entity.getBreathHelper().getBreathStateFractionComplete();
+                    float breathStateFractionComplete = dragon.getBreathHelper().getBreathStateFractionComplete();
                     breathTimer.set(1.0F - breathStateFractionComplete);
                     break;
                 }
@@ -355,23 +366,23 @@ public class DragonAnimatorCommon {
         }
 
         // update speed transition
-        boolean nearGround = entity.getAltitude() < entity.height * 2;
+        boolean nearGround = dragon.getAltitude() < dragon.height * 2;
         boolean speedFlag = speedEnt > speedMax || onGround || nearGround;
         float speedValue = 0.05f;
         speedTimer.add(speedFlag ? speedValue : -speedValue);
 
         // update trailers
-        double yawDiff = entity.renderYawOffset - prevRenderYawOffset;
-        prevRenderYawOffset = entity.renderYawOffset;
+        double yawDiff = dragon.renderYawOffset - prevRenderYawOffset;
+        prevRenderYawOffset = dragon.renderYawOffset;
 
         // filter out 360 degrees wrapping
         if (yawDiff < 180 && yawDiff > -180) {
             yawAbs += yawDiff;
         }
 
-        //yTrail.update(entity.posY - entity.yOffset);
-        yTrail.update(entity.posY);
-        yawTrail.update(yawAbs);
+        //yTrail.update(dragon.posY - dragon.yOffset);
+        yTrail.update((float)dragon.posY);
+        yawTrail.update((float)yawAbs);
         pitchTrail.update(getBodyPitch());
     }
 
@@ -538,8 +549,8 @@ public class DragonAnimatorCommon {
         }
     }
 
-    protected void animLegs() {
-        // do nothing - server doesn't need any of these positions so the DragonModel can do it all
+    public void animLegs() {
+       throw new UnsupportedOperationException("animLegs not used on Server");
     }
 
     static public void splineArrays(float x, boolean shift, float[] result, float[]... nodes) {

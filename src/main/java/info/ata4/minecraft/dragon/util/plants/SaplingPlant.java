@@ -6,7 +6,7 @@ import net.minecraft.block.BlockPlanks;
 import net.minecraft.block.BlockSapling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
@@ -18,7 +18,7 @@ import java.util.Random;
 public class SaplingPlant extends Plant {
 
   public SaplingPlant(BlockPlanks.EnumType enumSaplingType) {
-    BlockSapling blockSapling = (BlockSapling) Blocks.sapling;
+    BlockSapling blockSapling = (BlockSapling) Blocks.SAPLING;
     saplingBlockState = blockSapling.getDefaultState().withProperty(BlockSapling.TYPE, enumSaplingType);
   }
 
@@ -49,13 +49,13 @@ public class SaplingPlant extends Plant {
   {
     public Plant getPlantFromBlockState(IBlockState iBlockState)
     {
-      if (iBlockState == null || iBlockState.getBlock() != Blocks.sapling) return null;
+      if (iBlockState == null || iBlockState.getBlock() != Blocks.SAPLING) return null;
 
       return new SaplingPlant(iBlockState);
     }
 
     public Collection<Block> getBlocksUsedByThisPlant() {
-      return ImmutableList.of((Block) Blocks.sapling);
+      return ImmutableList.of((Block) Blocks.SAPLING);
     }
   }
 

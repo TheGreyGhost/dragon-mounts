@@ -5,8 +5,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockVine;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
@@ -19,9 +19,9 @@ public class VinesPlant extends Plant {
   @Override
   public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random) {
     boolean success = false;
-    IBlockState vineToPlace = Blocks.vine.getDefaultState();
+    IBlockState vineToPlace = Blocks.VINE.getDefaultState();
     for (EnumFacing facing : EnumFacing.Plane.HORIZONTAL.facings()) {
-      if (Blocks.vine.canPlaceBlockOnSide(world, blockPos, facing)) {
+      if (Blocks.VINE.canPlaceBlockOnSide(world, blockPos, facing)) {
         success = true;
         switch (facing) {
           case NORTH: {
@@ -62,13 +62,13 @@ public class VinesPlant extends Plant {
   {
     public Plant getPlantFromBlockState(IBlockState iBlockState)
     {
-      if (iBlockState == null || iBlockState.getBlock() != Blocks.vine) return null;
+      if (iBlockState == null || iBlockState.getBlock() != Blocks.VINE) return null;
 
       return new VinesPlant();
     }
 
     public Collection<Block> getBlocksUsedByThisPlant() {
-      return ImmutableList.of((Block) Blocks.vine);
+      return ImmutableList.of((Block) Blocks.VINE);
     }
   }
 

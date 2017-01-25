@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockTallGrass;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
@@ -16,13 +16,13 @@ import java.util.Random;
 */ // copied from WorldGenTallGrass
 public class TallGrassPlant extends Plant {
   public TallGrassPlant(BlockTallGrass.EnumType enumPlantType) {
-    grassToPlace = Blocks.tallgrass.getDefaultState().withProperty(BlockTallGrass.TYPE, enumPlantType);
+    grassToPlace = Blocks.TALLGRASS.getDefaultState().withProperty(BlockTallGrass.TYPE, enumPlantType);
   }
 
   @Override
   public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random) {
     boolean success = false;
-    if (world.isAirBlock(blockPos) && Blocks.tallgrass.canBlockStay(world, blockPos, grassToPlace)) {
+    if (world.isAirBlock(blockPos) && Blocks.TALLGRASS.canBlockStay(world, blockPos, grassToPlace)) {
       world.setBlockState(blockPos, grassToPlace, 2);
       success = true;
     }
@@ -34,7 +34,7 @@ public class TallGrassPlant extends Plant {
   {
     if (growthAmount > 100) {
       Random random = new Random();
-      Blocks.tallgrass.grow(world, random, blockPos, grassToPlace);
+      Blocks.TALLGRASS.grow(world, random, blockPos, grassToPlace);
     }
   }
 
@@ -42,13 +42,13 @@ public class TallGrassPlant extends Plant {
   {
     public Plant getPlantFromBlockState(IBlockState iBlockState)
     {
-      if (iBlockState == null || iBlockState.getBlock() != Blocks.tallgrass) return null;
+      if (iBlockState == null || iBlockState.getBlock() != Blocks.TALLGRASS) return null;
 
       return new TallGrassPlant(iBlockState);
     }
 
     public Collection<Block> getBlocksUsedByThisPlant() {
-      return ImmutableList.of((Block) Blocks.tallgrass);
+      return ImmutableList.of((Block) Blocks.TALLGRASS);
     }
   }
 

@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
@@ -22,8 +22,8 @@ public class PlantDoublePlant extends Plant {
   @Override
   public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random) {
     boolean success = false;
-    if (world.isAirBlock(blockPos) && Blocks.double_plant.canPlaceBlockAt(world, blockPos)) {
-      Blocks.double_plant.placeAt(world, blockPos, plantType, SET_BLOCKSTATE_FLAG);
+    if (world.isAirBlock(blockPos) && Blocks.DOUBLE_PLANT.canPlaceBlockAt(world, blockPos)) {
+      Blocks.DOUBLE_PLANT.placeAt(world, blockPos, plantType, SET_BLOCKSTATE_FLAG);
       success = true;
     }
     return success;
@@ -47,7 +47,7 @@ public class PlantDoublePlant extends Plant {
     @Override
     public Collection<Block> getBlocksUsedByThisPlant()
     {
-      return ImmutableList.of((Block) Blocks.double_plant);
+      return ImmutableList.of((Block) Blocks.DOUBLE_PLANT);
     }
   }
 

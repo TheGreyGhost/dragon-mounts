@@ -11,7 +11,7 @@ package info.ata4.minecraft.dragon.server.entity;
 
 import com.google.common.base.Optional;
 import info.ata4.minecraft.dragon.DragonMounts;
-import info.ata4.minecraft.dragon.client.model.anim.DragonAnimatorCommon;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonAnimatorCommon;
 import info.ata4.minecraft.dragon.server.entity.ai.path.PathNavigateFlying;
 import info.ata4.minecraft.dragon.server.entity.breeds.DragonBreed;
 import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
@@ -21,13 +21,9 @@ import java.util.*;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathHelper;
 import info.ata4.minecraft.dragon.server.util.DebugFreezeAnimator;
-import info.ata4.minecraft.dragon.server.util.ItemUtils;
-import info.ata4.minecraft.dragon.util.reflection.PrivateFields;
 import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EnumCreatureAttribute;
+import net.minecraft.entity.*;
+
 import static net.minecraft.entity.SharedMonsterAttributes.*;
 import net.minecraft.entity.ai.EntityAISit;
 import net.minecraft.entity.ai.attributes.IAttribute;
@@ -118,6 +114,9 @@ public class EntityTameableDragon extends EntityTameable {
     private DragonAnimatorCommon animator;
     protected int ticksSinceLastAttack = -1;
 
+  // server-only flags
+  private BitSet controlFlags;
+
 
   public EntityTameableDragon(World world) {
         super(world);
@@ -150,7 +149,7 @@ public class EntityTameableDragon extends EntityTameable {
         // init helpers
         helpers.values().forEach(DragonHelper::applyEntityAttributes);
     }
-    
+
     @Override
     protected float updateDistance(float p_110146_1_, float p_110146_2_) {
         // required to fixate body while sitting. also slows down rotation while
@@ -354,7 +353,7 @@ public class EntityTameableDragon extends EntityTameable {
       float netYawHead = getRotationYawHead() - renderYawOffset;
       animator.setLook(netYawHead, rotationPitch);
       animator.setTicksExisted(ticksExisted);
-      animator.tickingUpdate();
+//      animator.tickingUpdate();  MOVED TO DragonAnimator extends DragonHelper
       animator.animate();
 
 //        // set home position near owner when tamed
@@ -367,7 +366,7 @@ public class EntityTameableDragon extends EntityTameable {
 //                    }
 //                }
     } else {
-      animator.tickingUpdate();  // all other animator parameters are set by the model renderer
+//      animator.tickingUpdate();  // all other animator parameters are set by the model renderer   MOVED TO DragonAnimator extends DragonHelper
     }
     super.onLivingUpdate();
   }
@@ -428,21 +427,29 @@ public class EntityTameableDragon extends EntityTameable {
         return I18n.translateToLocal("entity." + entName + "." + breedName + ".name");
     }
     
-    /**
-     * Returns the sound this mob makes while it's alive.
-     */
-    @Override
-    protected String getLivingSound() {
-        if (isEgg()
-                || isFlying()
-                || getBreathHelper().getCurrentBreathState() != DragonBreathHelper.BreathState.IDLE) {
-            return null;
-        } else {
-            return getBreed().getLivingSound(this);
-        }
-    }
+//    /**
+//     * Returns the sound this mob makes while it's alive.
+//     */
+//    @Override
+//    protected String getLivingSound() {
+//        if (isEgg()
+//                || isFlying()
+//                || getBreathHelper().getCurrentBreathState() != DragonBreathHelper.BreathState.IDLE) {
+//            return null;
+//        } else {
+//            return getBreed().getLivingSound(this);
+//        }
+//    }
 
-    /**
+  /**
+   * Returns the sound this mob makes while it's alive.
+   */
+  @Override
+  protected SoundEvent getAmbientSound() {
+    return getSoundManager().getLivingSound();
+  }
+
+  /**
      * Returns the sound this mob makes when it is hurt.
      */
     @Override
@@ -821,33 +828,34 @@ public class EntityTameableDragon extends EntityTameable {
         return controlFlags;
     }
 
-    @Override
-    public void updateRiderPosition() {
-        if (riddenByEntity != null) {
-            double px = posX;
-            double py = posY + getMountedYOffset() + riddenByEntity.getYOffset();
-            double pz = posZ;
-
-      // dragon position is the middle of the model and the saddle is on
-            // the shoulders, so move player forwards on Z axis relative to the
-            // dragon's rotation to fix that
-            Vec3 pos = new Vec3(0, 0, 0.8 * getScale());
-            pos = pos.rotateYaw((float) Math.toRadians(-renderYawOffset)); // oops
-            px += pos.xCoord;
-            py += pos.yCoord;
-            pz += pos.zCoord;
-
-            riddenByEntity.setPosition(px, py, pz);
-
-            // fix rider rotation
-            if (riddenByEntity instanceof EntityLiving) {
-                EntityLiving rider = ((EntityLiving) riddenByEntity);
-                rider.prevRotationPitch = rider.rotationPitch;
-                rider.prevRotationYaw = rider.rotationYaw;
-                rider.renderYawOffset = renderYawOffset;
-            }
-        }
-    }
+// todo this has been commented out.  don't know why.
+//    @Override
+//    public void updateRiderPosition() {
+//        if (riddenByEntity != null) {
+//            double px = posX;
+//            double py = posY + getMountedYOffset() + riddenByEntity.getYOffset();
+//            double pz = posZ;
+//
+//      // dragon position is the middle of the model and the saddle is on
+//            // the shoulders, so move player forwards on Z axis relative to the
+//            // dragon's rotation to fix that
+//            Vec3 pos = new Vec3(0, 0, 0.8 * getScale());
+//            pos = pos.rotateYaw((float) Math.toRadians(-renderYawOffset)); // oops
+//            px += pos.xCoord;
+//            py += pos.yCoord;
+//            pz += pos.zCoord;
+//
+//            riddenByEntity.setPosition(px, py, pz);
+//
+//            // fix rider rotation
+//            if (riddenByEntity instanceof EntityLiving) {
+//                EntityLiving rider = ((EntityLiving) riddenByEntity);
+//                rider.prevRotationPitch = rider.rotationPitch;
+//                rider.prevRotationYaw = rider.rotationYaw;
+//                rider.renderYawOffset = renderYawOffset;
+//            }
+//        }
+//    }
 
     public boolean isInvulnerableTo(DamageSource src) {
         Entity srcEnt = src.getEntity();
@@ -888,33 +896,34 @@ public class EntityTameableDragon extends EntityTameable {
         return 120;
     }
 
-    /**
-     * Client side method for wing animations. Plays wing flapping sounds.
-     *
-     * @param speed wing animation playback speed
-     */
-    public void onWingsDown(float speed) {
-        if (!inWater) {
-            // play wing sounds
-            float pitch = getSoundPitch() + (1 - speed);
-            float volume = getSoundVolume() * 0.3f + (1 - speed) * 0.2f;
-            worldObj.playSound(posX, posY, posZ, "mob.enderdragon.wings", volume, pitch, false);
-        }
-    }
+// moved to DragonSoundManager
+//    /**
+//     * Client side method for wing animations. Plays wing flapping sounds.
+//     *
+//     * @param speed wing animation playback speed
+//     */
+//    public void onWingsDown(float speed) {
+//        if (!inWater) {
+//            // play wing sounds
+//            float pitch = getSoundPitch() + (1 - speed);
+//            float volume = getSoundVolume() * 0.3f + (1 - speed) * 0.2f;
+//            worldObj.playSound(posX, posY, posZ, "mob.enderdragon.wings", volume, pitch, false);
+//        }
+//    }
 
     public void setImmuneToFire(boolean isImmuneToFire) {
         L.trace("setImmuneToFire({})", isImmuneToFire);
         this.isImmuneToFire = isImmuneToFire;
     }
     
-    public void setAttackDamage(double damage) {
-        L.trace("setAttackDamage({})", damage);
-        getEntityAttribute(ATTACK_DAMAGE).setBaseValue(damage);
-    }
+//    public void setAttackDamage(double damage) {
+//        L.trace("setAttackDamage({})", damage);
+//        getEntityAttribute(ATTACK_DAMAGE).setBaseValue(damage);
+//    }
 
-    public double getAttackDamage() {
-        return getEntityAttribute(SharedMonsterAttributes.attackDamage).getAttributeValue();
-    }
+//    public double getAttackDamage() {
+//        return getEntityAttribute(SharedMonsterAttributes.attackDamage).getAttributeValue();
+//    }
 
     /**
      * Public wrapper for protected final setScale(), used by DragonLifeStageHelper.

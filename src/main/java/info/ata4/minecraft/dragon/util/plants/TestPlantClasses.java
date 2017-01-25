@@ -8,8 +8,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandClone;
 import net.minecraft.command.server.CommandTeleport;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -40,7 +41,7 @@ public class TestPlantClasses
     final int SOURCE_REGION_SIZE_Z = 10;
 
     for (int x = 0; x < SOURCE_REGION_SIZE_X; ++x) {
-      worldIn.setBlockState(sourceRegionOrigin.add(x, 0, 0), Blocks.dirt.getDefaultState());
+      worldIn.setBlockState(sourceRegionOrigin.add(x, 0, 0), Blocks.DIRT.getDefaultState());
     }
 
     BlockPos testRegionOriginA = new BlockPos(0, 180, 10);
@@ -86,7 +87,7 @@ public class TestPlantClasses
       TallGrassPlant grassPlant = new TallGrassPlant(grassType);
       grassPlant.trySpawnNewPlant(worldIn, testRegionOriginA.add(nextxpos++,1,0), random);
     }
-    worldIn.setBlockState(testRegionOriginA.add(nextxpos,1,0), Blocks.stone.getDefaultState());
+    worldIn.setBlockState(testRegionOriginA.add(nextxpos,1,0), Blocks.STONE.getDefaultState());
 
     // test getPlantFromBlockState
     for (int x = 0; x < SOURCE_REGION_SIZE_X; ++x) {
@@ -107,7 +108,7 @@ public class TestPlantClasses
       if (plantToGrow != null) {
         plantToGrow.grow(worldIn, blockPos, 101F);
       } else {
-        worldIn.setBlockState(blockPos, Blocks.obsidian.getDefaultState());
+        worldIn.setBlockState(blockPos, Blocks.OBSIDIAN.getDefaultState());
       }
     }
 
@@ -136,8 +137,8 @@ public class TestPlantClasses
     teleportPlayerToTestRegion(playerIn, testRegionOriginA.south(5));  // teleport the player nearby so you can watch
 
     for (int x = 0; x < SOURCE_REGION_SIZE_X; ++x) {
-      worldIn.setBlockState(eraseRegionOrigin.add(x, 0, 0), Blocks.dirt.getDefaultState());
-      worldIn.setBlockState(sourceRegionOrigin.add(x, 0, 0), Blocks.dirt.getDefaultState());
+      worldIn.setBlockState(eraseRegionOrigin.add(x, 0, 0), Blocks.DIRT.getDefaultState());
+      worldIn.setBlockState(sourceRegionOrigin.add(x, 0, 0), Blocks.DIRT.getDefaultState());
     }
 
 
@@ -186,8 +187,8 @@ public class TestPlantClasses
     // make shorelines
     for (int x = 0; x < SOURCE_REGION_SIZE_X; ++x) {
       for (int z = 0; z < SOURCE_REGION_SIZE_Z; ++z) {
-        worldIn.setBlockState(sourceRegionOrigin.add(x, 0, z), Blocks.dirt.getDefaultState());
-        IBlockState iBlockState = (0 == ((x ^ z) & 0x07)) ? Blocks.water.getDefaultState() : Blocks.sand.getDefaultState();
+        worldIn.setBlockState(sourceRegionOrigin.add(x, 0, z), Blocks.DIRT.getDefaultState());
+        IBlockState iBlockState = (0 == ((x ^ z) & 0x07)) ? Blocks.WATER.getDefaultState() : Blocks.SAND.getDefaultState();
         worldIn.setBlockState(sourceRegionOrigin.add(x, 1, z), iBlockState);
       }
     }
@@ -201,16 +202,16 @@ public class TestPlantClasses
     final int STONE_BLOCK2_Z = 17;
 
     worldIn.setBlockState(sourceRegionOrigin.add(STONE_BLOCK_X, STONE_BLOCK_Y, STONE_BLOCK_Z),
-                          Blocks.stone.getDefaultState());
+                          Blocks.STONE.getDefaultState());
 
     worldIn.setBlockState(sourceRegionOrigin.add(STONE_BLOCK2_X-1, STONE_BLOCK2_Y, STONE_BLOCK2_Z),
-                          Blocks.stone.getDefaultState());
+                          Blocks.STONE.getDefaultState());
     worldIn.setBlockState(sourceRegionOrigin.add(STONE_BLOCK2_X+1, STONE_BLOCK2_Y, STONE_BLOCK2_Z),
-                          Blocks.stone.getDefaultState());
+                          Blocks.STONE.getDefaultState());
     worldIn.setBlockState(sourceRegionOrigin.add(STONE_BLOCK2_X, STONE_BLOCK2_Y, STONE_BLOCK2_Z-1),
-                          Blocks.stone.getDefaultState());
+                          Blocks.STONE.getDefaultState());
     worldIn.setBlockState(sourceRegionOrigin.add(STONE_BLOCK2_X, STONE_BLOCK2_Y, STONE_BLOCK2_Z+1),
-                          Blocks.stone.getDefaultState());
+                          Blocks.STONE.getDefaultState());
 
     BlockPos testRegionOriginA = new BlockPos(12, 160, 0);
     BlockPos testRegionOriginB = new BlockPos(24, 160, 0);
@@ -298,16 +299,33 @@ public class TestPlantClasses
    */
   private boolean teleportPlayerToTestRegion(EntityPlayer playerIn, BlockPos location)
   {
+//    String tpArguments = "@p " + location.getX() + " " + location.getY() + " " + location.getZ();
+//    String[] tpArgumentsArray = tpArguments.split(" ");
+//
+//    CommandTeleport commandTeleport = new CommandTeleport();
+//    try {
+//      commandTeleport.execute(playerIn, tpArgumentsArray);
+//    } catch (Exception e) {
+//      return false;
+//    }
+//    return true;
+
+    if (!(playerIn instanceof EntityPlayerMP)) {
+      throw new UnsupportedOperationException("teleport not supported on client side; server side only");
+    }
+    EntityPlayerMP entityPlayerMP = (EntityPlayerMP)playerIn;
+
     String tpArguments = "@p " + location.getX() + " " + location.getY() + " " + location.getZ();
     String[] tpArgumentsArray = tpArguments.split(" ");
 
     CommandTeleport commandTeleport = new CommandTeleport();
     try {
-      commandTeleport.execute(playerIn, tpArgumentsArray);
+      commandTeleport.execute(entityPlayerMP.mcServer, playerIn, tpArgumentsArray);
     } catch (Exception e) {
       return false;
     }
     return true;
+
   }
 
   /**
@@ -330,6 +348,11 @@ public class TestPlantClasses
     checkArgument(zCount >= 1);
     String [] args = new String[9];
 
+    if (!(entityPlayer instanceof EntityPlayerMP)) {
+      throw new UnsupportedOperationException("teleport not supported on client side; server side only");
+    }
+    EntityPlayerMP entityPlayerMP = (EntityPlayerMP)entityPlayer;
+
     args[0] = String.valueOf(sourceOrigin.getX());
     args[1] = String.valueOf(sourceOrigin.getY());
     args[2] = String.valueOf(sourceOrigin.getZ());
@@ -342,7 +365,7 @@ public class TestPlantClasses
 
     CommandClone commandClone = new CommandClone();
     try {
-      commandClone.execute(entityPlayer, args);
+      commandClone.execute(entityPlayerMP.mcServer, entityPlayer, args);
     } catch (Exception e) {
       return false;
     }

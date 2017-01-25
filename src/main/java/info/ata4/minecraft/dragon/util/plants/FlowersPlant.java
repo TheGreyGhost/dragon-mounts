@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
@@ -24,7 +24,7 @@ public class FlowersPlant extends Plant {
   @Override
   public boolean trySpawnNewPlant(World world, BlockPos blockPos, Random random) {
     boolean success = false;
-    if (world.isAirBlock(blockPos) && Blocks.yellow_flower.canBlockStay(world, blockPos, flowerBlockState)) {
+    if (world.isAirBlock(blockPos) && Blocks.YELLOW_FLOWER.canBlockStay(world, blockPos, flowerBlockState)) {
       world.setBlockState(blockPos, flowerBlockState, SET_BLOCKSTATE_FLAG);
       success = true;
     }

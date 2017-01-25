@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockCrops;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
@@ -19,15 +19,15 @@ public class CropsPlant extends Plant {
   public CropsPlant(CropType cropType) {
     switch (cropType) {
       case POTATO: {
-        cropBlockState = Blocks.potatoes.getDefaultState();
+        cropBlockState = Blocks.POTATOES.getDefaultState();
         break;
       }
       case CARROT: {
-        cropBlockState = Blocks.carrots.getDefaultState();
+        cropBlockState = Blocks.CARROTS.getDefaultState();
         break;
       }
       case WHEAT: {
-        cropBlockState = Blocks.wheat.getDefaultState();
+        cropBlockState = Blocks.WHEAT.getDefaultState();
         break;
       }
       default: {
@@ -79,7 +79,7 @@ public class CropsPlant extends Plant {
     }
 
     public Collection<Block> getBlocksUsedByThisPlant() {
-      return ImmutableList.of(Blocks.wheat, Blocks.carrots, Blocks.potatoes);
+      return ImmutableList.of(Blocks.WHEAT, Blocks.CARROTS, Blocks.POTATOES);
     }
   }
 

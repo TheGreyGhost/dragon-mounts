@@ -6,7 +6,7 @@ import net.minecraft.block.BlockReed;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
@@ -23,15 +23,15 @@ public class ReedsPlant extends Plant {
     boolean success = false;
     BlockPos groundPos = blockPos.down();
 
-    if (world.getBlockState(groundPos.west()).getBlock().getMaterial() == Material.water
-            || world.getBlockState(groundPos.east()).getBlock().getMaterial() == Material.water
-            || world.getBlockState(groundPos.north()).getBlock().getMaterial() == Material.water
-            || world.getBlockState(groundPos.south()).getBlock().getMaterial() == Material.water) {
+    if (world.getBlockState(groundPos.west()).getMaterial() == Material.WATER
+            || world.getBlockState(groundPos.east()).getMaterial() == Material.WATER
+            || world.getBlockState(groundPos.north()).getMaterial() == Material.WATER
+            || world.getBlockState(groundPos.south()).getMaterial() == Material.WATER) {
       int reedHeight = 2 + random.nextInt(random.nextInt(3) + 1);
 
       for (int k = 0; k < reedHeight; ++k) {
-        if (Blocks.reeds.canBlockStay(world, blockPos)) {
-          world.setBlockState(blockPos.up(k), Blocks.reeds.getDefaultState(), SET_BLOCKSTATE_FLAG);
+        if (Blocks.REEDS.canBlockStay(world, blockPos)) {
+          world.setBlockState(blockPos.up(k), Blocks.REEDS.getDefaultState(), SET_BLOCKSTATE_FLAG);
           success = true;
         }
       }
@@ -44,7 +44,7 @@ public class ReedsPlant extends Plant {
   {
     checkArgument(growthAmount >= 0);
     IBlockState iBlockState = world.getBlockState(blockPos);
-    if (iBlockState.getBlock() != Blocks.reeds) return;
+    if (iBlockState.getBlock() != Blocks.REEDS) return;
 
     final int MAX_REED_AGE = 15;
     int currentAge = ((Integer)iBlockState.getValue(BlockReed.AGE)).intValue();
@@ -67,7 +67,7 @@ public class ReedsPlant extends Plant {
     BlockPos nextPos = startBlockPos;
     do {
       nextPos = nextPos.up();
-    } while (world.getBlockState(nextPos).getBlock() == Blocks.reeds);
+    } while (world.getBlockState(nextPos).getBlock() == Blocks.REEDS);
     return nextPos.down();
   }
 
@@ -76,13 +76,13 @@ public class ReedsPlant extends Plant {
   {
     public Plant getPlantFromBlockState(IBlockState iBlockState)
     {
-      if (iBlockState == null || iBlockState.getBlock() != Blocks.reeds) return null;
+      if (iBlockState == null || iBlockState.getBlock() != Blocks.REEDS) return null;
 
       return new ReedsPlant();
     }
 
     public Collection<Block> getBlocksUsedByThisPlant() {
-      return ImmutableList.of((Block) Blocks.reeds);
+      return ImmutableList.of((Block) Blocks.REEDS);
     }
   }
 
