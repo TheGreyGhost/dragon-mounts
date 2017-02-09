@@ -2,7 +2,7 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Random;
 
@@ -87,7 +87,7 @@ public class BreathNodeForest extends BreathNode {
   @Override
   public void modifyEntityVelocity(Entity entity)
   {
-    Vec3 entityVelocity = new Vec3(entity.motionX, entity.motionY, entity.motionZ);
+    Vec3d entityVelocity = new Vec3d(entity.motionX, entity.motionY, entity.motionZ);
 
     double speed = getStartingSpeed();
 
@@ -134,7 +134,7 @@ public class BreathNodeForest extends BreathNode {
   }
 
   @Override
-  public Vec3 getRandomisedStartingMotion(Vec3 initialDirection, Random rand)
+  public Vec3d getRandomisedStartingMotion(Vec3d initialDirection, Random rand)
   {
     return getRandomisedStartingMotion(initialDirection, rand, SPEED_VARIATION_ABS);
   }

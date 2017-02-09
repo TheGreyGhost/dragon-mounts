@@ -6,15 +6,12 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -65,12 +62,12 @@ public class BreathFXWater extends BreathFX {
                                                 BreathNode.Power power,
                                                 int tickCount, float partialTicksHeadStart)
   {
-    Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
+    Vec3d direction = new Vec3d(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
     BreathNode breathNode = new BreathNodeWater(power, DragonBreathMode.DEFAULT);
     breathNode.randomiseProperties(rand);
-    Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
+    Vec3d actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 
     x += actualMotion.xCoord * partialTicksHeadStart;
     y += actualMotion.yCoord * partialTicksHeadStart;
@@ -84,7 +81,7 @@ public class BreathFXWater extends BreathFX {
     return breathFXWater;
   }
 
-  private BreathFXWater(World world, double x, double y, double z, Vec3 motion,
+  private BreathFXWater(World world, double x, double y, double z, Vec3d motion,
                         BreathNode i_breathNode, double i_spawnTimeTicks, double timeInFlightTicks) {
     super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
 

@@ -11,13 +11,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
 import java.util.HashMap;
@@ -68,9 +70,10 @@ public class BreathWeaponFire extends BreathWeapon
           final float MIN_PITCH = 0.8F;
           final float MAX_PITCH = 1.2F;
           final float VOLUME = 1.0F;
-          world.playSoundEffect(sideToIgnite.getX() + 0.5, sideToIgnite.getY() + 0.5, sideToIgnite.getZ() + 0.5,
-                  "fire.ignite", VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH));
-          world.setBlockState(sideToIgnite, Blocks.fire.getDefaultState());
+          world.playSound(sideToIgnite.getX() + 0.5, sideToIgnite.getY() + 0.5, sideToIgnite.getZ() + 0.5,
+                  SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS,
+                  VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH), false);
+          world.setBlockState(sideToIgnite, Blocks.FIRE.getDefaultState());
         }
         if (densityOfThisFace >= thresholdForDestruction) {
           world.setBlockToAir(blockPos);
@@ -178,14 +181,14 @@ public class BreathWeaponFire extends BreathWeapon
         return iBlockStateSmelted;
       }
     }
-    if (block == Blocks.iron_ore) return Blocks.iron_block.getDefaultState();
-    if (block == Blocks.gold_ore) return Blocks.gold_block.getDefaultState();
-    if (block == Blocks.emerald_ore) return Blocks.emerald_block.getDefaultState();
-    if (block == Blocks.diamond_ore) return Blocks.diamond_block.getDefaultState();
-    if (block == Blocks.coal_ore) return Blocks.coal_block.getDefaultState();
-    if (block == Blocks.redstone_ore) return Blocks.redstone_block.getDefaultState();
-    if (block == Blocks.lapis_ore) return Blocks.lapis_block.getDefaultState();
-    if (block == Blocks.quartz_ore) return Blocks.quartz_block.getDefaultState();
+    if (block == Blocks.IRON_ORE) return Blocks.IRON_BLOCK.getDefaultState();
+    if (block == Blocks.GOLD_ORE) return Blocks.GOLD_BLOCK.getDefaultState();
+    if (block == Blocks.EMERALD_ORE) return Blocks.EMERALD_BLOCK.getDefaultState();
+    if (block == Blocks.DIAMOND_ORE) return Blocks.DIAMOND_BLOCK.getDefaultState();
+    if (block == Blocks.COAL_ORE) return Blocks.COAL_BLOCK.getDefaultState();
+    if (block == Blocks.REDSTONE_ORE) return Blocks.REDSTONE_BLOCK.getDefaultState();
+    if (block == Blocks.LAPIS_ORE) return Blocks.LAPIS_BLOCK.getDefaultState();
+    if (block == Blocks.QUARTZ_ORE) return Blocks.QUARTZ_BLOCK.getDefaultState();
     return null;
   }
 
@@ -197,16 +200,16 @@ public class BreathWeaponFire extends BreathWeapon
   private static IBlockState getVaporisedLiquidResult(IBlockState sourceBlock)
   {
     Block block = sourceBlock.getBlock();
-    Material material = block.getMaterial();
+    Material material = block.getMaterial(sourceBlock);
 
-    if (material == Material.water) {
-      return Blocks.air.getDefaultState();
-    } else if (material == Material.snow || material == Material.ice) {
+    if (material == Material.WATER) {
+      return Blocks.AIR.getDefaultState();
+    } else if (material == Material.SNOW || material == Material.ICE) {
       final int SMALL_LIQUID_AMOUNT = 4;
-      return Blocks.flowing_water.getDefaultState().withProperty(BlockLiquid.LEVEL, SMALL_LIQUID_AMOUNT);
-    } else if (material == Material.packedIce || material == Material.craftedSnow) {
+      return Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, SMALL_LIQUID_AMOUNT);
+    } else if (material == Material.PACKED_ICE || material == Material.CRAFTED_SNOW) {
       final int LARGE_LIQUID_AMOUNT = 1;
-      return Blocks.flowing_water.getDefaultState().withProperty(BlockLiquid.LEVEL, LARGE_LIQUID_AMOUNT);
+      return Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, LARGE_LIQUID_AMOUNT);
     }
     return null;
   }
@@ -218,13 +221,13 @@ public class BreathWeaponFire extends BreathWeapon
   private static IBlockState getMoltenLavaResult(IBlockState sourceBlock)
   {
     Block block = sourceBlock.getBlock();
-    Material material = block.getMaterial();
+    Material material = block.getMaterial(sourceBlock);
 
-    if (material == Material.sand || material == Material.clay
-            || material == Material.glass || material == Material.iron
-            || material == Material.ground || material == Material.rock) {
+    if (material == Material.SAND || material == Material.CLAY
+            || material == Material.GLASS || material == Material.IRON
+            || material == Material.GROUND || material == Material.ROCK) {
       final int LARGE_LIQUID_AMOUNT = 1;
-      return Blocks.lava.getDefaultState().withProperty(BlockLiquid.LEVEL, LARGE_LIQUID_AMOUNT);
+      return Blocks.LAVA.getDefaultState().withProperty(BlockLiquid.LEVEL, LARGE_LIQUID_AMOUNT);
     }
     return null;
   }
@@ -236,10 +239,10 @@ public class BreathWeaponFire extends BreathWeapon
   private static IBlockState getScorchedResult(IBlockState sourceBlock)
   {
     Block block = sourceBlock.getBlock();
-    Material material = block.getMaterial();
+    Material material = block.getMaterial(sourceBlock);
 
-    if (material == Material.grass) {
-      return Blocks.dirt.getDefaultState();
+    if (material == Material.GRASS) {
+      return Blocks.DIRT.getDefaultState();
     }
     return null;
   }

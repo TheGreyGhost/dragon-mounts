@@ -6,22 +6,19 @@ import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.util.ItemUtils;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockDynamicLiquid;
-import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
-
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -57,7 +54,7 @@ public class BreathWeaponAir extends BreathWeapon
     // causes fire to spread rapidly - NO, this looks stupid, so delete it
 
     if (block == null) return currentHitDensity;
-    Material material = block.getMaterial();
+    Material material = block.getMaterial(iBlockState);
     if (material == null) return currentHitDensity;
 
     if (materialDisintegrateTime.containsKey(material)) {
@@ -71,7 +68,7 @@ public class BreathWeaponAir extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.fire) {
+    if (material == Material.FIRE) {
       final float THRESHOLD_FIRE_SPREAD = 1;
       final float MAX_FIRE_DENSITY = 10;
       final int MAX_PATH_LENGTH = 4;
@@ -86,7 +83,7 @@ public class BreathWeaponAir extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (block == Blocks.torch) {
+    if (block == Blocks.TORCH) {
       final float THRESHOLD_FIRE_EXTINGUISH = 1;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_FIRE_EXTINGUISH) {
         final boolean DROP_BLOCK = true;
@@ -96,7 +93,7 @@ public class BreathWeaponAir extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (block == Blocks.glass_pane || block == Blocks.stained_glass_pane) {
+    if (block == Blocks.GLASS_PANE || block == Blocks.STAINED_GLASS_PANE) {
       final float THRESHOLD_SMASH_PANE = 1;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_SMASH_PANE) {
         final boolean DROP_BLOCK = true;
@@ -142,8 +139,8 @@ public class BreathWeaponAir extends BreathWeapon
     final double FORCE_MULTIPLIER = 0.05;
     final double VERTICAL_FORCE_MULTIPLIER = 0.05;
     float airForce = currentHitDensity.getHitDensity();
-    Vec3 airForceDirection = currentHitDensity.getHitDensityDirection();
-    Vec3 airMotion = MathX.multiply(airForceDirection, FORCE_MULTIPLIER);
+    Vec3d airForceDirection = currentHitDensity.getHitDensityDirection();
+    Vec3d airMotion = MathX.multiply(airForceDirection, FORCE_MULTIPLIER);
 
     final double WT_ENTITY = 0.5;
     final double WT_AIR = 1 - WT_ENTITY;
@@ -153,8 +150,8 @@ public class BreathWeaponAir extends BreathWeapon
     final double UPFORCE_THRESHOLD = 1.0;
     if (airForce > UPFORCE_THRESHOLD) {
       final double GRAVITY_OFFSET = -0.08;
-      Vec3 up = new Vec3(0, 1, 0);
-      Vec3 upMotion = MathX.multiply(up, VERTICAL_FORCE_MULTIPLIER * airForce);
+      Vec3d up = new Vec3d(0, 1, 0);
+      Vec3d upMotion = MathX.multiply(up, VERTICAL_FORCE_MULTIPLIER * airForce);
 //      System.out.format("upMotion:%s\n", upMotion);
       entity.motionY = WT_ENTITY * (entity.motionY - GRAVITY_OFFSET) + WT_AIR * upMotion.yCoord;
     }
@@ -215,16 +212,16 @@ public class BreathWeaponAir extends BreathWeapon
     final int INSTANT = 0;
     final int MODERATE = 10;
     final int SLOW = 50;
-    materialDisintegrateTime.put(Material.leaves, INSTANT);
-    materialDisintegrateTime.put(Material.plants, INSTANT);
-    materialDisintegrateTime.put(Material.vine, INSTANT);
-    materialDisintegrateTime.put(Material.web, INSTANT);
-    materialDisintegrateTime.put(Material.gourd, INSTANT);
-    materialDisintegrateTime.put(Material.sponge, MODERATE);
-    materialDisintegrateTime.put(Material.sand, MODERATE);
-    materialDisintegrateTime.put(Material.snow, MODERATE);
-    materialDisintegrateTime.put(Material.craftedSnow, MODERATE);
-    materialDisintegrateTime.put(Material.cactus, MODERATE);
+    materialDisintegrateTime.put(Material.LEAVES, INSTANT);
+    materialDisintegrateTime.put(Material.PLANTS, INSTANT);
+    materialDisintegrateTime.put(Material.VINE, INSTANT);
+    materialDisintegrateTime.put(Material.WEB, INSTANT);
+    materialDisintegrateTime.put(Material.GOURD, INSTANT);
+    materialDisintegrateTime.put(Material.SPONGE, MODERATE);
+    materialDisintegrateTime.put(Material.SAND, MODERATE);
+    materialDisintegrateTime.put(Material.SNOW, MODERATE);
+    materialDisintegrateTime.put(Material.CRAFTED_SNOW, MODERATE);
+    materialDisintegrateTime.put(Material.CACTUS, MODERATE);
   }
 
 }

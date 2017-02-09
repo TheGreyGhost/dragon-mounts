@@ -1,7 +1,7 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Random;
 
@@ -72,7 +72,7 @@ public class BreathNodeFire extends BreathNode
   }
 
   @Override
-  public Vec3 getRandomisedStartingMotion(Vec3 initialDirection, Random rand)
+  public Vec3d getRandomisedStartingMotion(Vec3d initialDirection, Random rand)
   {
     return getRandomisedStartingMotion(initialDirection, rand, SPEED_VARIATION_ABS);
   }

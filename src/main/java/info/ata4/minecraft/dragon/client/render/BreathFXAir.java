@@ -15,7 +15,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -56,12 +56,12 @@ public class BreathFXAir extends BreathFX {
                                               BreathNode.Power power,
                                               int tickCount, float partialTicksHeadStart)
   {
-    Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
+    Vec3d direction = new Vec3d(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
     BreathNode breathNode = new BreathNodeAir(power, DragonBreathMode.DEFAULT);
     breathNode.randomiseProperties(rand);
-    Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
+    Vec3d actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 
     x += actualMotion.xCoord * partialTicksHeadStart;
     y += actualMotion.yCoord * partialTicksHeadStart;
@@ -75,7 +75,7 @@ public class BreathFXAir extends BreathFX {
     return breathFXAir;
   }
 
-  private BreathFXAir(World world, double x, double y, double z, Vec3 motion,
+  private BreathFXAir(World world, double x, double y, double z, Vec3d motion,
                       BreathNode i_breathNode, double i_spawnTimeTicks, double timeInFlightTicks) {
     super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
 

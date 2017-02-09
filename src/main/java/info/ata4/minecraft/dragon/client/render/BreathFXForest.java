@@ -7,14 +7,11 @@ import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -54,12 +51,12 @@ public class BreathFXForest extends BreathFX {
                                                               BreathNode.Power power, DragonBreathMode dragonBreathMode,
                                                               int tickCount, float partialTicksHeadStart)
   {
-    Vec3 direction = new Vec3(directionX, directionY, directionZ).normalize();
+    Vec3d direction = new Vec3d(directionX, directionY, directionZ).normalize();
 
     Random rand = new Random();
     BreathNode breathNode = new BreathNodeForest(power, DragonBreathMode.FOREST_NOT_BURNING);
     breathNode.randomiseProperties(rand);
-    Vec3 actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
+    Vec3d actualMotion = breathNode.getRandomisedStartingMotion(direction, rand);
 
     x += actualMotion.xCoord * partialTicksHeadStart;
     y += actualMotion.yCoord * partialTicksHeadStart;
@@ -73,12 +70,12 @@ public class BreathFXForest extends BreathFX {
     return breathFXForest;
   }
 
-  private BreathFXForest(World world, double x, double y, double z, Vec3 motion,
+  private BreathFXForest(World world, double x, double y, double z, Vec3d motion,
                          BreathNode i_breathNode, double i_spawnTimeTicks, double timeInFlightTicks) {
     super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
 
     breathNode = i_breathNode;
-    particleGravity = Blocks.ice.blockParticleGravity;  /// arbitrary block!  maybe not even required.
+    particleGravity = Blocks.ICE.blockParticleGravity;  /// arbitrary block!  maybe not even required.
     particleMaxAge = (int)breathNode.getMaxLifeTime(); // not used, but good for debugging
     this.particleAlpha = MAX_ALPHA;
 

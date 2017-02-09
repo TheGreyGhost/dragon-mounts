@@ -1,8 +1,7 @@
 package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 /**
@@ -17,7 +16,7 @@ public class BreathWeaponFXEmitterFire extends BreathWeaponFXEmitter
   }
 
   @Override
-  protected BreathFX createSingleParticle(World world, Vec3 spawnOrigin, Vec3 spawnDirection, BreathNode.Power power,
+  protected BreathFX createSingleParticle(World world, Vec3d spawnOrigin, Vec3d spawnDirection, BreathNode.Power power,
                                            int tickCount, float partialTickHeadStart)
   {
     BreathFXFire breathFXFire = BreathFXFire.createBreathFXFire(world,
