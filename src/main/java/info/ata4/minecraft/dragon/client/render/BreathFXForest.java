@@ -87,10 +87,10 @@ public class BreathFXForest extends BreathFX {
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(
             forestGasCloudRL.toString());
-    func_180435_a(sprite);
+    setParticleTexture(sprite);
     entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
 
-    textureUV = setRandomTexture(this.particleIcon);
+    textureUV = setRandomTexture(this.particleTexture);
 
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     textureUVburning = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(

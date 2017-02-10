@@ -85,10 +85,10 @@ public class BreathFXIce extends BreathFX {
 
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(iceCrystalCloudRL.toString());
-    func_180435_a(sprite);
+    setParticleTexture(sprite);
     entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
 
-    textureUV = setRandomTexture(this.particleIcon);
+    textureUV = setRandomTexture(this.particleTexture);
   }
 
   // the texture for ice is made of four alternative textures, stacked 2x2

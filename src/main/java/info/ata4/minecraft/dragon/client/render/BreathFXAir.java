@@ -92,10 +92,10 @@ public class BreathFXAir extends BreathFX {
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(
             airDustCloudRL.toString());
-    func_180435_a(sprite);
+    setParticleTexture(sprite);
     entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
 
-    textureUV = setRandomTexture(this.particleIcon);
+    textureUV = setRandomTexture(this.particleTexture);
     clockwiseRotation = rand.nextBoolean();
     final float MIN_ROTATION_SPEED = 2.0F; // revolutions per second
     final float MAX_ROTATION_SPEED = 6.0F; // revolutions per second

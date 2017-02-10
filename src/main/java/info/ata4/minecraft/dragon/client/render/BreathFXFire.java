@@ -84,7 +84,7 @@ public class BreathFXFire extends BreathFX {
 
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(fireballRL.toString());
-    func_180435_a(sprite);
+    setParticleTexture((sprite);
     entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
   }
 
