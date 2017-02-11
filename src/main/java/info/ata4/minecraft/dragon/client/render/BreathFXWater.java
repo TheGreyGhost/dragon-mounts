@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -98,7 +99,7 @@ public class BreathFXWater extends BreathFX {
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(waterSquirtCloudRL.toString());
     setParticleTexture(sprite);
-    entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
+//    entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
 
     textureUV = setRandomTexture(this.particleTexture);
     clockwiseRotation = rand.nextBoolean();
@@ -177,13 +178,12 @@ public class BreathFXWater extends BreathFX {
   }
 
   // this function is used by EffectRenderer.addEffect() to determine whether depthmask writing should be on or not.
-  // by default, vanilla turns off depthmask writing for entityFX with alphavalue less than 1.0
   // BreathFXWater uses alphablending but we want depthmask writing on, otherwise translucent objects (such as water)
   //   render over the top of our breath.
   @Override
-  public float func_174838_j()
+  public boolean isTransparent()
   {
-    return 1.0F;
+    return true;
   }
 
   @Override
@@ -304,6 +304,7 @@ public class BreathFXWater extends BreathFX {
       particleAlpha = MAX_ALPHA * (1 - lifetimeFraction);
     }
 
+
     rotationResidual += rotationSpeedQuadrantsPerTick;
     int quadrantsRotated = MathHelper.floor_float(rotationResidual);
     textureUV.rotate90(clockwiseRotation ? -quadrantsRotated: quadrantsRotated);
@@ -320,17 +321,12 @@ public class BreathFXWater extends BreathFX {
       worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, motionX * 0.5, VERTICAL_PUFF_SPEED, motionZ * 0.5);
     }
 
-    // smoke / steam when hitting water.  node is responsible for aging to death
-    if (handleWaterMovement()) {
-      worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, 0, 0, 0);
-    }
-
     float newAABBDiameter = breathNode.getCurrentAABBcollisionSize();
 
     prevPosX = posX;
     prevPosY = posY;
     prevPosZ = posZ;
-    entityMoveAndResizeHelper.moveAndResizeEntity(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
+    moveAndResizeParticle(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
 
     if (isCollided && onGround) {
         motionY -= 0.01F;         // ensure that we hit the ground next time too
@@ -338,7 +334,12 @@ public class BreathFXWater extends BreathFX {
     breathNode.updateAge(this);
     particleAge = (int)breathNode.getAgeTicks();  // not used, but good for debugging
     if (breathNode.isDead()) {
-      setDead();
+      setExpired();
+    }
+
+    // smoke / steam when hitting water.  node is responsible for aging to death
+    if (isInWater()) {
+      worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, 0, 0, 0);
     }
   }
 
@@ -358,10 +359,10 @@ public class BreathFXWater extends BreathFX {
    */
   @Override
   public void moveEntity(double dx, double dy, double dz) {
-    entityMoveAndResizeHelper.moveAndResizeEntity(dx, dy, dz, this.width, this.height);
+    moveAndResizeParticle(dx, dy, dz, this.width, this.height);
   }
 
-  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
+//  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
   private RotatingQuad textureUV;
   private boolean clockwiseRotation;
   private float rotationSpeedQuadrantsPerTick;

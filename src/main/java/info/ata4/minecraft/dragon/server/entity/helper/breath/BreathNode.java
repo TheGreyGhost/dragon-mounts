@@ -1,5 +1,7 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.client.render.BreathFX;
+import info.ata4.minecraft.dragon.client.render.breeds.IEntityParticle;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
@@ -82,7 +84,7 @@ public abstract class BreathNode
   /**
    * Modifies the entity's velocity depending on the breathnode state (eg its age)
    */
-  public void modifyEntityVelocity(Entity entity) {return;}
+  public void modifyEntityVelocity(IEntityParticle entity) {return;}
 
   public float getMaxLifeTime()
   {
@@ -101,7 +103,7 @@ public abstract class BreathNode
    * Should be called once per tick
    * @param parentEntity the entity associated with this node
    */
-  public void updateAge(Entity parentEntity)
+  public void updateAge(IEntityParticle parentEntity)
   {
     ageTicks = calculateNewAge(parentEntity, ageTicks);
   }
@@ -113,7 +115,7 @@ public abstract class BreathNode
    * @param currentAge the current age of the entity (ticks)
    * @return the new age of the entity
    */
-  protected abstract float calculateNewAge(Entity parentEntity, float currentAge);
+  protected abstract float calculateNewAge(IEntityParticle parentEntity, float currentAge);
 
   private final float RATIO_OF_RENDER_DIAMETER_TO_EFFECT_DIAMETER = 1.0F;
   private final float RATIO_OF_COLLISION_DIAMETER_TO_EFFECT_DIAMETER = 0.5F;  // change to 0.5F

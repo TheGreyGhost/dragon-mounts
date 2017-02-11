@@ -12,8 +12,9 @@ package info.ata4.minecraft.dragon.server.cmd;
 import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
-import info.ata4.minecraft.dragon.server.entity.helper.EnumDragonLifeStage;
 import java.util.function.BiConsumer;
+
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.command.*;
 
 /**
@@ -27,9 +28,9 @@ public class CommandDragon extends CommandBaseNested implements IDragonModifier 
             (dragon, enumValue) -> dragon.setBreedType(enumValue);
         addCommand(new CommandDragonEnumSetter("breed", EnumDragonBreed.class, breedConsumer));
         
-        BiConsumer<EntityTameableDragon, EnumDragonLifeStage> lifeStageConsumer =
+        BiConsumer<EntityTameableDragon, DragonLifeStage> lifeStageConsumer =
             (dragon, enumValue) -> dragon.getLifeStageHelper().setLifeStage(enumValue);
-        addCommand(new CommandDragonEnumSetter("stage", EnumDragonLifeStage.class, lifeStageConsumer));
+        addCommand(new CommandDragonEnumSetter("stage", DragonLifeStage.class, lifeStageConsumer));
         
         addCommand(new CommandDragonTame());
 

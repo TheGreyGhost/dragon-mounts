@@ -11,8 +11,6 @@ package info.ata4.minecraft.dragon.server.entity.helper;
 
 import info.ata4.minecraft.dragon.server.block.BlockDragonBreedEgg;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
-import static info.ata4.minecraft.dragon.server.entity.helper.EnumDragonLifeStage.*;
-
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.util.ClientServerSynchronisedTickCount;
 import info.ata4.minecraft.dragon.server.util.EntityClassPredicate;
@@ -46,7 +44,7 @@ public class DragonLifeStageHelper extends DragonHelper {
     private static final float EGG_WIGGLE_THRESHOLD = 0.75f;
     private static final float EGG_WIGGLE_BASE_CHANCE = 20;
     
-    private EnumDragonLifeStage lifeStagePrev;
+    private DragonLifeStage lifeStagePrev;
     private int eggWiggleX;
     private int eggWiggleZ;
     
@@ -107,9 +105,9 @@ public class DragonLifeStageHelper extends DragonHelper {
      *
      * @return current life stage
      */
-    public EnumDragonLifeStage getLifeStage() {
+    public DragonLifeStage getLifeStage() {
         int age = getTicksSinceCreation();
-        return EnumDragonLifeStage.fromTickCount(age);
+        return DragonLifeStage.getLifeStageFromTickCount(age);
     }
 
     public int getTicksSinceCreation() {
@@ -136,7 +134,7 @@ public class DragonLifeStageHelper extends DragonHelper {
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         int ticksRead = nbt.getInteger(NBT_TICKS_SINCE_CREATION);
-        ticksRead = EnumDragonLifeStage.clampTickCount(ticksRead);
+        ticksRead = DragonLifeStage.clipTickCountToValid(ticksRead);
         ticksSinceCreationServer = ticksRead;
         dataWatcher.set(dataParam, ticksSinceCreationServer);
     }
@@ -147,7 +145,7 @@ public class DragonLifeStageHelper extends DragonHelper {
      * @return size
      */
     public float getScale() {
-        return EnumDragonLifeStage.scaleFromTickCount(getTicksSinceCreation());
+        return DragonLifeStage.getScaleFromTickCount(getTicksSinceCreation());
     }
 
     public BreathNode.Power getBreathPower() {
@@ -201,10 +199,10 @@ public class DragonLifeStageHelper extends DragonHelper {
      * 
      * @param lifeStage
      */
-    public final void setLifeStage(EnumDragonLifeStage lifeStage) {
+    public final void setLifeStage(DragonLifeStage lifeStage) {
         L.trace("setLifeStage({})", lifeStage);
         if (dragon.isServer()) {
-            ticksSinceCreationServer = lifeStage.startTicks();
+            ticksSinceCreationServer = lifeStage.startTicks;
             dataWatcher.set(dataParam, ticksSinceCreationServer);
         } else {
             L.error("setLifeStage called on Client");
@@ -215,12 +213,12 @@ public class DragonLifeStageHelper extends DragonHelper {
     /**
      * Called when the dragon enters a new life stage.
      */ 
-    private void onNewLifeStage(EnumDragonLifeStage lifeStage, EnumDragonLifeStage prevLifeStage) {
+    private void onNewLifeStage(DragonLifeStage lifeStage, DragonLifeStage prevLifeStage) {
         L.trace("onNewLifeStage({},{})", prevLifeStage, lifeStage);
         
         if (dragon.isClient()) {
             // play particle and sound effects when the dragon hatches
-            if (prevLifeStage != null && prevLifeStage == EGG && lifeStage == HATCHLING) {
+            if (prevLifeStage != null && prevLifeStage == DragonLifeStage.EGG && lifeStage == DragonLifeStage.HATCHLING) {
                 playEggCrackEffect();
                 dragon.playSound(SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, 1, 1);
             }
@@ -260,7 +258,7 @@ public class DragonLifeStageHelper extends DragonHelper {
     
     private void updateLifeStage() {
         // trigger event when a new life stage was reached
-        EnumDragonLifeStage lifeStage = getLifeStage();
+        DragonLifeStage lifeStage = getLifeStage();
         if (lifeStagePrev != lifeStage) {
             onNewLifeStage(lifeStage, lifeStagePrev);
             lifeStagePrev = lifeStage;
@@ -273,7 +271,7 @@ public class DragonLifeStageHelper extends DragonHelper {
         }
 
         // animate egg wiggle based on the time the eggs take to hatch
-        float progress = EnumDragonLifeStage.progressFromTickCount(getTicksSinceCreation());
+        float progress = DragonLifeStage.progressFromTickCount(getTicksSinceCreation());
 
         // wait until the egg is nearly hatched
         if (progress > EGG_WIGGLE_THRESHOLD) {

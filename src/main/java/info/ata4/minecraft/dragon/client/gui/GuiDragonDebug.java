@@ -10,12 +10,14 @@
 package info.ata4.minecraft.dragon.client.gui;
 
 import info.ata4.minecraft.dragon.DragonMounts;
+import info.ata4.minecraft.dragon.client.handler.DragonOrbControl;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.breeds.DragonBreed;
 import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonBreedHelper;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStageHelper;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonReproductionHelper;
+import info.ata4.minecraft.dragon.server.network.BreathWeaponTarget;
 import info.ata4.minecraft.dragon.util.reflection.PrivateAccessor;
 import java.text.DecimalFormat;
 import java.util.Collection;

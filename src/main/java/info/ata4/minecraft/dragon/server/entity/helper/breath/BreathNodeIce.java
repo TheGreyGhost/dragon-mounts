@@ -1,5 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.client.render.breeds.IEntityParticle;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
@@ -37,7 +38,7 @@ public class BreathNodeIce extends BreathNode {
    * @return the new age of the entity
    */
   @Override
-  protected float calculateNewAge(Entity parentEntity, float currentAge)
+  protected float calculateNewAge(IEntityParticle parentEntity, float currentAge)
   {
     if (parentEntity.isInLava()) {  // extinguish in lava
       ageTicks = getMaxLifeTime() + 1;
@@ -55,9 +56,10 @@ public class BreathNodeIce extends BreathNode {
 
     // slow breath nodes age very fast (they look silly when sitting still)
     final double SPEED_THRESHOLD = getStartingSpeed() * 0.25;
-    double speedSQ = parentEntity.motionX * parentEntity.motionX
-            + parentEntity.motionY * parentEntity.motionY
-            + parentEntity.motionZ * parentEntity.motionZ;
+    double speedSQ = parentEntity.getSpeedSQ();
+//            parentEntity.motionX * parentEntity.motionX
+//            + parentEntity.motionY * parentEntity.motionY
+//            + parentEntity.motionZ * parentEntity.motionZ;
     if (speedSQ < SPEED_THRESHOLD * SPEED_THRESHOLD) {
       ageTicks += 20;
     }

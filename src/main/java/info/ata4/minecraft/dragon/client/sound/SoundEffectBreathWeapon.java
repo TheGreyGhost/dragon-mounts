@@ -1,10 +1,8 @@
 package info.ata4.minecraft.dragon.client.sound;
 
-import info.ata4.minecraft.dragon.server.entity.helper.EnumDragonLifeStage;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.Vec3d;
-
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -194,7 +192,7 @@ private final float HEAD_MIN_VOLUME = 0.02F;
     public State breathingState = State.IDLE;
     public Vec3d dragonHeadLocation;  // location of a noise-making dragon's head
     public float relativeVolume; // 0 to 1
-    public EnumDragonLifeStage lifeStage;
+    public DragonLifeStage lifeStage;
   }
 
   protected enum SoundPart {START, LOOP, STOP}
@@ -205,6 +203,6 @@ private final float HEAD_MIN_VOLUME = 0.02F;
    * @param lifeStage how old is the dragon?
    * @return the resourcelocation corresponding to the desired sound. null for none.
    */
-  abstract protected SoundEffectName weaponHeadSound(SoundPart soundPart, EnumDragonLifeStage lifeStage);
+  abstract protected SoundEffectName weaponHeadSound(SoundPart soundPart, DragonLifeStage lifeStage);
 
 }

@@ -294,9 +294,9 @@ public abstract class EntityBreathProjectile extends Entity implements IEntityAd
 
     if (tagCompound.hasKey("direction", 9)) {
       NBTTagList nbttaglist = tagCompound.getTagList("direction", 6);
-      this.motionX = nbttaglist.getDouble(0);
-      this.motionY = nbttaglist.getDouble(1);
-      this.motionZ = nbttaglist.getDouble(2);
+      this.motionX = nbttaglist.getDoubleAt(0);
+      this.motionY = nbttaglist.getDoubleAt(1);
+      this.motionZ = nbttaglist.getDoubleAt(2);
     } else {
       this.setDead();
     }

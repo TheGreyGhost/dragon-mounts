@@ -98,13 +98,12 @@ public class BreathFXFire extends BreathFX {
   }
 
   // this function is used by EffectRenderer.addEffect() to determine whether depthmask writing should be on or not.
-  // by default, vanilla turns off depthmask writing for entityFX with alphavalue less than 1.0
-  // BreathFXFire uses alphablending but we want depthmask writing on, otherwise translucent objects (such as water)
+  // BreathFXWater uses alphablending but we want depthmask writing on, otherwise translucent objects (such as water)
   //   render over the top of our breath.
   @Override
-  public float func_174838_j()
+  public boolean isTransparent()
   {
-    return 1.0F;
+    return true;
   }
 
   @Override

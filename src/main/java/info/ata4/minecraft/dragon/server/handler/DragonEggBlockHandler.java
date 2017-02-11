@@ -14,7 +14,7 @@ import info.ata4.minecraft.dragon.DragonMounts;
 import info.ata4.minecraft.dragon.server.block.BlockDragonBreedEgg;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
-import info.ata4.minecraft.dragon.server.entity.helper.EnumDragonLifeStage;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -66,7 +66,7 @@ public class DragonEggBlockHandler {
             EntityTameableDragon dragon = new EntityTameableDragon(world);
             dragon.setPosition(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             dragon.getReproductionHelper().setBreeder(evt.getEntityPlayer());
-            dragon.getLifeStageHelper().setLifeStage(EnumDragonLifeStage.EGG);
+            dragon.getLifeStageHelper().setLifeStage(DragonLifeStage.EGG);
             
             // set breed type (custom dragon egg only, otherwise use default breed)
             if (block == BlockDragonBreedEgg.INSTANCE) {

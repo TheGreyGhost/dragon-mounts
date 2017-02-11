@@ -20,6 +20,9 @@ import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
 import java.util.*;
@@ -78,16 +81,16 @@ public class BreathWeaponIce extends BreathWeapon
     }
 
 
-    if (material == Material.water) {
+    if (material == Material.WATER) {
       final float THRESHOLD_WATER_FREEZE = 10;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_WATER_FREEZE) {
-        world.setBlockState(blockPos, Blocks.packed_ice.getDefaultState());
+        world.setBlockState(blockPos, Blocks.PACKED_ICE.getDefaultState());
         return new BreathAffectedBlock();
       }
       return currentHitDensity;
     }
 
-    if (material == Material.lava) {
+    if (material == Material.LAVA) {
       final float THRESHOLD_LAVA_FREEZE = 10;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_LAVA_FREEZE) {
         quenchLava(world, blockPos);
@@ -96,7 +99,7 @@ public class BreathWeaponIce extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.fire) {
+    if (material == Material.FIRE) {
       final float THRESHOLD_FIRE_EXTINGUISH = 1;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_FIRE_EXTINGUISH) {
         extinguishFire(world, blockPos);
@@ -105,15 +108,15 @@ public class BreathWeaponIce extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.snow || material == Material.craftedSnow) {
+    if (material == Material.SNOW || material == Material.CRAFTED_SNOW) {
       return thickenSnow(world, block, blockPos, currentHitDensity);
     }
 
-    if (material == Material.ice || material == Material.packedIce) {
+    if (material == Material.ICE || material == Material.PACKED_ICE) {
       return iceFreeze(world, block, blockPos, currentHitDensity);
     }
 
-    if (block == Blocks.torch) {
+    if (block == Blocks.TORCH) {
       final float THRESHOLD_FIRE_EXTINGUISH = 1;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_FIRE_EXTINGUISH) {
         final boolean DROP_BLOCK = true;
@@ -123,13 +126,13 @@ public class BreathWeaponIce extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.air) {
+    if (material == Material.AIR) {
       final int THRESHOLD_DEEPEN_SNOW_LAYER = 1;
       if (currentHitDensity.getMaxHitDensity() < THRESHOLD_DEEPEN_SNOW_LAYER
-          || !Blocks.snow_layer.canPlaceBlockAt(world, blockPos)) {
+          || !Blocks.SNOW_LAYER.canPlaceBlockAt(world, blockPos)) {
         return currentHitDensity;
       }
-      world.setBlockState(blockPos, Blocks.snow_layer.getDefaultState());
+      world.setBlockState(blockPos, Blocks.SNOW_LAYER.getDefaultState());
     }
 
     return currentHitDensity;
@@ -214,11 +217,11 @@ public class BreathWeaponIce extends BreathWeapon
             blocksSearched.add(adjacent);
 
             IBlockState adjacentBlockState = world.getBlockState(adjacent);
-            Material material = adjacentBlockState.getBlock().getMaterial();
-            if (material == Material.water) {
+            Material material = adjacentBlockState.getBlock().getMaterial(adjacentBlockState);
+            if (material == Material.WATER) {
               blocksToSearchFromNext.add(adjacent);
-              world.setBlockState(adjacent, Blocks.packed_ice.getDefaultState());
-            } else if (material == Material.ice || material == Material.packedIce) {
+              world.setBlockState(adjacent, Blocks.PACKED_ICE.getDefaultState());
+            } else if (material == Material.ICE || material == Material.PACKED_ICE) {
               blocksToSearchFromNext.add(adjacent);
             }
           }
@@ -247,7 +250,7 @@ public class BreathWeaponIce extends BreathWeapon
         Integer newLayerDepth = layers + 1;
         newBlockState = currentBlockState.withProperty(BlockSnow.LAYERS, newLayerDepth);
       } else {
-        newBlockState = Blocks.snow.getDefaultState();
+        newBlockState = Blocks.SNOW.getDefaultState();
       }
       world.setBlockState(blockPos, newBlockState);
       return new BreathAffectedBlock();
@@ -257,7 +260,7 @@ public class BreathWeaponIce extends BreathWeapon
     if (currentHitDensity.getMaxHitDensity() < THRESHOLD_SNOW_BECOMES_ICE) {
       return currentHitDensity;
     }
-    IBlockState newBlockState = Blocks.packed_ice.getDefaultState();
+    IBlockState newBlockState = Blocks.PACKED_ICE.getDefaultState();
     world.setBlockState(blockPos, newBlockState);
     return new BreathAffectedBlock();
 
@@ -268,7 +271,7 @@ public class BreathWeaponIce extends BreathWeapon
   // copy from BlockLiquid.checkForMixing()
   private void quenchLava(World world, BlockPos blockPos)
   {
-    world.setBlockState(blockPos, Blocks.obsidian.getDefaultState());
+    world.setBlockState(blockPos, Blocks.OBSIDIAN.getDefaultState());
     double wx = blockPos.getX();
     double wy = blockPos.getY();
     double wz = blockPos.getZ();
@@ -356,15 +359,15 @@ public class BreathWeaponIce extends BreathWeapon
     final int INSTANT = 0;
     final int MODERATE = 10;
     final int SLOW = 50;
-    materialShatterTime.put(Material.leaves, INSTANT);
-    materialShatterTime.put(Material.plants, INSTANT);
-    materialShatterTime.put(Material.vine, INSTANT);
-    materialShatterTime.put(Material.web, INSTANT);
-    materialShatterTime.put(Material.gourd, INSTANT);
-    materialShatterTime.put(Material.sponge, MODERATE);
-    materialShatterTime.put(Material.glass, MODERATE);
-    materialShatterTime.put(Material.cactus, MODERATE);
-    materialShatterTime.put(Material.rock, SLOW);
+    materialShatterTime.put(Material.LEAVES, INSTANT);
+    materialShatterTime.put(Material.PLANTS, INSTANT);
+    materialShatterTime.put(Material.VINE, INSTANT);
+    materialShatterTime.put(Material.WEB, INSTANT);
+    materialShatterTime.put(Material.GOURD, INSTANT);
+    materialShatterTime.put(Material.SPONGE, MODERATE);
+    materialShatterTime.put(Material.GLASS, MODERATE);
+    materialShatterTime.put(Material.CACTUS, MODERATE);
+    materialShatterTime.put(Material.ROCK, SLOW);
   }
 
   /**

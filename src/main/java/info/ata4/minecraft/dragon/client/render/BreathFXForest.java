@@ -148,15 +148,13 @@ public class BreathFXForest extends BreathFX {
   }
 
   // this function is used by EffectRenderer.addEffect() to determine whether depthmask writing should be on or not.
-  // by default, vanilla turns off depthmask writing for entityFX with alphavalue less than 1.0
   // BreathFXWater uses alphablending but we want depthmask writing on, otherwise translucent objects (such as water)
   //   render over the top of our breath.
   @Override
-  public float func_174838_j()
+  public boolean isTransparent()
   {
-    return 1.0F;
+    return true;
   }
-
 
   private static final int MIN_LIGHT = 0x08;
   private static final int MAX_LIGHT = 0x0f;
@@ -319,7 +317,7 @@ public class BreathFXForest extends BreathFX {
     prevPosY = posY;
     prevPosZ = posZ;
     breathNode.modifyEntityVelocity(this);
-    entityMoveAndResizeHelper.moveAndResizeEntity(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
+    moveAndResizeParticle(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
 
     if (isCollided && onGround) {
         motionY -= 0.01F;         // ensure that we hit the ground next time too
@@ -327,7 +325,7 @@ public class BreathFXForest extends BreathFX {
     breathNode.updateAge(this);
     particleAge = (int)breathNode.getAgeTicks();  // not used, but good for debugging
     if (breathNode.isDead()) {
-      setDead();
+      setExpired();
     }
   }
 
@@ -356,10 +354,10 @@ public class BreathFXForest extends BreathFX {
    */
   @Override
   public void moveEntity(double dx, double dy, double dz) {
-    entityMoveAndResizeHelper.moveAndResizeEntity(dx, dy, dz, this.width, this.height);
+    moveAndResizeParticle(dx, dy, dz, this.width, this.height);
   }
 
-  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
+//  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
   private RotatingQuad textureUV;
   private TextureAtlasSprite textureUVburning;
   private boolean hasBeenIgnited = false;

@@ -6,14 +6,12 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3d;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -74,7 +72,7 @@ public class BreathFXIce extends BreathFX {
     super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
 
     breathNode = i_breathNode;
-    particleGravity = Blocks.ice.blockParticleGravity;  /// arbitrary block!  maybe not even required.
+    particleGravity = Blocks.ICE.blockParticleGravity;  /// arbitrary block!  maybe not even required.
     particleMaxAge = (int)breathNode.getMaxLifeTime(); // not used, but good for debugging
     this.particleAlpha = MAX_ALPHA;
 
@@ -86,7 +84,7 @@ public class BreathFXIce extends BreathFX {
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(iceCrystalCloudRL.toString());
     setParticleTexture(sprite);
-    entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
+//    entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
 
     textureUV = setRandomTexture(this.particleTexture);
   }
@@ -230,17 +228,12 @@ public class BreathFXIce extends BreathFX {
       worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, motionX * 0.5, VERTICAL_PUFF_SPEED, motionZ * 0.5);
     }
 
-    // smoke / steam when hitting water.  node is responsible for aging to death
-    if (handleWaterMovement()) {
-      worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, 0, 0, 0);
-    }
-
     float newAABBDiameter = breathNode.getCurrentAABBcollisionSize();
 
     prevPosX = posX;
     prevPosY = posY;
     prevPosZ = posZ;
-    entityMoveAndResizeHelper.moveAndResizeEntity(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
+    moveAndResizeParticle(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
 
     if (isCollided && onGround) {
         motionY -= 0.01F;         // ensure that we hit the ground next time too
@@ -248,7 +241,12 @@ public class BreathFXIce extends BreathFX {
     breathNode.updateAge(this);
     particleAge = (int)breathNode.getAgeTicks();  // not used, but good for debugging
     if (breathNode.isDead()) {
-      setDead();
+      setExpired();
+    }
+
+    // smoke / steam when hitting water.  node is responsible for aging to death
+    if (isInWater()) {
+      worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, 0, 0, 0);
     }
   }
 
@@ -268,9 +266,9 @@ public class BreathFXIce extends BreathFX {
    */
   @Override
   public void moveEntity(double dx, double dy, double dz) {
-    entityMoveAndResizeHelper.moveAndResizeEntity(dx, dy, dz, this.width, this.height);
+    moveAndResizeParticle(dx, dy, dz, this.width, this.height);
   }
 
-  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
+//  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
   private RotatingQuad textureUV;
 }

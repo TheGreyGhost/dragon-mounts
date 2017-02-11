@@ -46,7 +46,12 @@ public enum DragonLifeStage {
         }
         return ADULT;
     }
-    
+
+    public static float progressFromTickCount(int ticksSinceCreation) {
+      DragonLifeStage lifeStage = getLifeStageFromTickCount(ticksSinceCreation);
+      int lifeStageTicks = ticksSinceCreation - lifeStage.startTicks;
+      return lifeStageTicks / (float)lifeStage.durationTicks;
+    }
     public static float getScaleFromTickCount(int ticksSinceCreation) {
         DragonLifeStage lifeStage = getLifeStageFromTickCount(ticksSinceCreation);
         int timeInThisStage = ticksSinceCreation - lifeStage.startTicks;

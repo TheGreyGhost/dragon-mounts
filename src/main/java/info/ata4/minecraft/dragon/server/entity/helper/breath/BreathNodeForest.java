@@ -1,5 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.client.render.breeds.IEntityParticle;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
@@ -52,7 +53,7 @@ public class BreathNodeForest extends BreathNode {
    * @return the new age of the entity
    */
   @Override
-  protected float calculateNewAge(Entity parentEntity, float currentAge)
+  protected float calculateNewAge(IEntityParticle parentEntity, float currentAge)
   {
     if (dragonBreathMode.equals(DragonBreathMode.FOREST_BURNING)) {
       if (!isBurning) {  // catch fire
@@ -85,9 +86,9 @@ public class BreathNodeForest extends BreathNode {
   }
 
   @Override
-  public void modifyEntityVelocity(Entity entity)
+  public void modifyEntityVelocity(IEntityParticle entity)
   {
-    Vec3d entityVelocity = new Vec3d(entity.motionX, entity.motionY, entity.motionZ);
+    Vec3d entityVelocity = new Vec3d(entity.getMotionX(), entity.getMotionY(), entity.getMotionZ());
 
     double speed = getStartingSpeed();
 
@@ -96,7 +97,7 @@ public class BreathNodeForest extends BreathNode {
     }
 
     boolean shouldStartExpansion = false;
-    if (entity.isCollided) {
+    if (entity.isCollided()) {
       shouldStartExpansion = true;
     } else {
       if (ageTicks < RAPID_MOVE_TICKS) {
@@ -117,9 +118,7 @@ public class BreathNodeForest extends BreathNode {
       entityVelocity = MathX.getRandomPointOnSphere(random, EXPANSION_SPEED);
     }
 
-    entity.motionX = entityVelocity.xCoord;
-    entity.motionY = entityVelocity.yCoord;
-    entity.motionZ = entityVelocity.zCoord;
+    entity.setMotion(entityVelocity);
   }
 
   @Override

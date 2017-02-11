@@ -2,20 +2,16 @@ package info.ata4.minecraft.dragon.client.render;
 
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeAir;
-import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeWater;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3d;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -80,7 +76,7 @@ public class BreathFXAir extends BreathFX {
     super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
 
     breathNode = i_breathNode;
-    particleGravity = Blocks.ice.blockParticleGravity;  /// arbitrary block!  maybe not even required.
+    particleGravity = Blocks.ICE.blockParticleGravity;  /// arbitrary block!  maybe not even required.
     particleMaxAge = (int)breathNode.getMaxLifeTime(); // not used, but good for debugging
     this.particleAlpha = MAX_ALPHA;
 
@@ -93,7 +89,7 @@ public class BreathFXAir extends BreathFX {
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(
             airDustCloudRL.toString());
     setParticleTexture(sprite);
-    entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
+//    entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);  turned into member function
 
     textureUV = setRandomTexture(this.particleTexture);
     clockwiseRotation = rand.nextBoolean();
@@ -172,13 +168,12 @@ public class BreathFXAir extends BreathFX {
   }
 
   // this function is used by EffectRenderer.addEffect() to determine whether depthmask writing should be on or not.
-  // by default, vanilla turns off depthmask writing for entityFX with alphavalue less than 1.0
   // BreathFXWater uses alphablending but we want depthmask writing on, otherwise translucent objects (such as water)
   //   render over the top of our breath.
   @Override
-  public float func_174838_j()
+  public boolean isTransparent()
   {
-    return 1.0F;
+    return true;
   }
 
   @Override
@@ -314,7 +309,7 @@ public class BreathFXAir extends BreathFX {
     prevPosX = posX;
     prevPosY = posY;
     prevPosZ = posZ;
-    entityMoveAndResizeHelper.moveAndResizeEntity(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
+    moveAndResizeParticle(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
 
     if (isCollided && onGround) {
         motionY -= 0.01F;         // ensure that we hit the ground next time too
@@ -322,7 +317,7 @@ public class BreathFXAir extends BreathFX {
     breathNode.updateAge(this);
     particleAge = (int)breathNode.getAgeTicks();  // not used, but good for debugging
     if (breathNode.isDead()) {
-      setDead();
+      setExpired();
     }
   }
 
@@ -342,10 +337,10 @@ public class BreathFXAir extends BreathFX {
    */
   @Override
   public void moveEntity(double dx, double dy, double dz) {
-    entityMoveAndResizeHelper.moveAndResizeEntity(dx, dy, dz, this.width, this.height);
+    moveAndResizeParticle(dx, dy, dz, this.width, this.height);
   }
 
-  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
+  //  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;  turned into member  function
   private RotatingQuad textureUV;
   private boolean clockwiseRotation;
   private float rotationSpeedQuadrantsPerTick;

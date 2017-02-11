@@ -18,8 +18,6 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjec
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileGhost;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileNether;
 import info.ata4.minecraft.dragon.server.handler.DragonEggBlockHandler;
-import info.ata4.minecraft.dragon.server.network.DragonControlMessage;
-import info.ata4.minecraft.dragon.server.network.DragonControlMessageHandler;
 import info.ata4.minecraft.dragon.server.network.DragonTargetMessage;
 import info.ata4.minecraft.dragon.server.network.DragonTargetMessageHandlerServer;
 import info.ata4.minecraft.dragon.test.StartupCommon;
@@ -68,8 +66,9 @@ public class CommonProxy {
     public ItemDragonOrb itemDragonOrb;
 
     public void onPreInit(FMLPreInitializationEvent evt) {
-        itemDragonOrb = (ItemDragonOrb) (new ItemDragonOrb().setUnlocalizedName("dragonorb"));
-        GameRegistry.registerItem(itemDragonOrb, "dragonorb");
+      itemDragonOrb = (ItemDragonOrb) (new ItemDragonOrb().setUnlocalizedName("dragonorb"));
+      itemDragonOrb.setRegistryName("dragonorb");
+      GameRegistry.register(itemDragonOrb);
       GameRegistry.register(BlockDragonBreedEgg.INSTANCE.setRegistryName("dragon_egg"));
       GameRegistry.register(ItemDragonBreedEgg.INSTANCE.setRegistryName("dragon_egg"));
 //    MinecraftForge.EVENT_BUS.register(new EntitySpawnSuppressor());
@@ -85,8 +84,8 @@ public class CommonProxy {
 
         MinecraftForge.EVENT_BUS.register(new DragonEggBlockHandler());
         network = NetworkRegistry.INSTANCE.newSimpleChannel("DragonControls");
-        network.registerMessage(DragonControlMessageHandler.class, DragonControlMessage.class,
-                DCM_DISCRIMINATOR_ID, Side.SERVER);
+//        network.registerMessage(DragonControlMessageHandler.class, DragonControlMessage.class, //todo no longer needed?
+//                DCM_DISCRIMINATOR_ID, Side.SERVER);
         network.registerMessage(DragonTargetMessageHandlerServer.class, DragonTargetMessage.class,
                 DOT_DISCRIMINATOR_ID, Side.SERVER);
       StartupCommon.initCommon();

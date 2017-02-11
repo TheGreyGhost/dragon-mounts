@@ -1,5 +1,6 @@
 package info.ata4.minecraft.dragon.server.entity.helper.breath;
 
+import info.ata4.minecraft.dragon.client.render.breeds.IEntityParticle;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.entity.Entity;
@@ -23,7 +24,7 @@ import java.util.Random;
  * 2) call onUpdate() every tick to move and collide
  * 3) various getters for intensity, radius, and recent collisions.
   */
-class EntityBreathNode extends Entity
+class EntityBreathNode extends Entity implements IEntityParticle
 {
   public static EntityBreathNode createEntityBreathNodeServer(World world, double x, double y, double z,
                                                               double directionX, double directionY, double directionZ,
@@ -136,4 +137,11 @@ class EntityBreathNode extends Entity
   private Collection<Pair<EnumFacing, AxisAlignedBB>> collisions;
   private float intensityAtCollision;
 
+  public double getMotionX() {return motionX;}
+  public double getMotionY() {return motionY;}
+  public double getMotionZ() {return motionZ;}
+  public double getSpeedSQ() {return motionX*motionX + motionY*motionY + motionZ*motionZ;}
+//  public boolean isInWater() {return isInWater();}
+  public boolean isCollided() {return isCollided;}
+//  public boolean isInLava() {return super.isInLava();}
 }
