@@ -14,14 +14,14 @@ public class TextureStitcherBreathFX
   @SubscribeEvent
   public void stitcherEventPre(TextureStitchEvent.Pre event) {
     ResourceLocation flameRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_fire");
-    event.map.registerSprite(flameRL);
+    event.getMap().registerSprite(flameRL);
     ResourceLocation iceRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_ice");
-    event.map.registerSprite(iceRL);
+    event.getMap().registerSprite(iceRL);
     ResourceLocation waterRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_water");
-    event.map.registerSprite(waterRL);
+    event.getMap().registerSprite(waterRL);
     ResourceLocation airRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_air");
-    event.map.registerSprite(airRL);
+    event.getMap().registerSprite(airRL);
     ResourceLocation forestGasCloudRL = new ResourceLocation("dragonmounts:entities/breathweapon/breath_forest");
-    event.map.registerSprite(forestGasCloudRL);
+    event.getMap().registerSprite(forestGasCloudRL);
   }
 }

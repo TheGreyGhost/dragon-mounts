@@ -15,7 +15,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 
 import java.util.HashSet;
@@ -58,7 +62,7 @@ public class BreathWeaponWater extends BreathWeapon
     // coat blocks with water.  Gradually builds up and will coat everything
 
     if (block == null) return currentHitDensity;
-    Material material = block.getMaterial();
+    Material material = iBlockState.getMaterial();
     if (material == null) return currentHitDensity;
 
     if (materialDisintegrateTime.containsKey(material)) {
@@ -72,7 +76,7 @@ public class BreathWeaponWater extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.lava) {
+    if (material == Material.LAVA) {
       final float THRESHOLD_LAVA_QUENCH = 10;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_LAVA_QUENCH) {
         quenchLava(world, blockPos);
@@ -81,7 +85,7 @@ public class BreathWeaponWater extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.fire) {
+    if (material == Material.FIRE) {
       final float THRESHOLD_FIRE_EXTINGUISH = 1;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_FIRE_EXTINGUISH) {
         extinguishFire(world, blockPos);
@@ -90,10 +94,10 @@ public class BreathWeaponWater extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.water) {
+    if (material == Material.WATER) {
       return deepenWater(world, block, blockPos, currentHitDensity);
     }
-    if (block == Blocks.torch) {
+    if (block == Blocks.TORCH) {
       final float THRESHOLD_FIRE_EXTINGUISH = 1;
       if (currentHitDensity.getMaxHitDensity() > THRESHOLD_FIRE_EXTINGUISH) {
         final boolean DROP_BLOCK = true;
@@ -103,7 +107,7 @@ public class BreathWeaponWater extends BreathWeapon
       return currentHitDensity;
     }
 
-    if (material == Material.air) {
+    if (material == Material.AIR) {
       final int THRESHOLD_DEEPEN_WATER_LAYER = 1;
       if (currentHitDensity.getMaxHitDensity() < THRESHOLD_DEEPEN_WATER_LAYER) {
         return currentHitDensity;
@@ -112,9 +116,9 @@ public class BreathWeaponWater extends BreathWeapon
 
       final int MINIMUM_DEPTH = 7;
 
-      if (blockUnderneath.getBlock().getMaterial().blocksMovement()) {
+      if (blockUnderneath.getMaterial().blocksMovement()) {
         world.setBlockState(blockPos,
-                Blocks.flowing_water.getDefaultState().withProperty(BlockLiquid.LEVEL, MINIMUM_DEPTH));
+                Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, MINIMUM_DEPTH));
       }
     }
 
@@ -126,7 +130,7 @@ public class BreathWeaponWater extends BreathWeapon
                                           BreathAffectedBlock currentHitDensity)
   {
     IBlockState currentBlockState = world.getBlockState(blockPos);
-    if (block.getMaterial() == Material.water && block instanceof BlockDynamicLiquid) {
+    if (currentBlockState.getMaterial() == Material.WATER && block instanceof BlockDynamicLiquid) {
       final int THRESHOLD_DEEPEN_WATER_LEVEL = 1;
       if (currentHitDensity.getMaxHitDensity() < THRESHOLD_DEEPEN_WATER_LEVEL) {
         return currentHitDensity;
@@ -158,12 +162,13 @@ public class BreathWeaponWater extends BreathWeapon
   // copy from BlockLiquid.checkForMixing()
   private void quenchLava(World world, BlockPos blockPos)
   {
-    world.setBlockState(blockPos, Blocks.obsidian.getDefaultState());
+    world.setBlockState(blockPos, Blocks.OBSIDIAN.getDefaultState());
     double wx = blockPos.getX();
     double wy = blockPos.getY();
     double wz = blockPos.getZ();
-    world.playSoundEffect(wx + 0.5D, wy + 0.5D, wz + 0.5D, "random.fizz",
-            0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
+    world.playSound(wx + 0.5D, wy + 0.5D, wz + 0.5D,
+                    SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS,
+                    0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F, false);
 
     for (int i = 0; i < 8; ++i) {
       world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, wx + Math.random(), wy + 1.2D, wz + Math.random(),
@@ -178,8 +183,9 @@ public class BreathWeaponWater extends BreathWeapon
     double wx = blockPos.getX();
     double wy = blockPos.getY();
     double wz = blockPos.getZ();
-    world.playSoundEffect(wx + 0.5D, wy + 0.5D, wz + 0.5D, "random.fizz",
-            0.5F, 3.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
+    world.playSound(wx + 0.5D, wy + 0.5D, wz + 0.5D,
+                    SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS,
+                    0.5F, 3.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F, false);
   }
 
   @Override
@@ -215,8 +221,8 @@ public class BreathWeaponWater extends BreathWeapon
 
 
     final double FORCE_MULTIPLIER = 0.01;
-    Vec3 waterForceDirection = currentHitDensity.getHitDensityDirection();
-    Vec3 waterMotion = MathX.multiply(waterForceDirection, FORCE_MULTIPLIER);
+    Vec3d waterForceDirection = currentHitDensity.getHitDensityDirection();
+    Vec3d waterMotion = MathX.multiply(waterForceDirection, FORCE_MULTIPLIER);
     entity.addVelocity(waterMotion.xCoord, waterMotion.yCoord, waterMotion.zCoord);
 
     final float DAMAGE_PER_HIT_DENSITY = 0.1F;
@@ -243,21 +249,21 @@ public class BreathWeaponWater extends BreathWeapon
     final int INSTANT = 0;
     final int MODERATE = 10;
     final int SLOW = 50;
-    materialDisintegrateTime.put(Material.leaves, INSTANT);
-    materialDisintegrateTime.put(Material.plants, INSTANT);
-    materialDisintegrateTime.put(Material.vine, INSTANT);
-    materialDisintegrateTime.put(Material.web, INSTANT);
-    materialDisintegrateTime.put(Material.gourd, INSTANT);
-    materialDisintegrateTime.put(Material.grass, MODERATE);
-    materialDisintegrateTime.put(Material.sponge, MODERATE);
-    materialDisintegrateTime.put(Material.sand, MODERATE);
-    materialDisintegrateTime.put(Material.ice, MODERATE);
-    materialDisintegrateTime.put(Material.packedIce, MODERATE);
-    materialDisintegrateTime.put(Material.snow, MODERATE);
-    materialDisintegrateTime.put(Material.craftedSnow, MODERATE);
-    materialDisintegrateTime.put(Material.clay, SLOW);
-    materialDisintegrateTime.put(Material.cactus, SLOW);
-    materialDisintegrateTime.put(Material.rock, SLOW);
+    materialDisintegrateTime.put(Material.LEAVES, INSTANT);
+    materialDisintegrateTime.put(Material.PLANTS, INSTANT);
+    materialDisintegrateTime.put(Material.VINE, INSTANT);
+    materialDisintegrateTime.put(Material.WEB, INSTANT);
+    materialDisintegrateTime.put(Material.GOURD, INSTANT);
+    materialDisintegrateTime.put(Material.GRASS, MODERATE);
+    materialDisintegrateTime.put(Material.SPONGE, MODERATE);
+    materialDisintegrateTime.put(Material.SAND, MODERATE);
+    materialDisintegrateTime.put(Material.ICE, MODERATE);
+    materialDisintegrateTime.put(Material.PACKED_ICE, MODERATE);
+    materialDisintegrateTime.put(Material.SNOW, MODERATE);
+    materialDisintegrateTime.put(Material.CRAFTED_SNOW, MODERATE);
+    materialDisintegrateTime.put(Material.CLAY, SLOW);
+    materialDisintegrateTime.put(Material.CACTUS, SLOW);
+    materialDisintegrateTime.put(Material.ROCK, SLOW);
   }
 
 }

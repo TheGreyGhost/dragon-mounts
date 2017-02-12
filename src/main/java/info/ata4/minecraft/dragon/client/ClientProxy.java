@@ -100,8 +100,10 @@ public class ClientProxy extends CommonProxy {
     FMLCommonHandler.instance().bus().register(DragonOrbControl.getInstance());
     MinecraftForge.EVENT_BUS.register(new TargetHighlighter());
     FMLCommonHandler.instance().bus().register(new DragonEntityWatcher());
-    StartupClientOnly.postInitClientOnly();
 
+    Minecraft.getMinecraft().getItemColors().registerItemColorHandler(new DragonOrbColour(), DragonMounts.proxy.itemDragonOrb);
+
+    StartupClientOnly.postInitClientOnly();
   }
 
     /**

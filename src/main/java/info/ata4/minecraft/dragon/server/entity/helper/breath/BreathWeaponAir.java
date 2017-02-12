@@ -54,7 +54,7 @@ public class BreathWeaponAir extends BreathWeapon
     // causes fire to spread rapidly - NO, this looks stupid, so delete it
 
     if (block == null) return currentHitDensity;
-    Material material = block.getMaterial(iBlockState);
+    Material material = iBlockState.getMaterial();
     if (material == null) return currentHitDensity;
 
     if (materialDisintegrateTime.containsKey(material)) {

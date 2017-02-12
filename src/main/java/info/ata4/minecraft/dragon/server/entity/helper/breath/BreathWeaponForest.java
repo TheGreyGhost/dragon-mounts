@@ -13,6 +13,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.*;
@@ -80,17 +82,17 @@ public class BreathWeaponForest extends BreathWeapon {
     Random rand = new Random();
 
     if (block == null) return currentHitDensity;
-    Material material = block.getMaterial();
+    Material material = iBlockState.getMaterial();
 
     if (material == null) return currentHitDensity;
 
     // spawnNew
-    if (material == Material.air ||
-        block == Blocks.snow_layer ||
-        block == Blocks.flowing_water) {
+    if (material == Material.AIR ||
+        block == Blocks.SNOW_LAYER ||
+        block == Blocks.FLOWING_WATER) {
       BlockPos oneDown = blockPos.down();
       IBlockState groundBelow = world.getBlockState(oneDown);
-      Material materialBelow = groundBelow.getBlock().getMaterial();
+      Material materialBelow = groundBelow.getMaterial();
       if (materialEffectTimeSpawnNew.containsKey(materialBelow)) {
         Integer spawnTime = materialEffectTimeSpawnNew.get(materialBelow);
         if (spawnTime != null
@@ -123,7 +125,7 @@ public class BreathWeaponForest extends BreathWeapon {
 
     // ignite (flammable)
 
-    if (block == Blocks.torch) {
+    if (block == Blocks.TORCH) {
       if (currentHitDensity.getMaxHitDensity() > 0) {
 //        EnumFacing whichFaceTouched = currentHitDensity.getMaxHitDensityFace();
 //        BlockPos adjacentFace = blockPos.offset(whichFaceTouched);
@@ -133,7 +135,7 @@ public class BreathWeaponForest extends BreathWeapon {
       return currentHitDensity;
     }
 
-    if (materialEffectTimeFlammable.containsKey(material) || block == Blocks.torch) {
+    if (materialEffectTimeFlammable.containsKey(material) || block == Blocks.TORCH) {
       Integer igniteTime = materialEffectTimeFlammable.get(material);
       if (igniteTime != null
               && currentHitDensity.getMaxHitDensity() > igniteTime) {
@@ -183,9 +185,10 @@ public class BreathWeaponForest extends BreathWeapon {
           final float MIN_PITCH = 0.8F;
           final float MAX_PITCH = 1.2F;
           final float VOLUME = 1.0F;
-          world.playSoundEffect(sideToIgnite.getX() + 0.5, sideToIgnite.getY() + 0.5, sideToIgnite.getZ() + 0.5,
-                                "fire.ignite", VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH));
-          world.setBlockState(sideToIgnite, Blocks.fire.getDefaultState());
+          world.playSound(sideToIgnite.getX() + 0.5, sideToIgnite.getY() + 0.5, sideToIgnite.getZ() + 0.5,
+                          SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.HOSTILE,
+                          VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH), false);
+          world.setBlockState(sideToIgnite, Blocks.FIRE.getDefaultState());
         }
         if (densityOfThisFace >= thresholdForDestruction) {
           world.setBlockToAir(blockPos);
@@ -250,7 +253,7 @@ public class BreathWeaponForest extends BreathWeapon {
     float hitDensity = currentHitDensity.getHitDensity();
     if (entity instanceof EntityLivingBase && applyDamageThisTick && hitDensity > POISON_THRESHOLD) {
       EntityLivingBase entityLivingBase = (EntityLivingBase)entity;
-      entityLivingBase.addPotionEffect(new PotionEffect(Potion.poison.id, POISON_DURATION_TICKS, POISON_AMPLIFIER));
+      entityLivingBase.addPotionEffect(new PotionEffect(MobEffects.POISON, POISON_DURATION_TICKS, POISON_AMPLIFIER));
       currentHitDensity.resetHitDensity();
     }
 
@@ -275,25 +278,25 @@ public class BreathWeaponForest extends BreathWeapon {
   private BreathAffectedBlock transmute(BreathAffectedBlock currentHitDensity, World world,
                                        BlockPos blockPos, IBlockState iBlockState)
   {
-    Material material = iBlockState.getBlock().getMaterial();
+    Material material = iBlockState.getBlock().getMaterial(iBlockState);
 
     final int SET_BLOCKSTATE_FLAG = 3;  // update flag setting to use for setBlockState
 
-    if (material == Material.ground) {
-      world.setBlockState(blockPos, Blocks.grass.getDefaultState(), SET_BLOCKSTATE_FLAG);
+    if (material == Material.GROUND) {
+      world.setBlockState(blockPos, Blocks.GRASS.getDefaultState(), SET_BLOCKSTATE_FLAG);
       return new BreathAffectedBlock();
-    } else if (material == Material.rock) {
+    } else if (material == Material.ROCK) {
       Block block = iBlockState.getBlock();
-      if (block == Blocks.cobblestone) {
-        world.setBlockState(blockPos, Blocks.mossy_cobblestone.getDefaultState(), SET_BLOCKSTATE_FLAG);
+      if (block == Blocks.COBBLESTONE) {
+        world.setBlockState(blockPos, Blocks.MOSSY_COBBLESTONE.getDefaultState(), SET_BLOCKSTATE_FLAG);
         return new BreathAffectedBlock();
-      } else if (block == Blocks.cobblestone_wall) {
+      } else if (block == Blocks.COBBLESTONE_WALL) {
         world.setBlockState(blockPos,
                             iBlockState.withProperty(BlockWall.VARIANT, BlockWall.EnumType.MOSSY),
                             SET_BLOCKSTATE_FLAG);
         return new BreathAffectedBlock();
       }
-    } else if (material == Material.air) {
+    } else if (material == Material.AIR) {
       VinesPlant vinesPlant = new VinesPlant();
       Random random = new Random();
       boolean successfulSpawn = vinesPlant.trySpawnNewPlant(world, blockPos, random);
@@ -311,7 +314,7 @@ public class BreathWeaponForest extends BreathWeapon {
                                        World world, BlockPos blockPos, IBlockState groundBlockState,
                                        Random rand)
   {
-    WeightedRandomChoices<Plant> plantChoices = weightedSpawners.get(groundBlockState.getBlock().getMaterial());
+    WeightedRandomChoices<Plant> plantChoices = weightedSpawners.get(groundBlockState.getMaterial());
     Plant plant = plantChoices.pickRandom(rand);
 
     boolean spawnsuccess = plant.trySpawnNewPlant(world, blockPos, rand);
@@ -356,39 +359,39 @@ public class BreathWeaponForest extends BreathWeapon {
     final int INSTANT = 0;
     final int MODERATE = 10;
     final int SLOW = 50;
-    materialEffectTimeGrow.put(Material.leaves, MODERATE);
-    materialEffectTimeGrow.put(Material.plants, INSTANT);  // cocoa, flower, reed, bush
-    materialEffectTimeGrow.put(Material.vine, INSTANT);  // vine, deadbush, double plant, tallgrass
-    materialEffectTimeGrow.put(Material.web, INSTANT);
-    materialEffectTimeGrow.put(Material.gourd, INSTANT); //melon, pumpkin
-    materialEffectTimeGrow.put(Material.cactus, MODERATE);
+    materialEffectTimeGrow.put(Material.LEAVES, MODERATE);
+    materialEffectTimeGrow.put(Material.PLANTS, INSTANT);  // cocoa, flower, reed, bush
+    materialEffectTimeGrow.put(Material.VINE, INSTANT);  // vine, deadbush, double plant, tallgrass
+    materialEffectTimeGrow.put(Material.WEB, INSTANT);
+    materialEffectTimeGrow.put(Material.GOURD, INSTANT); //melon, pumpkin
+    materialEffectTimeGrow.put(Material.CACTUS, MODERATE);
 
-    materialEffectTimeTransmute.put(Material.ground, INSTANT);
-    materialEffectTimeTransmute.put(Material.rock, MODERATE);
-    materialEffectTimeTransmute.put(Material.air, MODERATE);  // for vines
+    materialEffectTimeTransmute.put(Material.GROUND, INSTANT);
+    materialEffectTimeTransmute.put(Material.ROCK, MODERATE);
+    materialEffectTimeTransmute.put(Material.AIR, MODERATE);  // for vines
 
-    materialEffectTimeFlammable.put(Material.lava, INSTANT);
-    materialEffectTimeFlammable.put(Material.fire, MODERATE);
+    materialEffectTimeFlammable.put(Material.LAVA, INSTANT);
+    materialEffectTimeFlammable.put(Material.FIRE, MODERATE);
 
-    materialEffectTimeSpawnNew.put(Material.grass, INSTANT);
-    materialEffectTimeSpawnNew.put(Material.water, MODERATE);
-    materialEffectTimeSpawnNew.put(Material.sand, MODERATE);
+    materialEffectTimeSpawnNew.put(Material.GRASS, INSTANT);
+    materialEffectTimeSpawnNew.put(Material.WATER, MODERATE);
+    materialEffectTimeSpawnNew.put(Material.SAND, MODERATE);
 
     //------------
-    weightedSpawners.put(Material.water, WeightedRandomChoices.ofEqualWeights(new WaterLilyPlant()));
+    weightedSpawners.put(Material.WATER, WeightedRandomChoices.ofEqualWeights(new WaterLilyPlant()));
 
     final int CROPS_WEIGHT_PART = 100;
     WeightedRandomChoices<Plant> ground = new WeightedRandomChoices<Plant>();
     ground.add(new CropsPlant(CropsPlant.CropType.CARROT), CROPS_WEIGHT_PART);
     ground.add(new CropsPlant(CropsPlant.CropType.POTATO), CROPS_WEIGHT_PART);
     ground.add(new CropsPlant(CropsPlant.CropType.WHEAT), CROPS_WEIGHT_PART * 8);
-    weightedSpawners.put(Material.ground, ground);
+    weightedSpawners.put(Material.GROUND, ground);
 
     final int SAND_WEIGHT_PART = 100;
     WeightedRandomChoices<Plant> sand = new WeightedRandomChoices<Plant>();
     sand.add(new CactusPlant(), SAND_WEIGHT_PART);
     sand.add(new ReedsPlant(), 9 * SAND_WEIGHT_PART);
-    weightedSpawners.put(Material.sand, sand);
+    weightedSpawners.put(Material.SAND, sand);
 
 
     WeightedRandomChoices<Plant> grass = new WeightedRandomChoices<Plant>();
@@ -417,7 +420,7 @@ public class BreathWeaponForest extends BreathWeapon {
     grass.add(new SaplingPlant(BlockPlanks.EnumType.JUNGLE), SAPLING_WEIGHT);
     grass.add(new SaplingPlant(BlockPlanks.EnumType.DARK_OAK), SAPLING_WEIGHT);
 
-    weightedSpawners.put(Material.grass, grass);
+    weightedSpawners.put(Material.GRASS, grass);
   }
 }
 

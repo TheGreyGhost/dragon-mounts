@@ -200,7 +200,7 @@ public class BreathWeaponFire extends BreathWeapon
   private static IBlockState getVaporisedLiquidResult(IBlockState sourceBlock)
   {
     Block block = sourceBlock.getBlock();
-    Material material = block.getMaterial(sourceBlock);
+    Material material = sourceBlock.getMaterial();
 
     if (material == Material.WATER) {
       return Blocks.AIR.getDefaultState();
@@ -221,7 +221,7 @@ public class BreathWeaponFire extends BreathWeapon
   private static IBlockState getMoltenLavaResult(IBlockState sourceBlock)
   {
     Block block = sourceBlock.getBlock();
-    Material material = block.getMaterial(sourceBlock);
+    Material material = sourceBlock.getMaterial();
 
     if (material == Material.SAND || material == Material.CLAY
             || material == Material.GLASS || material == Material.IRON
@@ -239,7 +239,7 @@ public class BreathWeaponFire extends BreathWeapon
   private static IBlockState getScorchedResult(IBlockState sourceBlock)
   {
     Block block = sourceBlock.getBlock();
-    Material material = block.getMaterial(sourceBlock);
+    Material material = sourceBlock.getMaterial();
 
     if (material == Material.GRASS) {
       return Blocks.DIRT.getDefaultState();

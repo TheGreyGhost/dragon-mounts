@@ -9,6 +9,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -192,6 +193,13 @@ public class BreathFX extends Particle implements IEntityParticle {
   public double getSpeedSQ() {return motionX*motionX + motionY*motionY + motionZ*motionZ;}
   @Override
   public boolean isCollided() {return isCollided;}
+
+  @Override
+  public void setMotion(Vec3d newMotion) {
+    motionX = newMotion.xCoord;
+    motionY = newMotion.yCoord;
+    motionZ = newMotion.zCoord;
+  }
 
   @Override
   public boolean isInWater() {

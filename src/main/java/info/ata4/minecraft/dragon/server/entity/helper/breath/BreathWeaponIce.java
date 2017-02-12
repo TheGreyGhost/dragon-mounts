@@ -13,6 +13,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
@@ -66,7 +69,7 @@ public class BreathWeaponIce extends BreathWeapon
 
 
     if (block == null) return currentHitDensity;
-    Material material = block.getMaterial();
+    Material material = iBlockState.getMaterial();
     if (material == null) return currentHitDensity;
 
     if (materialShatterTime.containsKey(material)) {
@@ -217,7 +220,7 @@ public class BreathWeaponIce extends BreathWeapon
             blocksSearched.add(adjacent);
 
             IBlockState adjacentBlockState = world.getBlockState(adjacent);
-            Material material = adjacentBlockState.getBlock().getMaterial(adjacentBlockState);
+            Material material = adjacentBlockState.getMaterial();
             if (material == Material.WATER) {
               blocksToSearchFromNext.add(adjacent);
               world.setBlockState(adjacent, Blocks.PACKED_ICE.getDefaultState());
@@ -275,8 +278,9 @@ public class BreathWeaponIce extends BreathWeapon
     double wx = blockPos.getX();
     double wy = blockPos.getY();
     double wz = blockPos.getZ();
-    world.playSoundEffect(wx + 0.5D, wy + 0.5D, wz + 0.5D, "random.fizz",
-            0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
+    world.playSound(wx + 0.5D, wy + 0.5D, wz + 0.5D,
+                    SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS,
+                    0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F, false);
 
     for (int i = 0; i < 8; ++i) {
       world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, wx + Math.random(), wy + 1.2D, wz + Math.random(),
@@ -291,8 +295,9 @@ public class BreathWeaponIce extends BreathWeapon
     double wx = blockPos.getX();
     double wy = blockPos.getY();
     double wz = blockPos.getZ();
-    world.playSoundEffect(wx + 0.5D, wy + 0.5D, wz + 0.5D, "random.fizz",
-            0.5F, 3.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
+    world.playSound(wx + 0.5D, wy + 0.5D, wz + 0.5D,
+                    SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS,
+                    0.5F, 3.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F, false);
   }
 
   @Override
@@ -336,13 +341,13 @@ public class BreathWeaponIce extends BreathWeapon
 
       if (entity instanceof EntityLivingBase) {
         EntityLivingBase entityLivingBase = (EntityLivingBase)entity;
-        if (entityLivingBase.isPotionActive(Potion.invisibility.id)) {
-          entityLivingBase.removePotionEffect(Potion.invisibility.id);
+        if (entityLivingBase.isPotionActive(MobEffects.INVISIBILITY)) {
+          entityLivingBase.removePotionEffect(MobEffects.INVISIBILITY);
         }
 
         int duration = 10 * 20;          // 10 seconds
         final int EFFECT_AMPLIFIER = 3;  // not sure why this is 3; other vanilla uses that value
-        PotionEffect slowDown = new PotionEffect(Potion.moveSlowdown.id, duration, EFFECT_AMPLIFIER);
+        PotionEffect slowDown = new PotionEffect(MobEffects.SLOWNESS, duration, EFFECT_AMPLIFIER);
         entityLivingBase.addPotionEffect(slowDown);
       }
     }
@@ -384,15 +389,13 @@ public class BreathWeaponIce extends BreathWeapon
     }
     EntityLivingBase entityLivingBase = (EntityLivingBase)armoredEntity;
 
-    final int FIRST_ARMOUR_INDEX = 1;
-    final int LAST_ARMOUR_INDEX = 4;
-    final float ARMOUR_SLOTS_COUNT = LAST_ARMOUR_INDEX - FIRST_ARMOUR_INDEX + 1;
-
+    int armourSlotsCount = 0;
     int conductorCount = 0;
     int insulatorCount = 0;
-    for (int slot = FIRST_ARMOUR_INDEX; slot <= LAST_ARMOUR_INDEX; ++slot) {
-      ItemStack itemStack = entityLivingBase.getEquipmentInSlot(slot);
-      if (itemStack != null && itemStack.getItem() instanceof ItemArmor) {
+    for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+      ItemStack itemStack = entityLivingBase.getItemStackFromSlot(slot);
+      if (slot.getSlotType() == EntityEquipmentSlot.Type.ARMOR && itemStack != null && itemStack.getItem() instanceof ItemArmor) {
+        armourSlotsCount++;
         ItemArmor.ArmorMaterial material = ((ItemArmor) itemStack.getItem()).getArmorMaterial();
         switch (material) {
           case IRON:
@@ -414,9 +417,12 @@ public class BreathWeaponIce extends BreathWeapon
         }
       }
     }
+    if (armourSlotsCount == 0) {  // should never reach here, but just in case...
+      return UNMODIFIED;
+    }
     float damageMultiplier = UNMODIFIED
-                             * (1 + conductorCount / ARMOUR_SLOTS_COUNT)
-                             / (1 + insulatorCount / ARMOUR_SLOTS_COUNT);
+                             * (1 + conductorCount / armourSlotsCount)
+                             / (1 + insulatorCount / armourSlotsCount);
     return damageMultiplier;
   }
 

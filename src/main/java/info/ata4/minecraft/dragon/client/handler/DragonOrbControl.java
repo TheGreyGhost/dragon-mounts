@@ -9,7 +9,7 @@ import info.ata4.minecraft.dragon.server.util.ItemUtils;
 import info.ata4.minecraft.dragon.server.util.RayTraceServer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -83,7 +83,7 @@ public class DragonOrbControl {
     } else {
       enableClickInterception(true);
       final float MAX_ORB_RANGE = 20.0F;
-      MovingObjectPosition mop = RayTraceServer.getMouseOver(entityPlayerSP.getEntityWorld(), entityPlayerSP, MAX_ORB_RANGE);
+      RayTraceResult mop = RayTraceServer.getMouseOver(entityPlayerSP.getEntityWorld(), entityPlayerSP, MAX_ORB_RANGE);
       targetBeingLookedAt = BreathWeaponTarget.fromMovingObjectPosition(mop, entityPlayerSP);
       triggerHeld = attackButtonInterceptor.isUnderlyingKeyDown();
       if (triggerHeld) {

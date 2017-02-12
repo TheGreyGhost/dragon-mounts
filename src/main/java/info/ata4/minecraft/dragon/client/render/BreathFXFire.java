@@ -6,14 +6,13 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3d;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -73,7 +72,7 @@ public class BreathFXFire extends BreathFX {
     super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
 
     breathNode = i_breathNode;
-    particleGravity = Blocks.fire.blockParticleGravity;  /// arbitrary block!  maybe not even required.
+    particleGravity = Blocks.FIRE.blockParticleGravity;  /// arbitrary block!  maybe not even required.
     particleMaxAge = (int)breathNode.getMaxLifeTime(); // not used, but good for debugging
     this.particleAlpha = MAX_ALPHA;  // a value less than 1 turns on alpha blending
 
@@ -84,8 +83,8 @@ public class BreathFXFire extends BreathFX {
 
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(fireballRL.toString());
-    setParticleTexture((sprite);
-    entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
+    setParticleTexture(sprite);
+//    entityMoveAndResizeHelper = new EntityMoveAndResizeHelper(this);
   }
 
   /**
@@ -126,7 +125,7 @@ public class BreathFXFire extends BreathFX {
    *   by half the quad's height.
    * NB edgeLRdirectionY is not provided because it's always 0, i.e. the top of the viewer's screen is always directly
    *    up so moving left-right on the viewer's screen doesn't affect the y coordinate position in the world
-   * @param worldRenderer
+   * @param vertexBuffer
    * @param entity
    * @param partialTick
    * @param edgeLRdirectionX edgeLRdirection[XYZ] is the vector direction pointing left-right on the player's screen
@@ -136,14 +135,14 @@ public class BreathFXFire extends BreathFX {
    * @param edgeUDdirectionZ edgeUDdirection[XYZ] is the vector direction pointing up-down on the player's screen
    */
   @Override
-  public void func_180434_a(WorldRenderer worldRenderer, Entity entity, float partialTick,
-                            float edgeLRdirectionX, float edgeUDdirectionY, float edgeLRdirectionZ,
-                            float edgeUDdirectionX, float edgeUDdirectionZ)
+  public void renderParticle(VertexBuffer vertexBuffer, Entity entity, float partialTick,
+                             float edgeLRdirectionX, float edgeUDdirectionY, float edgeLRdirectionZ,
+                             float edgeUDdirectionX, float edgeUDdirectionZ)
   {
-    double minU = this.particleIcon.getMinU();
-    double maxU = this.particleIcon.getMaxU();
-    double minV = this.particleIcon.getMinV();
-    double maxV = this.particleIcon.getMaxV();
+    double minU = this.particleTexture.getMinU();
+    double maxU = this.particleTexture.getMaxU();
+    double minV = this.particleTexture.getMinV();
+    double maxV = this.particleTexture.getMaxV();
     RotatingQuad tex = new RotatingQuad(minU, minV, maxU, maxV);
     Random random = new Random();
     if (random.nextBoolean()) {
@@ -159,23 +158,27 @@ public class BreathFXFire extends BreathFX {
     // centre of rendering is now y midpt not ymin
     double z = this.prevPosZ + (this.posZ - this.prevPosZ) * partialTick - interpPosZ;
 
-    worldRenderer.setColorRGBA_F(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
-    worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
-            y - edgeUDdirectionY * scaleUD,
-            z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
-            tex.getU(0),  tex.getV(0));
-    worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
+    vertexBuffer.pos(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
+                     y - edgeUDdirectionY * scaleUD,
+                     z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
+                .tex(tex.getU(0), tex.getV(0))
+                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
+                .endVertex();
+    vertexBuffer.pos(x - edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
+                                 y + edgeUDdirectionY * scaleUD,
+                                 z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
+            .tex(tex.getU(1), tex.getV(1))
+            .endVertex();
+    vertexBuffer.pos(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
             y + edgeUDdirectionY * scaleUD,
-            z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
-            tex.getU(1),  tex.getV(1));
-    worldRenderer.addVertexWithUV(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
-            y + edgeUDdirectionY * scaleUD,
-            z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
-            tex.getU(2),  tex.getV(2));
-    worldRenderer.addVertexWithUV(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
+            z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
+            .tex(tex.getU(2),  tex.getV(2))
+            .endVertex();
+    vertexBuffer.pos(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
             y - edgeUDdirectionY * scaleUD,
-            z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
-            tex.getU(3),  tex.getV(3));
+            z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
+            .tex(tex.getU(3),  tex.getV(3))
+            .endVertex();
   }
 
   /** call once per tick to update the EntityFX size, position, collisions, etc
@@ -204,7 +207,7 @@ public class BreathFXFire extends BreathFX {
     }
 
     // smoke / steam when hitting water.  node is responsible for aging to death
-    if (handleWaterMovement()) {
+    if (isInWater()) {
       worldObj.spawnParticle(getSmokeParticleID(), posX, posY, posZ, 0, 0, 0);
     }
 
@@ -213,7 +216,7 @@ public class BreathFXFire extends BreathFX {
     prevPosX = posX;
     prevPosY = posY;
     prevPosZ = posZ;
-    entityMoveAndResizeHelper.moveAndResizeEntity(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
+    moveAndResizeParticle(motionX, motionY, motionZ, newAABBDiameter, newAABBDiameter);
 
     if (isCollided && onGround) {
         motionY -= 0.01F;         // ensure that we hit the ground next time too
@@ -221,7 +224,7 @@ public class BreathFXFire extends BreathFX {
     breathNode.updateAge(this);
     particleAge = (int)breathNode.getAgeTicks();  // not used, but good for debugging
     if (breathNode.isDead()) {
-      setDead();
+      setExpired();
     }
   }
 
@@ -241,8 +244,8 @@ public class BreathFXFire extends BreathFX {
    */
   @Override
   public void moveEntity(double dx, double dy, double dz) {
-    entityMoveAndResizeHelper.moveAndResizeEntity(dx, dy, dz, this.width, this.height);
+    moveAndResizeParticle(dx, dy, dz, this.width, this.height);
   }
 
-  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
+//  private EntityMoveAndResizeHelper entityMoveAndResizeHelper;
 }
