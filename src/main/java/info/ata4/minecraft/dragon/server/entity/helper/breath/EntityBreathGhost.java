@@ -3,9 +3,11 @@ package info.ata4.minecraft.dragon.server.entity.helper.breath;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.effect.EntityWeatherEffect;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -24,7 +26,7 @@ import java.util.Random;
 public class EntityBreathGhost extends EntityWeatherEffect
 {
 
-  public EntityBreathGhost(World worldIn, Vec3 i_startPoint, Vec3 i_endPoint, BreathNode.Power i_power)
+  public EntityBreathGhost(World worldIn, Vec3d i_startPoint, Vec3d i_endPoint, BreathNode.Power i_power)
   {
     super(worldIn);
     startPoint = i_startPoint;
@@ -40,11 +42,11 @@ public class EntityBreathGhost extends EntityWeatherEffect
     super(worldIn);
   }
 
-  public Vec3 getEndPoint()
+  public Vec3d getEndPoint()
   {
     return endPoint;
   }
-  public Vec3 getStartPoint()
+  public Vec3d getStartPoint()
   {
     return startPoint;
   }
@@ -67,8 +69,8 @@ public class EntityBreathGhost extends EntityWeatherEffect
   protected void writeEntityToNBT(NBTTagCompound tagCompound) {}
 
 
-  private Vec3 startPoint;
-  private Vec3 endPoint;
+  private Vec3d startPoint;
+  private Vec3d endPoint;
   private long randomSeed;
 
 
@@ -95,7 +97,8 @@ public class EntityBreathGhost extends EntityWeatherEffect
       if (renderStage == RenderStage.STRIKE) {
         if (this.worldObj.isRemote) {
           WorldClient worldClient = (WorldClient)this.worldObj;
-          worldClient.playSound(startPoint.xCoord, startPoint.xCoord, startPoint.xCoord, "ambient.weather.thunder",
+          worldClient.playSound(startPoint.xCoord, startPoint.xCoord, startPoint.xCoord,
+                                SoundEvents.ENTITY_LIGHTNING_THUNDER, SoundCategory.HOSTILE,
                   10000.0F, 0.8F + this.rand.nextFloat() * 0.2F, false);
           float explosionVolume = 1.0F;
           float cloudSpread = 1.0F;
@@ -105,7 +108,8 @@ public class EntityBreathGhost extends EntityWeatherEffect
             case LARGE: {explosionVolume = 200.0F; cloudSpread = 4.0F; break;}
           }
 
-          worldClient.playSound(endPoint.xCoord, endPoint.yCoord, endPoint.zCoord, "random.explode",
+          worldClient.playSound(endPoint.xCoord, endPoint.yCoord, endPoint.zCoord,
+                                SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.HOSTILE,
                   explosionVolume, 0.5F + this.rand.nextFloat() * 0.2F, false);
 
           final float CLOUD_Y_OFFSET = 0.0F;

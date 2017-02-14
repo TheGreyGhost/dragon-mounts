@@ -168,16 +168,19 @@ public class BreathFXFire extends BreathFX {
                                  y + edgeUDdirectionY * scaleUD,
                                  z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
             .tex(tex.getU(1), tex.getV(1))
+                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
             .endVertex();
     vertexBuffer.pos(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
             y + edgeUDdirectionY * scaleUD,
             z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
-            .tex(tex.getU(2),  tex.getV(2))
+            .tex(tex.getU(2), tex.getV(2))
+                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
             .endVertex();
     vertexBuffer.pos(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
             y - edgeUDdirectionY * scaleUD,
             z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
             .tex(tex.getU(3),  tex.getV(3))
+                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
             .endVertex();
   }
 

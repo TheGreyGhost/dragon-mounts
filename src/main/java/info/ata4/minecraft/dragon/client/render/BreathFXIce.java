@@ -6,6 +6,7 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
 import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
@@ -160,7 +161,7 @@ public class BreathFXIce extends BreathFX {
    *   by half the quad's height.
    * NB edgeLRdirectionY is not provided because it's always 0, i.e. the top of the viewer's screen is always directly
    *    up so moving left-right on the viewer's screen doesn't affect the y coordinate position in the world
-   * @param worldRenderer
+   * @param vertexBuffer
    * @param entity
    * @param partialTick
    * @param edgeLRdirectionX edgeLRdirection[XYZ] is the vector direction pointing left-right on the player's screen
@@ -170,7 +171,7 @@ public class BreathFXIce extends BreathFX {
    * @param edgeUDdirectionZ edgeUDdirection[XYZ] is the vector direction pointing up-down on the player's screen
    */
   @Override
-  public void func_180434_a(WorldRenderer worldRenderer, Entity entity, float partialTick,
+  public void renderParticle(VertexBuffer vertexBuffer, Entity entity, float partialTick,
                             float edgeLRdirectionX, float edgeUDdirectionY, float edgeLRdirectionZ,
                             float edgeUDdirectionX, float edgeUDdirectionZ)
   {
@@ -183,23 +184,32 @@ public class BreathFXIce extends BreathFX {
     // centre of rendering is now y midpt not ymin
     double z = this.prevPosZ + (this.posZ - this.prevPosZ) * partialTick - interpPosZ;
 
-    worldRenderer.setColorRGBA_F(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
-    worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
+    vertexBuffer.pos(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
                                   y - edgeUDdirectionY * scaleUD,
-                                  z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
-                                  textureUV.getU(0), textureUV.getV(0));
-    worldRenderer.addVertexWithUV(x - edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
+                                  z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
+                .tex(textureUV.getU(0), textureUV.getV(0))
+                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
+                .endVertex();
+    vertexBuffer.pos(x - edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
                                   y + edgeUDdirectionY * scaleUD,
-                                  z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
-                                  textureUV.getU(1), textureUV.getV(1));
-    worldRenderer.addVertexWithUV(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
+                                  z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
+            .tex(textureUV.getU(1), textureUV.getV(1))
+                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
+                .endVertex();
+
+    vertexBuffer.pos(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
                                   y + edgeUDdirectionY * scaleUD,
-                                  z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD,
-                                  textureUV.getU(2),  textureUV.getV(2));
-    worldRenderer.addVertexWithUV(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
+                                  z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
+            .tex(textureUV.getU(2), textureUV.getV(2))
+                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
+                .endVertex();
+
+    vertexBuffer.pos(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
                                   y - edgeUDdirectionY * scaleUD,
-                                  z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD,
-                                  textureUV.getU(3), textureUV.getV(3));
+                                  z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
+            .tex(textureUV.getU(3), textureUV.getV(3))
+                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
+                .endVertex();
   }
 
   /** call once per tick to update the EntityFX size, position, collisions, etc

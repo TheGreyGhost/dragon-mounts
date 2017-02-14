@@ -196,7 +196,7 @@ public class EntityBreathProjectileEnder extends EntityBreathProjectile {
         this.worldObj.playSound((EntityPlayer)null, this.posX, this.posY, this.posZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, this.getSoundCategory(), 1.0F, 1.0F);
         this.playSound(SoundEvents.ENTITY_ENDERMEN_TELEPORT, 1.0F, 1.0F);
 
-        boolean mobGriefingOK = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
+        boolean mobGriefingOK = this.worldObj.getGameRules().getBoolean("mobGriefing");
         if (mobGriefingOK && DragonMounts.instance.getConfig().isBreathAffectsBlocks()) {
 
           // delete all blocks within given radius of impact location

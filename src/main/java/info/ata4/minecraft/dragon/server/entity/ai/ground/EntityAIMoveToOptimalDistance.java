@@ -19,8 +19,8 @@ import info.ata4.minecraft.dragon.server.network.BreathWeaponTarget;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 /**Moves the dragon to the optimal distance from the breath weapon target- not too close, not too far
  * The location to move to taken from the dragon breath helper's getBreathTargetForMoving
@@ -98,7 +98,7 @@ public class EntityAIMoveToOptimalDistance extends EntityAIBase {
     }
     if (canSeeTarget) {
       ++this.canSeeTargetTickCount;
-      Vec3 dragonEyePos = dragon.getPositionVector().addVector(0, dragon.getEyeHeight(), 0);
+      Vec3d dragonEyePos = dragon.getPositionVector().addVector(0, dragon.getEyeHeight(), 0);
       currentTarget.setEntityLook(dragon.worldObj, dragon.getLookHelper(), dragonEyePos,
                                   dragon.getHeadYawSpeed(), dragon.getHeadPitchSpeed());
     } else {

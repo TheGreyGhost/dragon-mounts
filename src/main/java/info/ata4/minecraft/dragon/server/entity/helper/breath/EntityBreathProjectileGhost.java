@@ -17,8 +17,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -146,7 +149,7 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   {
     BlockPos blockPosCentre = new BlockPos(impactPoint);
     if (world.isRemote
-        || !world.getGameRules().getGameRuleBooleanValue("doFireTick")
+        || !world.getGameRules().getBoolean("doFireTick")
         || !world.isAreaLoaded(blockPosCentre, 10)
         ) {
       return;
@@ -170,9 +173,9 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
               BlockPos sideToIgnite = blockPos.offset(facing);
               IBlockState iBlockState = world.getBlockState(sideToIgnite);
               Block block = iBlockState.getBlock();
-              if (!block.isAir(world, sideToIgnite) && block.isFlammable(world, sideToIgnite, facing)) {
+              if (!block.isAir(iBlockState, world, sideToIgnite) && block.isFlammable(world, sideToIgnite, facing)) {
                 ++numberOfIgnitions;
-                world.setBlockState(blockPos, Blocks.fire.getDefaultState());
+                world.setBlockState(blockPos, Blocks.FIRE.getDefaultState());
               }
             }
           }
@@ -183,15 +186,15 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
       final float MIN_PITCH = 0.8F;
       final float MAX_PITCH = 1.2F;
       final float VOLUME = 1.0F * numberOfIgnitions;
-      world.playSoundEffect(blockPosCentre.getX() + 0.5, blockPosCentre.getY() + 0.5, blockPosCentre.getZ() + 0.5,
-              "fire.ignite", VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH));
+      world.playSound(blockPosCentre.getX() + 0.5, blockPosCentre.getY() + 0.5, blockPosCentre.getZ() + 0.5,
+                      SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.HOSTILE, VOLUME, MIN_PITCH + rand.nextFloat() * (MAX_PITCH - MIN_PITCH), false);
     }
   }
 
   private void strikeEntities(World world, Vec3d impactPoint, float effectRadius)
   {
     EntityLightningBolt entityLightningBolt = new EntityLightningBolt(world,
-            impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord);
+            impactPoint.xCoord, impactPoint.yCoord, impactPoint.zCoord, true);
     AxisAlignedBB effectAABB = new AxisAlignedBB(impactPoint.xCoord - effectRadius,
             impactPoint.yCoord - effectRadius,
             impactPoint.zCoord - effectRadius,
@@ -234,7 +237,8 @@ public class EntityBreathProjectileGhost extends EntityBreathProjectile {
   /**
    * Not relevant
    */
-  protected void onImpact(MovingObjectPosition movingObject)
+  @Override
+  protected void onImpact(RayTraceResult movingObject)
   {
   }
 

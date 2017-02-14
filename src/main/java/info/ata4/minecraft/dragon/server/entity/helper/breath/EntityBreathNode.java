@@ -65,6 +65,13 @@ class EntityBreathNode extends Entity implements IEntityParticle
     breathNode.changeBreathMode(dragonBreathMode);
   }
 
+  public void setMotion(Vec3d newMotion)
+  {
+    motionX = newMotion.xCoord;
+    motionY = newMotion.yCoord;
+    motionZ = newMotion.zCoord;
+  }
+
   @Override
   public void onUpdate() {
 

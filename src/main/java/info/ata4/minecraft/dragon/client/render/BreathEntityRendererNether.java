@@ -5,11 +5,12 @@ import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjec
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.EntityFireball;
 import net.minecraft.init.Items;
@@ -17,11 +18,12 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Created by TGG on 26/03/2016.
  */
-@SideOnly(Side.CLIENT)
+
 public class BreathEntityRendererNether extends Render<EntityBreathProjectileNether> {
   private float scale;
 
@@ -43,7 +45,7 @@ public class BreathEntityRendererNether extends Render<EntityBreathProjectileNet
     float f2 = this.scale;
     GlStateManager.scale(f2 / 1.0F, f2 / 1.0F, f2 / 1.0F);
     Tessellator tessellator = Tessellator.getInstance();
-    WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+    VertexBuffer vertexBuffer = tessellator.getBuffer();
     double uMin = 0.0F;
     double uMax = 1.0F;
     double vMin = 0.0F;
@@ -54,12 +56,11 @@ public class BreathEntityRendererNether extends Render<EntityBreathProjectileNet
     double yOffset = ySize / 2;
     GlStateManager.rotate(180.0F - this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
     GlStateManager.rotate(-this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
-    worldrenderer.startDrawingQuads();
-    worldrenderer.setNormal(0.0F, 1.0F, 0.0F);
-    worldrenderer.addVertexWithUV((0.0 - xOffset), (0.0 - yOffset), 0.0D, uMin, vMax);
-    worldrenderer.addVertexWithUV((xSize - xOffset), (0.0 - yOffset), 0.0D, uMax, vMax);
-    worldrenderer.addVertexWithUV( (xSize - xOffset),  (ySize - yOffset), 0.0D,  uMax, vMin);
-    worldrenderer.addVertexWithUV( (0.0 - xOffset),  (ySize - yOffset), 0.0D,  uMin, vMin);
+    vertexBuffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_NORMAL);
+    vertexBuffer.pos((0.0 - xOffset), (0.0 - yOffset), 0.0D).tex(uMin, vMax).normal(0.0F, 1.0F, 0.0F).endVertex();
+    vertexBuffer.pos((xSize - xOffset), (0.0 - yOffset), 0.0D).tex(uMax, vMax).normal(0.0F, 1.0F, 0.0F).endVertex();
+    vertexBuffer.pos((xSize - xOffset), (ySize - yOffset), 0.0D).tex(uMax, vMin).normal(0.0F, 1.0F, 0.0F).endVertex();
+    vertexBuffer.pos((0.0 - xOffset), (ySize - yOffset), 0.0D).tex(uMin, vMin).normal(0.0F, 1.0F, 0.0F).endVertex();
     tessellator.draw();
 
     GlStateManager.disableLighting();
@@ -68,9 +69,9 @@ public class BreathEntityRendererNether extends Render<EntityBreathProjectileNet
     TextureAtlasSprite fireLayer1 = texturemap.getAtlasSprite("minecraft:blocks/fire_layer_1");
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-    worldrenderer.startDrawingQuads();
+    vertexBuffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_NORMAL);
 
-    this.bindTexture(TextureMap.locationBlocksTexture);
+    this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
     float fireLayer0MinU = fireLayer0.getMinU();
     float fireLayer0MinV = fireLayer0.getMinV();
     float fireLayer0MaxU = fireLayer0.getMaxU();
@@ -78,10 +79,14 @@ public class BreathEntityRendererNether extends Render<EntityBreathProjectileNet
 
     final float Z_NUDGE = -0.01F;
     yOffset -= ySize / 2;  // draw flame from midpt of ball
-    worldrenderer.addVertexWithUV((0.0 - xOffset), (0.0 - yOffset), Z_NUDGE, fireLayer0MaxU, fireLayer0MaxV);
-    worldrenderer.addVertexWithUV((xSize - xOffset), (0.0 - yOffset), Z_NUDGE, fireLayer0MinU, fireLayer0MaxV);
-    worldrenderer.addVertexWithUV((xSize - xOffset), (ySize - yOffset), Z_NUDGE, fireLayer0MinU, fireLayer0MinV);
-    worldrenderer.addVertexWithUV((0.0 - xOffset),  (ySize - yOffset), Z_NUDGE, fireLayer0MaxU, fireLayer0MinV);
+    vertexBuffer.pos((0.0 - xOffset), (0.0 - yOffset), Z_NUDGE).tex(fireLayer0MaxU, fireLayer0MaxV).normal(0.0F, 1.0F,
+                                                                                                           0.0F).endVertex();
+    vertexBuffer.pos((xSize - xOffset), (0.0 - yOffset), Z_NUDGE).tex(fireLayer0MinU, fireLayer0MaxV).normal(0.0F, 1.0F,
+                                                                                                             0.0F).endVertex();
+    vertexBuffer.pos((xSize - xOffset), (ySize - yOffset), Z_NUDGE).tex(fireLayer0MinU, fireLayer0MinV).normal(0.0F,
+                                                                                                               1.0F,
+                                                                                                               0.0F).endVertex();
+    vertexBuffer.pos((0.0 - xOffset), (ySize - yOffset), Z_NUDGE).tex(fireLayer0MaxU, fireLayer0MinV).normal(0.0F, 1.0F, 0.0F).endVertex();
 
     tessellator.draw();
 

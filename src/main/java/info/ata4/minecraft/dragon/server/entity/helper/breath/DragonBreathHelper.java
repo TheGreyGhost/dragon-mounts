@@ -7,6 +7,7 @@ import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.breeds.DragonBreed;
 import info.ata4.minecraft.dragon.server.entity.helper.DragonHelper;
 import info.ata4.minecraft.dragon.server.network.BreathWeaponTarget;
+import info.ata4.minecraft.dragon.server.network.DragonOrbTargets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
@@ -435,7 +436,7 @@ public class DragonBreathHelper extends DragonHelper
   private BreathWeaponTarget getTarget()
   {
     if (dragon.isClient()) {
-      String targetString = dataWatcher.getWatchableObjectString(DATA_WATCHER_BREATH_TARGET);
+      String targetString = dataWatcher.get(DATA_BREATH_WEAPON_TARGET);
       BreathWeaponTarget target = BreathWeaponTarget.fromEncodedString(targetString);
       return target;
     } else {

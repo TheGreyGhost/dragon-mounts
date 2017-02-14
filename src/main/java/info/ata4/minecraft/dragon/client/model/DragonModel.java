@@ -114,6 +114,9 @@ public class DragonModel extends ModelBase {
         buildLegs();
     }
 
+    public void setMode(DragonModelMode mode) {
+        this.mode = mode;
+    }
 //    public ResourceLocation getEggTexture() {
 //        return eggTexture;
 //    }
