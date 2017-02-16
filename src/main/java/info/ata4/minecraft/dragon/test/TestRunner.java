@@ -8,12 +8,12 @@ import net.minecraft.block.BlockLadder;
 import net.minecraft.command.CommandClone;
 import net.minecraft.command.server.CommandTeleport;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Vector;
@@ -41,20 +41,20 @@ public class TestRunner
         EntityTameableDragon dragon = new EntityTameableDragon(worldIn);
         BreathNode.Power power = BreathNode.Power.SMALL;
         ++testCounter;
-        Vec3 origin = new Vec3(0, 24, 0);
-        Vec3 target = new Vec3(0, 4, 0);
+        Vec3d origin = new Vec3d(0, 24, 0);
+        Vec3d target = new Vec3d(0, 4, 0);
         if (testCounter == 1) {
-           origin = new Vec3(0, 24, 0);
-           target = new Vec3(0, 4, 0);
+           origin = new Vec3d(0, 24, 0);
+           target = new Vec3d(0, 4, 0);
         }
         if (testCounter == 2) {
-          origin = new Vec3(0, 24, 0);
-          target = new Vec3(0, 4, 0);
+          origin = new Vec3d(0, 24, 0);
+          target = new Vec3d(0, 4, 0);
           power = BreathNode.Power.MEDIUM;
         }
         if (testCounter == 3) {
-          origin = new Vec3(0, 24, 0);
-          target = new Vec3(0, 4, 0);
+          origin = new Vec3d(0, 24, 0);
+          target = new Vec3d(0, 4, 0);
           power = BreathNode.Power.LARGE;
           testCounter = 0;
         }
@@ -108,9 +108,9 @@ public class TestRunner
     final int SOURCE_REGION_SIZE_Z = 3;
 
     // put a stone block with attached ladder in the middle of our test region
-    worldIn.setBlockState(sourceRegionOrigin.add(1, 0, 1), Blocks.stone.getDefaultState());
+    worldIn.setBlockState(sourceRegionOrigin.add(1, 0, 1), Blocks.STONE.getDefaultState());
     worldIn.setBlockState(sourceRegionOrigin.add(2, 0, 1),
-                            Blocks.ladder.getDefaultState().withProperty(BlockLadder.FACING, EnumFacing.EAST));
+                            Blocks.LADDER.getDefaultState().withProperty(BlockLadder.FACING, EnumFacing.EAST));
 
     BlockPos testRegionOriginA = new BlockPos(5, 204, 0);
     BlockPos testRegionOriginB = new BlockPos(10, 204, 0);
@@ -128,16 +128,16 @@ public class TestRunner
 
     boolean success = true;
     // testA: replace stone with wood; ladder should remain
-    worldIn.setBlockState(testRegionOriginA.add(1, 0, 1), Blocks.log.getDefaultState());
-    success &= worldIn.getBlockState(testRegionOriginA.add(2, 0, 1)).getBlock() == Blocks.ladder;
+    worldIn.setBlockState(testRegionOriginA.add(1, 0, 1), Blocks.LOG.getDefaultState());
+    success &= worldIn.getBlockState(testRegionOriginA.add(2, 0, 1)).getBlock() == Blocks.LADDER;
 
     // testB: replace stone with glass; ladder should be destroyed
-    worldIn.setBlockState(testRegionOriginB.add(1, 0, 1), Blocks.glass.getDefaultState());
-    success &= worldIn.getBlockState(testRegionOriginB.add(2, 0, 1)).getBlock() == Blocks.air;
+    worldIn.setBlockState(testRegionOriginB.add(1, 0, 1), Blocks.GLASS.getDefaultState());
+    success &= worldIn.getBlockState(testRegionOriginB.add(2, 0, 1)).getBlock() == Blocks.AIR;
 
     // testC: replace stone with diamond block; ladder should remain
-    worldIn.setBlockState(testRegionOriginC.add(1, 0, 1), Blocks.diamond_block.getDefaultState());
-    success &= worldIn.getBlockState(testRegionOriginC.add(2, 0, 1)).getBlock() == Blocks.ladder;
+    worldIn.setBlockState(testRegionOriginC.add(1, 0, 1), Blocks.DIAMOND_BLOCK.getDefaultState());
+    success &= worldIn.getBlockState(testRegionOriginC.add(2, 0, 1)).getBlock() == Blocks.LADDER;
 
     return success;
   }
@@ -150,12 +150,17 @@ public class TestRunner
    */
   public static boolean teleportPlayerToTestRegion(EntityPlayer playerIn, BlockPos location)
   {
+    if (!(playerIn instanceof EntityPlayerMP)) {
+      throw new UnsupportedOperationException("teleport not supported on client side; server side only");
+    }
+    EntityPlayerMP entityPlayerMP = (EntityPlayerMP)playerIn;
+
     String tpArguments = "@p " + location.getX() + " " + location.getY() + " " + location.getZ();
     String[] tpArgumentsArray = tpArguments.split(" ");
 
     CommandTeleport commandTeleport = new CommandTeleport();
     try {
-      commandTeleport.execute(playerIn, tpArgumentsArray);
+      commandTeleport.execute(entityPlayerMP.mcServer, playerIn, tpArgumentsArray);
     } catch (Exception e) {
       return false;
     }
@@ -182,6 +187,12 @@ public class TestRunner
     checkArgument(zCount >= 1);
     String [] args = new String[9];
 
+    if (!(entityPlayer instanceof EntityPlayerMP)) {
+      throw new UnsupportedOperationException("teleport not supported on client side; server side only");
+    }
+    EntityPlayerMP entityPlayerMP = (EntityPlayerMP)entityPlayer;
+
+
     args[0] = String.valueOf(sourceOrigin.getX());
     args[1] = String.valueOf(sourceOrigin.getY());
     args[2] = String.valueOf(sourceOrigin.getZ());
@@ -194,7 +205,7 @@ public class TestRunner
 
     CommandClone commandClone = new CommandClone();
     try {
-      commandClone.execute(entityPlayer, args);
+      commandClone.execute(entityPlayerMP.mcServer, entityPlayer, args);
     } catch (Exception e) {
       return false;
     }

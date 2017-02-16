@@ -6,6 +6,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -25,7 +28,7 @@ public class ItemTestRunner extends Item
     final int MAX_TEST_NUMBER = 64;
     this.setMaxStackSize(MAX_TEST_NUMBER);
     if (DragonMounts.instance.getConfig().isDebug()) {
-      this.setCreativeTab(CreativeTabs.tabMisc);   // the item will appear on the Miscellaneous tab in creative
+      this.setCreativeTab(CreativeTabs.MISC);   // the item will appear on the Miscellaneous tab in creative
     } else {
       // no tab
     }
@@ -59,8 +62,9 @@ public class ItemTestRunner extends Item
   // called on the client and again on the server
   // execute your test code on the appropriate side....
   @Override
-  public ItemStack onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer playerIn) {
-    if (itemStackIn == null) return itemStackIn;  // just in case.
+  public ActionResult<ItemStack> onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer playerIn, EnumHand
+          hand) {
+    if (itemStackIn == null) return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemStackIn);  // just in case.
     int testNumber = itemStackIn.stackSize;
     TestRunner testRunner = new TestRunner();
 
@@ -69,7 +73,7 @@ public class ItemTestRunner extends Item
     } else {
       testRunner.runServerSideTest(worldIn, playerIn, testNumber);
     }
-    return itemStackIn;
+    return new ActionResult<ItemStack>(EnumActionResult.PASS, itemStackIn);
   }
 
 }

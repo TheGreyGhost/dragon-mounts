@@ -10,9 +10,9 @@
 package info.ata4.minecraft.dragon.server.entity.ai;
 
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -50,7 +50,7 @@ public class DragonFlightNode {
     int idxToFastestWay;                // Which branch leads to destination
     public double fastestSubDistance;   // Estimation of how much far the dragon should travel at minimum
 
-    DragonFlightNode(Vec3 source) {
+    DragonFlightNode(Vec3d source) {
         this.parent = null;
         this.myIdx = -1;
 
@@ -71,7 +71,7 @@ public class DragonFlightNode {
         collapseAll();
     }
 
-    DragonFlightNode(DragonFlightNode parent, int myIdx, Vec3 source) {
+    DragonFlightNode(DragonFlightNode parent, int myIdx, Vec3d source) {
         this.parent = parent;
         parent.children[myIdx] = this;
         this.myIdx = myIdx;
@@ -80,7 +80,7 @@ public class DragonFlightNode {
         this.pointY = source.yCoord;
         this.pointZ = source.zCoord;
 
-        Vec3 parentSource = new Vec3(parent.pointX, parent.pointY, parent.pointZ);
+        Vec3d parentSource = new Vec3d(parent.pointX, parent.pointY, parent.pointZ);
         this.sourceDistance = parent.sourceDistance + parentSource.distanceTo(source);
         this.targetDistance = 0;
         this.blockDistance = 999999;
@@ -143,8 +143,8 @@ public class DragonFlightNode {
     // Will be called after "orphanizeMe" to recalculate source distance over the whole subtree
     private void recalculateSourceDistance() {
         if (parent != null) {
-            Vec3 parentSource = new Vec3(parent.pointX, parent.pointY, parent.pointZ);
-            Vec3 source = new Vec3(pointX, pointY, pointZ);
+            Vec3d parentSource = new Vec3d(parent.pointX, parent.pointY, parent.pointZ);
+            Vec3d source = new Vec3d(pointX, pointY, pointZ);
             this.sourceDistance = parent.sourceDistance + parentSource.distanceTo(source);
         } else {
             this.sourceDistance = 0;
@@ -216,7 +216,7 @@ public class DragonFlightNode {
     // Collision detection like rayTrace, but tests the whole bounding box of dragon instead of a ray
     // NOTE: Doesn't work perfect. Can sometimes bring problems with landing
     //         
-    private double simulateTunnelMovement(EntityCreature creature, Vec3 target) {
+    private double simulateTunnelMovement(EntityCreature creature, Vec3d target) {
         // simulates the dragon movement inside a straight virtual tunnel as if there would be repeated "moveAndResizeEntity" calls
         // It is better than ray collision, so the dragon keeps distance to surrounding blockers.
         /////
@@ -225,8 +225,8 @@ public class DragonFlightNode {
         final double tunnelWallDistance = 1.0;    // dragon will keep a distance of a few blocks to walls when flying. 1.0 for one block
         World worldObj = creature.worldObj;
 
-        Vec3 source = new Vec3(pointX, pointY, pointZ);
-        Vec3 delta = new Vec3(target.xCoord - source.xCoord, target.yCoord - source.yCoord, target.zCoord - source.zCoord);
+        Vec3d source = new Vec3d(pointX, pointY, pointZ);
+        Vec3d delta = new Vec3d(target.xCoord - source.xCoord, target.yCoord - source.yCoord, target.zCoord - source.zCoord);
         double deltaLen = delta.lengthVector();
 
         // find largest coordinate entry
@@ -258,17 +258,17 @@ public class DragonFlightNode {
             return 99999999;
         }
 
-        Vec3 stepDelta = new Vec3(delta.xCoord * stepSize / maxCoord, delta.yCoord * stepSize / maxCoord, delta.zCoord * stepSize / maxCoord);
+        Vec3d stepDelta = new Vec3d(delta.xCoord * stepSize / maxCoord, delta.yCoord * stepSize / maxCoord, delta.zCoord * stepSize / maxCoord);
         double stepDeltaLen = stepDelta.lengthVector();
 
         // make a proxy area
         AxisAlignedBB proxyInnerBox = creature.getEntityBoundingBox().expand(0,0,0);  // equivalent substitute for copy()
-        Vec3 center = new Vec3((proxyInnerBox.minX + proxyInnerBox.maxX) / 2, (proxyInnerBox.minY + proxyInnerBox.maxY) / 2, (proxyInnerBox.minZ + proxyInnerBox.maxZ) / 2);
+        Vec3d center = new Vec3d((proxyInnerBox.minX + proxyInnerBox.maxX) / 2, (proxyInnerBox.minY + proxyInnerBox.maxY) / 2, (proxyInnerBox.minZ + proxyInnerBox.maxZ) / 2);
         proxyInnerBox.offset(pointX - center.xCoord, pointY - center.yCoord, pointZ - center.zCoord);
 
         AxisAlignedBB proxyBox = proxyInnerBox.expand(tunnelWallDistance, tunnelWallDistance, tunnelWallDistance);
-        proxyBox = proxyInnerBox.fromBounds(proxyBox.minX, proxyBox.minY - 1.5, proxyBox.minZ,
-                                            proxyBox.maxX, proxyBox.maxY + 0.5, proxyBox.maxZ);
+        proxyBox = new AxisAlignedBB(proxyBox.minX, proxyBox.minY - 1.5, proxyBox.minZ,
+                                     proxyBox.maxX, proxyBox.maxY + 0.5, proxyBox.maxZ);
 //        proxyBox.maxY += 0.5;    // ceiling problem, where the dragon would take damage
 //        proxyBox.minY -= 1.5;    // prevent early landing
 
@@ -281,7 +281,7 @@ public class DragonFlightNode {
         stepX = stepDelta.xCoord;
         stepY = stepDelta.yCoord;
         stepZ = stepDelta.zCoord;
-        collidersInside = worldObj.getCollidingBoundingBoxes(creature, proxyBox.addCoord(stepX, stepY, stepZ));
+        collidersInside = worldObj.getCollisionBoxes(creature, proxyBox.addCoord(stepX, stepY, stepZ));
 
         for (j = 0; j < collidersInside.size(); j++) {
             AxisAlignedBB other = (AxisAlignedBB) collidersInside.get(j);
@@ -320,7 +320,7 @@ public class DragonFlightNode {
                 stepX = stepDelta.xCoord;
                 stepY = stepDelta.yCoord;
                 stepZ = stepDelta.zCoord;
-                collidersInside = worldObj.getCollidingBoundingBoxes(creature, proxyBox.addCoord(stepX, stepY, stepZ));
+                collidersInside = worldObj.getCollisionBoxes(creature, proxyBox.addCoord(stepX, stepY, stepZ));
 
                 // move box and test for collisions
                 for (j = 0; j < collidersInside.size(); j++) {
@@ -343,7 +343,7 @@ public class DragonFlightNode {
 
                 // test if tunnel collided
                 if (stepX != stepDelta.xCoord || stepY != stepDelta.yCoord || stepZ != stepDelta.zCoord) {
-                    movedLen += new Vec3(stepX, stepY, stepZ).lengthVector();
+                    movedLen += new Vec3d(stepX, stepY, stepZ).lengthVector();
 
                     // for moving the inner part
                     stepX = stepDelta.xCoord - stepX;
@@ -375,7 +375,7 @@ public class DragonFlightNode {
             }
             proxyInnerBox.offset(0, 0, stepZ);
 
-            movedLen += new Vec3(stepX, stepY, stepZ).lengthVector();
+            movedLen += new Vec3d(stepX, stepY, stepZ).lengthVector();
         }
 
         // tell if could move fully
@@ -386,8 +386,8 @@ public class DragonFlightNode {
     }
 
     // Is called by explore() to check if the could be a direct way to target or not.
-    private void traceTarget(EntityCreature creature, Vec3 target) {
-        Vec3 source = new Vec3(pointX, pointY, pointZ);
+    private void traceTarget(EntityCreature creature, Vec3d target) {
+        Vec3d source = new Vec3d(pointX, pointY, pointZ);
         targetDistance = source.distanceTo(target);
 
         // make a raytrace to find if it is a direct way
@@ -398,7 +398,7 @@ public class DragonFlightNode {
     }
 
     // Searches for a good path to some given target point. CountNodes specify the amount of nodes which should be visited maximally
-    public void explore(EntityCreature creature, Vec3 target, int countNodes) {
+    public void explore(EntityCreature creature, Vec3d target, int countNodes) {
         // An iterative A* shortest path algorithm using monte carlo simulation to create
         // navigation waypoint candidates
 
@@ -426,7 +426,7 @@ public class DragonFlightNode {
                 bestNode = nextNode;
             }
 
-            Vec3 delta = new Vec3(target.xCoord - bestNode.pointX,
+            Vec3d delta = new Vec3d(target.xCoord - bestNode.pointX,
                     target.yCoord - bestNode.pointY,
                     target.zCoord - bestNode.pointZ);
             double deltaLength = delta.lengthVector();
@@ -439,7 +439,7 @@ public class DragonFlightNode {
                 DragonFlightNode subNode;
                 for (j = 0; j < NUM_CHILDREN; j++) {
                     // generate a random direction from "bestNode" with a drift away from ancestors by some chance to improve variety
-                    Vec3 direction; // = Vec3.createVector( 0, 0, 0 );
+                    Vec3d direction; // = Vec3d.createVector( 0, 0, 0 );
                     double ancDirX, ancDirY, ancDirZ;
                     double switchProb;
                     boolean isInvalid = false;
@@ -447,7 +447,7 @@ public class DragonFlightNode {
                     
                     do {
                         isInvalid = false;
-                        direction = new Vec3(2 * rand.nextDouble() - 1, 2 * rand.nextDouble() - 1, 2 * rand.nextDouble() - 1);
+                        direction = new Vec3d(2 * rand.nextDouble() - 1, 2 * rand.nextDouble() - 1, 2 * rand.nextDouble() - 1);
 
                         // drop a sample which is tracing back to ancestors area
                         ancNode = bestNode.parent;
@@ -482,7 +482,7 @@ public class DragonFlightNode {
                     subTargetDistance *= (0.5 + rand.nextDouble() * 0.5);
 
                     // Test direction for collision
-                    Vec3 subTarget = new Vec3(bestNode.pointX + direction.xCoord * subTargetDistance,
+                    Vec3d subTarget = new Vec3d(bestNode.pointX + direction.xCoord * subTargetDistance,
                             bestNode.pointY + direction.yCoord * subTargetDistance,
                             bestNode.pointZ + direction.zCoord * subTargetDistance);
                     double subBlockDistance = bestNode.simulateTunnelMovement(creature, subTarget);
@@ -491,7 +491,7 @@ public class DragonFlightNode {
                         if (subBlockDistance < MIN_SAMPLE_DISTANCE) {
                             continue;    // reject small samples. Otherwise the dragon would fly around itself. ANNNNNOYING
                         }
-                        subTarget = new Vec3(bestNode.pointX + direction.xCoord * subBlockDistance,
+                        subTarget = new Vec3d(bestNode.pointX + direction.xCoord * subBlockDistance,
                                 bestNode.pointY + direction.yCoord * subBlockDistance,
                                 bestNode.pointZ + direction.zCoord * subBlockDistance);
                     }

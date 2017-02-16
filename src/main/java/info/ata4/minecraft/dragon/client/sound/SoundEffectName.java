@@ -1,6 +1,9 @@
 package info.ata4.minecraft.dragon.client.sound;
 
 import info.ata4.minecraft.dragon.DragonMounts;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
 /**
  * User: The Grey Ghost
@@ -45,6 +48,7 @@ public enum SoundEffectName
 
 
   public final String getJsonName() {return DragonMounts.AID + ":" + jsonName;}
+  public final SoundEvent getSoundEvent() {return soundEvent;}
   public final double getDurationInSeconds() {return durationInSeconds;}
   public final int getDurationInTicks() {return (int)(durationInSeconds * 20.0);}
 
@@ -57,7 +61,15 @@ public enum SoundEffectName
   private SoundEffectName(String i_jsonName, double i_durationInSeconds) {
     jsonName = i_jsonName;
     durationInSeconds = i_durationInSeconds;
+    soundEvent = registerSound(jsonName);
   }
   private final String jsonName;
   private final double durationInSeconds;
+  private final SoundEvent soundEvent;
+
+  private static SoundEvent registerSound(String soundName) {
+    ResourceLocation soundID = new ResourceLocation(DragonMounts.AID, soundName);
+    return GameRegistry.register(new SoundEvent(soundID).setRegistryName(soundID));
+  }
+
 }

@@ -54,7 +54,7 @@ public abstract class DragonBreed {
     private final Set<Biome> biomes = new HashSet<>();
     protected final Random rand = new Random();
     
-    DragonBreed(String skin, int color) {
+    public DragonBreed(String skin, int color) {
         this.skin = skin;
         this.color = color;
         

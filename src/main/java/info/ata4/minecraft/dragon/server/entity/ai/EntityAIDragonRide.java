@@ -10,6 +10,7 @@
 package info.ata4.minecraft.dragon.server.entity.ai;
 
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
+import info.ata4.minecraft.dragon.server.network.BreathWeaponTarget;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import info.ata4.minecraft.dragon.util.reflection.PrivateAccessor;
 import net.minecraft.entity.player.EntityPlayer;
@@ -71,5 +72,15 @@ public class EntityAIDragonRide extends EntityAIDragonBase implements PrivateAcc
         }
 
         dragon.getMoveHelper().setMoveTo(x, y, z, 1);
+
+      // if we're breathing at a target, look at it
+      BreathWeaponTarget breathWeaponTarget = dragon.getBreathHelper().getPlayerSelectedTarget();  //todo is this right?
+      if (breathWeaponTarget != null) {
+        Vec3d dragonEyePos = dragon.getPositionVector().addVector(0, dragon.getEyeHeight(), 0);
+        breathWeaponTarget.setEntityLook(dragon.worldObj, dragon.getLookHelper(), dragonEyePos,
+                dragon.getHeadYawSpeed(), dragon.getHeadPitchSpeed());
+      }
+
+
     }
 }

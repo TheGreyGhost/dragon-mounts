@@ -30,7 +30,7 @@ import net.minecraft.util.DamageSource;
  */
 public class DragonBreedFire extends DragonBreed {
 
-    DragonBreedFire() {
+  public DragonBreedFire() {
         super("fire", 0x960b0f);
         
         addImmunity(DamageSource.inFire);

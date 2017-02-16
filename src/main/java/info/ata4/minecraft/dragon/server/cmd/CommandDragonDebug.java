@@ -11,10 +11,11 @@ package info.ata4.minecraft.dragon.server.cmd;
 
 import info.ata4.minecraft.dragon.client.gui.GuiDragonDebug;
 import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
-import info.ata4.minecraft.dragon.server.entity.helper.EnumDragonLifeStage;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -62,7 +63,7 @@ public class CommandDragonDebug extends CommandBaseNested implements IDragonModi
         addCommand(new CommandDragonLambda("testStages", dragon -> {
             new Thread(() -> {
                 try {
-                    for (EnumDragonLifeStage stage : EnumDragonLifeStage.values()) {
+                    for (DragonLifeStage stage : DragonLifeStage.values()) {
                         dragon.getLifeStageHelper().setLifeStage(stage);
                         Thread.sleep(1000);
                     }

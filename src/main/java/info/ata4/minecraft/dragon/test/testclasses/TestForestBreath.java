@@ -9,8 +9,8 @@ import info.ata4.minecraft.dragon.test.TestRunner;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 /**
@@ -34,17 +34,17 @@ public class TestForestBreath {
 
     // put long line of dirt blocks to support our test items
     for (int x = 0; x < SOURCE_REGION_SIZE_X; ++x) {
-      worldIn.setBlockState(sourceRegionOrigin.add(x, 0, 2), Blocks.dirt.getDefaultState());
+      worldIn.setBlockState(sourceRegionOrigin.add(x, 0, 2), Blocks.DIRT.getDefaultState());
     }
 
-    worldIn.setBlockState(sourceRegionOrigin.add(1, 1, 2), Blocks.obsidian.getDefaultState());
-    worldIn.setBlockState(sourceRegionOrigin.add(2, 1, 2), Blocks.lava.getDefaultState());
-    worldIn.setBlockState(sourceRegionOrigin.add(3, 1, 2), Blocks.obsidian.getDefaultState());
+    worldIn.setBlockState(sourceRegionOrigin.add(1, 1, 2), Blocks.OBSIDIAN.getDefaultState());
+    worldIn.setBlockState(sourceRegionOrigin.add(2, 1, 2), Blocks.LAVA.getDefaultState());
+    worldIn.setBlockState(sourceRegionOrigin.add(3, 1, 2), Blocks.OBSIDIAN.getDefaultState());
 
-    worldIn.setBlockState(sourceRegionOrigin.add(6, 1, 2), Blocks.torch.getDefaultState());
+    worldIn.setBlockState(sourceRegionOrigin.add(6, 1, 2), Blocks.TORCH.getDefaultState());
 
-    worldIn.setBlockState(sourceRegionOrigin.add(10, 0, 2), Blocks.netherrack.getDefaultState());
-    worldIn.setBlockState(sourceRegionOrigin.add(10, 1, 2), Blocks.fire.getDefaultState());
+    worldIn.setBlockState(sourceRegionOrigin.add(10, 0, 2), Blocks.NETHERRACK.getDefaultState());
+    worldIn.setBlockState(sourceRegionOrigin.add(10, 1, 2), Blocks.FIRE.getDefaultState());
 
     BlockPos testRegionOriginA = new BlockPos(0, 204, 8);
 //    BlockPos testRegionOriginB = new BlockPos(0, 204, 0);

@@ -24,7 +24,7 @@ import net.minecraft.util.DamageSource;
  */
 public class DragonBreedEnd extends DragonBreed {
 
-    DragonBreedEnd() {
+  public DragonBreedEnd() {
         super("ender", 0xab39be);
         
         addImmunity(DamageSource.magic);

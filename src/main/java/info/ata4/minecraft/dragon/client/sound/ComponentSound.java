@@ -4,7 +4,11 @@ import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.client.audio.ITickableSound;
 import net.minecraft.client.audio.PositionedSound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.Vec3d;
+
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -34,31 +38,32 @@ class ComponentSound extends PositionedSound implements ITickableSound
 {
   /**
    * Create a ComponentSound for the given sound.
-   * @param i_resourceLocation null means silence
+   * @param i_soundEvent null means silence
    * @param initialVolume
    * @param i_repeat
    * @param i_soundSettings
    * @return
    */
-  static public ComponentSound createComponentSound(ResourceLocation i_resourceLocation, float initialVolume, RepeatType i_repeat,
+  static public ComponentSound createComponentSound(@Nullable SoundEvent i_soundEvent, SoundCategory i_soundCategory,
+                                                    float initialVolume, RepeatType i_repeat,
                                      ComponentSoundSettings i_soundSettings)
   {
-    if (i_resourceLocation == null) {
+    if (i_soundEvent == null) {
       return new ComponentSoundSilent();
     }
-    return new ComponentSound(i_resourceLocation, initialVolume, i_repeat, i_soundSettings);
+    return new ComponentSound(i_soundEvent, i_soundCategory, initialVolume, i_repeat, i_soundSettings);
   }
 
   /**
    * Create a preload ComponentSound for the given sound. (reduces lag between triggering sound and it actually playing)
-   * @param i_resourceLocation null means silence
+   * @param i_soundEvent null means silence
    */
-  static public ComponentSound createComponentSoundPreload(ResourceLocation i_resourceLocation)
+  static public ComponentSound createComponentSoundPreload(@Nullable SoundEvent i_soundEvent, SoundCategory i_soundCategory)
   {
-    if (i_resourceLocation == null) {
+    if (i_soundEvent == null) {
       return new ComponentSoundSilent();
     }
-    return new ComponentSound(i_resourceLocation);
+    return new ComponentSound(i_soundEvent, i_soundCategory);
   }
 
   /**
@@ -69,40 +74,40 @@ class ComponentSound extends PositionedSound implements ITickableSound
    * @param i_soundSettings
    * @return
    */
-  static public ComponentSound createComponentSound(SoundEffectName soundEffectName, float initialVolume, RepeatType i_repeat,
+  static public ComponentSound createComponentSound(SoundEffectName soundEffectName, SoundCategory soundCategory, float initialVolume, RepeatType i_repeat,
                                                     ComponentSoundSettings i_soundSettings)
   {
     if (soundEffectName == null) {
       return new ComponentSoundSilent();
     }
-    ResourceLocation resourceLocation = new ResourceLocation(soundEffectName.getJsonName());
-    return new ComponentSound(resourceLocation, initialVolume, i_repeat, i_soundSettings);
+    SoundEvent soundEvent = soundEffectName.getSoundEvent();
+    return new ComponentSound(soundEvent, soundCategory, initialVolume, i_repeat, i_soundSettings);
   }
 
   /**
    * Create a preload ComponentSound for the given sound. (reduces lag between triggering sound and it actually playing)
    * @param soundEffectName null means silence
    */
-  static public ComponentSound createComponentSoundPreload(SoundEffectName soundEffectName)
+  static public ComponentSound createComponentSoundPreload(SoundEffectName soundEffectName, SoundCategory soundCategory)
   {
     if (soundEffectName == null) {
       return new ComponentSoundSilent();
     }
-    ResourceLocation resourceLocation = new ResourceLocation(soundEffectName.getJsonName());
-    return new ComponentSound(resourceLocation);
+    SoundEvent soundEvent = soundEffectName.getSoundEvent();
+    return new ComponentSound(soundEvent, soundCategory);
   }
 
   /**
    * Creates the sound ready for playing
-   * @param i_resourceLocation
+   * @param soundEvent
    * @param initialVolume
    * @param i_repeat
    * @param i_soundSettings
    */
-  protected ComponentSound(ResourceLocation i_resourceLocation, float initialVolume, RepeatType i_repeat,
+  protected ComponentSound(SoundEvent soundEvent, SoundCategory soundCategory,  float initialVolume, RepeatType i_repeat,
                          ComponentSoundSettings i_soundSettings)
   {
-    super(i_resourceLocation);
+    super(soundEvent, soundCategory);
     repeat = (i_repeat == RepeatType.REPEAT);
     volume = initialVolume;
     attenuationType = AttenuationType.NONE;
@@ -113,11 +118,11 @@ class ComponentSound extends PositionedSound implements ITickableSound
   /**
    * Preload for this sound (plays at very low volume).
    *
-   * @param i_resourceLocation the sound to be played
+   * @param soundEvent the sound to be played
    */
-  protected ComponentSound(ResourceLocation i_resourceLocation)
+  protected ComponentSound(SoundEvent soundEvent, SoundCategory soundCategory)
   {
-    super(i_resourceLocation);
+    super(soundEvent, soundCategory);
     repeat = false;
     final float VERY_LOW_VOLUME = 0.001F;
     volume = VERY_LOW_VOLUME;

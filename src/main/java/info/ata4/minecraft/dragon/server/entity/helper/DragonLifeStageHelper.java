@@ -318,19 +318,19 @@ public class DragonLifeStageHelper extends DragonHelper {
     }
     
     public boolean isEgg() {
-        return getLifeStage() == EGG;
+        return getLifeStage() == DragonLifeStage.EGG;
     }
     
     public boolean isHatchling() {
-        return getLifeStage() == HATCHLING;
+        return getLifeStage() == DragonLifeStage.HATCHLING;
     }
     
     public boolean isJuvenile() {
-        return getLifeStage() == JUVENILE;
+        return getLifeStage() == DragonLifeStage.JUVENILE;
     }
     
     public boolean isAdult() {
-        return getLifeStage() == ADULT;
+        return getLifeStage() == DragonLifeStage.ADULT;
     }
 
 

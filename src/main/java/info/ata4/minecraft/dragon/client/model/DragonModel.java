@@ -144,7 +144,9 @@ public class DragonModel extends ModelBase {
         animHeadAndNeck(dragon);
         animTail(dragon);
         animWings(dragon);
-        dragonAnimator.animLegs(dragon);
+
+      // animate the legs
+        animLegs(dragon);
     }
 
     protected void animHeadAndNeck(EntityTameableDragon dragon) {
@@ -209,93 +211,143 @@ public class DragonModel extends ModelBase {
         copyPositionRotationLocation(tail, dragonAnimatorCommon.getTail());
     }
 
-//    // left this in DragonModel because it isn't really needed by the server and is difficult to move.
-//    protected void animLegs(EntityTameableDragon dragon) {
-//        DragonAnimatorCommon dragonAnimatorCommon = dragon.getAnimator();
-//
-//        // dangling legs for flying
-//        float ground = dragonAnimatorCommon.getGroundTime();
-//        float speed = dragonAnimatorCommon.getSpeed();
-//        float walk = dragonAnimatorCommon.getWalkTime();
-//        float sit = dragonAnimatorCommon.getSitTime();
-//        float cycleOfs = dragonAnimatorCommon.getCycleOfs();
-//        if (ground < 1) {
-//            float footAirOfs = cycleOfs * 0.1f;
-//            float footAirX = 0.75f + cycleOfs * 0.1f;
-//
-//            xAirAll[0][0] = 1.3f + footAirOfs;
-//            xAirAll[0][1] = -(0.7f * speed + 0.1f + footAirOfs);
-//            xAirAll[0][2] = footAirX;
-//            xAirAll[0][3] = footAirX * 0.5f;
-//
-//            xAirAll[1][0] = footAirOfs + 0.6f;
-//            xAirAll[1][1] = footAirOfs + 0.8f;
-//            xAirAll[1][2] = footAirX;
-//            xAirAll[1][3] = footAirX * 0.5f;
-//        }
-//
-//    // 0 - front leg, right side
-//        // 1 - hind leg, right side
-//        // 2 - front leg, left side
-//        // 3 - hind leg, left side
-//        for (int i = 0; i < thighProxy.length; i++) {
-//            ModelPart thigh, crus, foot, toe;
-//
-//            if (i % 2 == 0) {
-//                thigh = forethigh;
-//                crus = forecrus;
-//                foot = forefoot;
-//                toe = foretoe;
-//
-//                thigh.rotationPointZ = 4;
-//            } else {
-//                thigh = hindthigh;
-//                crus = hindcrus;
-//                foot = hindfoot;
-//                toe = hindtoe;
-//
-//                thigh.rotationPointZ = 46;
-//            }
-//
-//            xAir = xAirAll[i % 2];
-//
-//            // interpolate between sitting and standing
-//            dragonAnimatorCommon.slerpArrays(xGroundStand[i % 2], xGroundSit[i % 2], xGround, sit);
-//
-//            // align the toes so they're always horizontal on the ground
-//            xGround[3] = -(xGround[0] + xGround[1] + xGround[2]);
-//
-//            // apply walking cycle
-//            if (walk > 0) {
-//                // interpolate between the keyframes, based on the cycle
-//                dragonAnimatorCommon.splineArrays(dragonAnimatorCommon.getMoveTime() * 0.2f, i > 1, xGroundWalk2,
-//                        xGroundWalk[0][i % 2], xGroundWalk[1][i % 2], xGroundWalk[2][i % 2]);
-//                // align the toes so they're always horizontal on the ground
-//                xGroundWalk2[3] -= xGroundWalk2[0] + xGroundWalk2[1] + xGroundWalk2[2];
-//
-//                dragonAnimatorCommon.slerpArrays(xGround, xGroundWalk2, xGround, walk);
-//            }
-//
-//            float yAir = yAirAll[i % 2];
-//            float yGround;
-//
-//            // interpolate between sitting and standing
-//            yGround = MathX.slerp(yGroundStand[i % 2], yGroundSit[i % 2], sit);
-//
-//            // interpolate between standing and walking
-//            yGround = MathX.slerp(yGround, yGroundWalk[i % 2], walk);
-//
-//            // interpolate between flying and grounded
-//            thigh.rotateAngleY = MathX.slerp(yAir, yGround, ground);
-//            thigh.rotateAngleX = MathX.slerp(xAir[0], xGround[0], ground);
-//            crus.rotateAngleX = MathX.slerp(xAir[1], xGround[1], ground);
-//            foot.rotateAngleX = MathX.slerp(xAir[2], xGround[2], ground);
-//            toe.rotateAngleX = MathX.slerp(xAir[3], xGround[3], ground);
-//
-//            // update proxy
-//            thighProxy[i].update();
-//        }
-//    }
+  // final X rotation angles for ground
+  private float[] xGround = {0, 0, 0, 0};
+
+  // X rotation angles for ground
+  // 1st dim - front, hind
+  // 2nd dim - thigh, crus, foot, toe
+  private float[][] xGroundStand = {
+          {0.8f, -1.5f, 1.3f, 0},
+          {-0.3f, 1.5f, -0.2f, 0},
+  };
+  private float[][] xGroundSit = {
+          {0.3f, -1.8f, 1.8f, 0},
+          {-0.8f, 1.8f, -0.9f, 0},
+  };
+
+  // X rotation angles for walking
+  // 1st dim - animation keyframe
+  // 2nd dim - front, hind
+  // 3rd dim - thigh, crus, foot, toe
+  private float[][][] xGroundWalk = {{
+          {0.4f, -1.4f, 1.3f, 0},    // move down and forward
+          {0.1f, 1.2f, -0.5f, 0}     // move back
+  }, {
+          {1.2f, -1.6f, 1.3f, 0},    // move back
+          {-0.3f, 2.1f, -0.9f, 0.6f} // move up and forward
+  }, {
+          {0.9f, -2.1f, 1.8f, 0.6f}, // move up and forward
+          {-0.7f, 1.4f, -0.2f, 0}    // move down and forward
+  }};
+
+  // final X rotation angles for walking
+  private float[] xGroundWalk2 = {0, 0, 0, 0};
+
+  // Y rotation angles for ground, thigh only
+  private float[] yGroundStand = {-0.25f, 0.25f};
+  private float[] yGroundSit = {0.1f, 0.35f};
+  private float[] yGroundWalk = {-0.1f, 0.1f};
+
+    // final X rotation angles for air
+    private float[] xAir;
+
+    // X rotation angles for air
+    // 1st dim - front, hind
+    // 2nd dim - thigh, crus, foot, toe
+    private float[][] xAirAll = {{0, 0, 0, 0}, {0, 0, 0, 0}};
+
+    // Y rotation angles for air, thigh only
+    private float[] yAirAll = {-0.1f, 0.1f};
+
+
+  // left this in DragonModel because it isn't really needed by the server and is difficult to move.
+    protected void animLegs(EntityTameableDragon dragon) {
+        DragonAnimatorCommon dragonAnimatorCommon = dragon.getAnimator();
+
+        // dangling legs for flying
+        float ground = dragonAnimatorCommon.getGroundTime();
+        float speed = dragonAnimatorCommon.getSpeed();
+        float walk = dragonAnimatorCommon.getWalkTime();
+        float sit = dragonAnimatorCommon.getSitTime();
+        float cycleOfs = dragonAnimatorCommon.getCycleOfs();
+        if (ground < 1) {
+            float footAirOfs = cycleOfs * 0.1f;
+            float footAirX = 0.75f + cycleOfs * 0.1f;
+
+            xAirAll[0][0] = 1.3f + footAirOfs;
+            xAirAll[0][1] = -(0.7f * speed + 0.1f + footAirOfs);
+            xAirAll[0][2] = footAirX;
+            xAirAll[0][3] = footAirX * 0.5f;
+
+            xAirAll[1][0] = footAirOfs + 0.6f;
+            xAirAll[1][1] = footAirOfs + 0.8f;
+            xAirAll[1][2] = footAirX;
+            xAirAll[1][3] = footAirX * 0.5f;
+        }
+
+    // 0 - front leg, right side
+        // 1 - hind leg, right side
+        // 2 - front leg, left side
+        // 3 - hind leg, left side
+        for (int i = 0; i < thighProxy.length; i++) {
+            ModelPart thigh, crus, foot, toe;
+
+            if (i % 2 == 0) {
+                thigh = forethigh;
+                crus = forecrus;
+                foot = forefoot;
+                toe = foretoe;
+
+                thigh.rotationPointZ = 4;
+            } else {
+                thigh = hindthigh;
+                crus = hindcrus;
+                foot = hindfoot;
+                toe = hindtoe;
+
+                thigh.rotationPointZ = 46;
+            }
+
+            xAir = xAirAll[i % 2];
+
+            // interpolate between sitting and standing
+            dragonAnimatorCommon.slerpArrays(xGroundStand[i % 2], xGroundSit[i % 2], xGround, sit);
+
+            // align the toes so they're always horizontal on the ground
+            xGround[3] = -(xGround[0] + xGround[1] + xGround[2]);
+
+            // apply walking cycle
+            if (walk > 0) {
+                // interpolate between the keyframes, based on the cycle
+                dragonAnimatorCommon.splineArrays(dragonAnimatorCommon.getMoveTime() * 0.2f, i > 1, xGroundWalk2,
+                        xGroundWalk[0][i % 2], xGroundWalk[1][i % 2], xGroundWalk[2][i % 2]);
+                // align the toes so they're always horizontal on the ground
+                xGroundWalk2[3] -= xGroundWalk2[0] + xGroundWalk2[1] + xGroundWalk2[2];
+
+                dragonAnimatorCommon.slerpArrays(xGround, xGroundWalk2, xGround, walk);
+            }
+
+            float yAir = yAirAll[i % 2];
+            float yGround;
+
+            // interpolate between sitting and standing
+            yGround = MathX.slerp(yGroundStand[i % 2], yGroundSit[i % 2], sit);
+
+            // interpolate between standing and walking
+            yGround = MathX.slerp(yGround, yGroundWalk[i % 2], walk);
+
+            // interpolate between flying and grounded
+            thigh.rotateAngleY = MathX.slerp(yAir, yGround, ground);
+            thigh.rotateAngleX = MathX.slerp(xAir[0], xGround[0], ground);
+            crus.rotateAngleX = MathX.slerp(xAir[1], xGround[1], ground);
+            foot.rotateAngleX = MathX.slerp(xAir[2], xGround[2], ground);
+            toe.rotateAngleX = MathX.slerp(xAir[3], xGround[3], ground);
+
+            // update proxy
+            thighProxy[i].update();
+        }
+    }
 
     protected void copyPositionRotationLocation(ModelPart modelPart,
             SegmentSizePositionRotation segmentData) {

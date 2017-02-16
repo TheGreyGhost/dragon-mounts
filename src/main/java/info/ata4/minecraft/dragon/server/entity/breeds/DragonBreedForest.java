@@ -36,8 +36,8 @@ import net.minecraft.world.World;
 public class DragonBreedForest extends DragonBreed {
 	
     private static final int GRASS_LIGHT_THRESHOLD = 4;
-    
-    DragonBreedForest() {
+
+  public DragonBreedForest() {
         super("forest", 0x2d6e00);
         
         addHabitatBlock(Blocks.LOG);

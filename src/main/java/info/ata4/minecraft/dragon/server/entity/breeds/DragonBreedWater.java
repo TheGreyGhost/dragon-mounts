@@ -28,7 +28,7 @@ import net.minecraft.util.DamageSource;
  */
 public class DragonBreedWater extends DragonBreed {
 
-    DragonBreedWater() {
+  public DragonBreedWater() {
         super("sylphid", 0x4f69a8);
         
         addImmunity(DamageSource.drown);

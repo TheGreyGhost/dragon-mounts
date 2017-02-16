@@ -30,7 +30,7 @@ public class DragonBreedAir extends DragonBreed {
     public static final UUID MODIFIER_ID = UUID.fromString("60be8770-29f2-4bbe-bb8c-7a41143c9974");
     public static final AttributeModifier MODIFIER = new AttributeModifier(MODIFIER_ID, "Air dragon speed bonus", 0.2, 2).setSaved(false);
 
-    DragonBreedAir() {
+    public DragonBreedAir() {
         super("aether", 0x1dc4f3);
         
         addImmunity(DamageSource.magic);

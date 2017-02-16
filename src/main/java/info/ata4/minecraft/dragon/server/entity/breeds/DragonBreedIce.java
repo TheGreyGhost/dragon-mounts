@@ -29,8 +29,8 @@ import net.minecraft.world.World;
  * @author Nico Bergemann <barracuda415 at yahoo.de>
  */
 public class DragonBreedIce extends DragonBreed {
-    
-    DragonBreedIce() {
+
+  public DragonBreedIce() {
         super("ice", 0x6fc3ff);
         
         addImmunity(DamageSource.magic);

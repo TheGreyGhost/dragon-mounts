@@ -5,9 +5,11 @@ import info.ata4.minecraft.dragon.client.sound.SoundController;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectile;
 import info.ata4.minecraft.dragon.client.sound.SoundEffectProjectileNether;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
-import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.util.*;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -19,7 +21,7 @@ import java.util.Random;
 public class EntityBreathProjectileNether extends EntityBreathProjectile {
 
   public EntityBreathProjectileNether(World worldIn, EntityTameableDragon shooter,
-                                      Vec3 origin, Vec3 destination, BreathNode.Power power)
+                                      Vec3d origin, Vec3d destination, BreathNode.Power power)
   {
     super(worldIn, shooter, origin, destination, power);
   }
@@ -132,7 +134,7 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
   /**
    * Called when this EntityFireball hits a block or entity.
    */
-  protected void onImpact(MovingObjectPosition movingObject)
+  protected void onImpact(RayTraceResult movingObject)
   {
     if (!this.worldObj.isRemote) {
       float explosionSize = 1.0F;
@@ -161,11 +163,11 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
       if (movingObject.entityHit != null) {
         DamageSource fireballDamage = new EntityDamageSourceIndirect("fireball", this, shootingEntity).setFireDamage().setProjectile();
         movingObject.entityHit.attackEntityFrom(fireballDamage, damageAmount);
-        this.func_174815_a(this.shootingEntity, movingObject.entityHit);
+        this.applyEnchantments(this.shootingEntity, movingObject.entityHit);
       }
 
       if (DragonMounts.instance.getConfig().isBreathAffectsBlocks()) {
-        boolean flag = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
+        boolean flag = this.worldObj.getGameRules().getBoolean("mobGriefing");
         this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, explosionSize, flag, flag);
       }
 
@@ -177,8 +179,9 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
   protected void inWaterUpdate()
   {
     Random rand = this.worldObj.rand;
-    this.worldObj.playSoundEffect(this.posX + 0.5D, this.posY + 0.5D, this.posZ + 0.5D,
-                                  "random.fizz", 0.5F, 2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F);
+    this.worldObj.playSound(this.posX + 0.5D, this.posY + 0.5D, this.posZ + 0.5D,
+            SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.HOSTILE,
+            0.5F, 2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F, false);
 
     final float SMOKE_Y_OFFSET = 1.2F;
     for (int i = 0; i < 8; ++i) {
@@ -191,7 +194,7 @@ public class EntityBreathProjectileNether extends EntityBreathProjectile {
   }
 
   public static class BreathProjectileFactoryNether implements BreathProjectileFactory {
-    public boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3 origin, Vec3 target, BreathNode.Power power)
+    public boolean spawnProjectile(World world, EntityTameableDragon dragon, Vec3d origin, Vec3d target, BreathNode.Power power)
     {
       if (coolDownTimerTicks > 0 || !mouthHasBeenClosed) return false;
 

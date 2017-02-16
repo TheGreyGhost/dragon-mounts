@@ -5,7 +5,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockCactus;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
@@ -24,8 +25,8 @@ public class CactusPlant extends Plant {
       int cactusHeight = 1 + random.nextInt(random.nextInt(3) + 1);
 
       for (int k = 0; k < cactusHeight; ++k) {
-        if (Blocks.cactus.canBlockStay(world, blockPos)) {
-          world.setBlockState(blockPos.up(k), Blocks.cactus.getDefaultState(), SET_BLOCKSTATE_FLAG);
+        if (Blocks.CACTUS.canBlockStay(world, blockPos)) {
+          world.setBlockState(blockPos.up(k), Blocks.CACTUS.getDefaultState(), SET_BLOCKSTATE_FLAG);
           success = true;
         }
       }
@@ -38,7 +39,7 @@ public class CactusPlant extends Plant {
   {
     checkArgument(growthAmount >= 0);
     IBlockState iBlockState = world.getBlockState(blockPos);
-    if (iBlockState.getBlock() != Blocks.cactus) return;
+    if (iBlockState.getBlock() != Blocks.CACTUS) return;
 
     final int MAX_CACTUS_AGE = 15;
     int currentAge = ((Integer)iBlockState.getValue(BlockCactus.AGE)).intValue();
@@ -60,7 +61,7 @@ public class CactusPlant extends Plant {
     BlockPos nextPos = startBlockPos;
     do {
       nextPos = nextPos.up();
-    } while (world.getBlockState(nextPos).getBlock() == Blocks.cactus);
+    } while (world.getBlockState(nextPos).getBlock() == Blocks.CACTUS);
     return nextPos.down();
   }
 
@@ -68,12 +69,12 @@ public class CactusPlant extends Plant {
   {
     public Plant getPlantFromBlockState(IBlockState iBlockState)
     {
-      if (iBlockState == null || iBlockState.getBlock() != Blocks.cactus) return null;
+      if (iBlockState == null || iBlockState.getBlock() != Blocks.CACTUS) return null;
       return new CactusPlant();
     }
 
     public Collection<Block> getBlocksUsedByThisPlant() {
-      return ImmutableList.of((Block) Blocks.cactus);
+      return ImmutableList.of((Block) Blocks.CACTUS);
     }
   }
 

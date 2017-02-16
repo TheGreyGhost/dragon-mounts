@@ -11,8 +11,8 @@ package info.ata4.minecraft.dragon.server.entity.ai;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Generic flight waypoint for dragons.
@@ -57,7 +57,7 @@ public class DragonFlightWaypoint {
         return new BlockPos(posX, posY, posZ);
     }
 
-    public void setVector(Vec3 vec) {
+    public void setVector(Vec3d vec) {
         posX = (int) vec.xCoord;
         posY = (int) vec.yCoord;
         posZ = (int) vec.zCoord;
@@ -69,8 +69,8 @@ public class DragonFlightWaypoint {
         posZ = (int) target.posZ;
     }
     
-    public Vec3 toVector() {
-        return new Vec3(posX, posY, posZ);
+    public Vec3d toVector() {
+        return new Vec3d(posX, posY, posZ);
     }
     
     public void writeToNBT(NBTTagCompound nbt) {

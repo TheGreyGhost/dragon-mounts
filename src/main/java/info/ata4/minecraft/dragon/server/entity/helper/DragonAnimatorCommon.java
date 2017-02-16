@@ -256,7 +256,7 @@ public class DragonAnimatorCommon extends DragonHelper {
         animHeadAndNeck();
         animTail();
         animWings();
-        animLegs();
+//        animLegs();
     }
 
     /**
