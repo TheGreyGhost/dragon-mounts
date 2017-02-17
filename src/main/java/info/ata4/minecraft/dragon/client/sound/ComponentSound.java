@@ -84,18 +84,17 @@ class ComponentSound extends PositionedSound implements ITickableSound
     return new ComponentSound(soundEvent, soundCategory, initialVolume, i_repeat, i_soundSettings);
   }
 
-  /**
-   * Create a preload ComponentSound for the given sound. (reduces lag between triggering sound and it actually playing)
-   * @param soundEffectName null means silence
-   */
-  static public ComponentSound createComponentSoundPreload(SoundEffectName soundEffectName, SoundCategory soundCategory)
-  {
-    if (soundEffectName == null) {
-      return new ComponentSoundSilent();
-    }
-    SoundEvent soundEvent = soundEffectName.getSoundEvent();
-    return new ComponentSound(soundEvent, soundCategory);
-  }
+//  /**
+//   * Create a preload ComponentSound for the given sound. (reduces lag between triggering sound and it actually playing)
+//   * @param soundEvent null means silence
+//   */
+//  static public ComponentSound createComponentSoundPreload(SoundEvent soundEvent, SoundCategory soundCategory)
+//  {
+//    if (soundEvent == null) {
+//      return new ComponentSoundSilent();
+//    }
+//    return new ComponentSound(soundEvent, soundCategory);
+//  }
 
   /**
    * Creates the sound ready for playing

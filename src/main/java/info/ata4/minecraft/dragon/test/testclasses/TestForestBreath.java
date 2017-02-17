@@ -2,7 +2,7 @@ package info.ata4.minecraft.dragon.test.testclasses;
 
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.breeds.DragonBreed;
-import info.ata4.minecraft.dragon.server.entity.helper.DragonBreedRegistry;
+import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathAffectedBlock;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
 import info.ata4.minecraft.dragon.test.TestRunner;
@@ -55,7 +55,7 @@ public class TestForestBreath {
     // copy the test blocks to the destination region
     TestRunner.copyTestRegion(playerIn, sourceRegionOrigin, testRegionOriginA,
                               SOURCE_REGION_SIZE_X, SOURCE_REGION_SIZE_Y, SOURCE_REGION_SIZE_Z);
-    DragonBreed forestDragonBreed = DragonBreedRegistry.getInstance().getBreedByName("forest");
+    DragonBreed forestDragonBreed = EnumDragonBreed.FOREST.getBreed();
 
     EntityTameableDragon dragon = new EntityTameableDragon(worldIn);
     BreathWeapon breathWeapon = forestDragonBreed.getBreathWeapon(dragon);  // just a dummy dragon

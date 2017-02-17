@@ -56,7 +56,7 @@ public class DragonEntityWatcher {
             return;
         }
 
-        ridingDragon = mc.thePlayer.ridingEntity instanceof EntityTameableDragon;
+        ridingDragon = mc.thePlayer.getRidingEntity() instanceof EntityTameableDragon;
         
         // display a key binding notice after the vanilla notice
         if (ridingDragon && !ridingDragonPrev) {

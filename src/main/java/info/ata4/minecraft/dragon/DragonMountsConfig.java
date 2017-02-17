@@ -64,7 +64,13 @@ public class DragonMountsConfig {
         syncFromFile();
     }
 
-    public void clientInit() {
+
+  public Configuration getParent() {
+    return config;
+  }
+
+
+  public void clientInit() {
         //register the save config handler to the forge mod loader event bus
         // creates an instance of the static class ConfigEventHandler and has it listen
         // on the FML bus (see Notes and ConfigEventHandler for more information)

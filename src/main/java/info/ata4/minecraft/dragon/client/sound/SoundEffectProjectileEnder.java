@@ -1,6 +1,7 @@
 package info.ata4.minecraft.dragon.client.sound;
 
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
+import net.minecraft.util.SoundEvent;
 
 /**
  * Created by TGG on 24/06/2016.

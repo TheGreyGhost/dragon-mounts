@@ -2,6 +2,7 @@ package info.ata4.minecraft.dragon.client.sound;
 
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -106,7 +107,7 @@ private final float HEAD_MIN_VOLUME = 0.02F;
           stopAllHeadSounds();
           SoundEffectName headStop = weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage);
           headStoppingSound =
-                  ComponentSound.createComponentSound(headStop,
+                  ComponentSound.createComponentSound(headStop.getSoundEvent(), SoundCategory.HOSTILE,
                                                     HEAD_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                                                     headSoundSettings);
           headStoppingSound.setPlayCountdown(headStop.getDurationInTicks());
@@ -119,11 +120,11 @@ private final float HEAD_MIN_VOLUME = 0.02F;
           SoundEffectName headLoop = weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage);
           SoundEffectName headStop = weaponHeadSound(SoundPart.STOP, weaponSoundInfo.lifeStage);
 
-          ComponentSound preloadLoop = ComponentSound.createComponentSoundPreload(headLoop);
+          ComponentSound preloadLoop = ComponentSound.createComponentSoundPreload(headLoop.getSoundEvent(), SoundCategory.HOSTILE);
           soundController.playSound(preloadLoop);
-          ComponentSound preLoadStop = ComponentSound.createComponentSoundPreload(headStop);
+          ComponentSound preLoadStop = ComponentSound.createComponentSoundPreload(headStop.getSoundEvent(), SoundCategory.HOSTILE);
           soundController.playSound(preLoadStop);
-          headStartupSound = ComponentSound.createComponentSound(headStart,
+          headStartupSound = ComponentSound.createComponentSound(headStart.getSoundEvent(), SoundCategory.HOSTILE,
                                                    HEAD_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                                                    headSoundSettings);
           headStartupSound.setPlayCountdown(headStart.getDurationInTicks());
@@ -145,7 +146,7 @@ private final float HEAD_MIN_VOLUME = 0.02F;
         if (headStartupSound != null && headStartupSound.getPlayCountdown() <= 0) {
           stopAllHeadSounds();
           SoundEffectName headLoop = weaponHeadSound(SoundPart.LOOP, weaponSoundInfo.lifeStage);
-          headLoopSound = ComponentSound.createComponentSound(headLoop,
+          headLoopSound = ComponentSound.createComponentSound(headLoop.getSoundEvent(), SoundCategory.HOSTILE,
                                                 HEAD_MIN_VOLUME, ComponentSound.RepeatType.REPEAT, headSoundSettings);
           soundController.playSound(headLoopSound);
         }

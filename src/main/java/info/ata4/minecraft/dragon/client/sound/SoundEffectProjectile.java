@@ -2,6 +2,8 @@ package info.ata4.minecraft.dragon.client.sound;
 
 import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.Vec3d;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -94,7 +96,7 @@ public abstract class SoundEffectProjectile
           float initialVolume = ComponentSound.volumeAdjustmentForDistance(soundProjectileSettings.playerDistanceToEpicentre);
 
           SoundEffectName spawnSoundEffectName = projectileSound(SoundPart.SPAWN, projectileSoundInfo.lifeStage);
-          ComponentSound spawnSoundEffect = ComponentSound.createComponentSound(spawnSoundEffectName,
+          ComponentSound spawnSoundEffect = ComponentSound.createComponentSound(spawnSoundEffectName.getSoundEvent(), SoundCategory.HOSTILE,
                   initialVolume, ComponentSound.RepeatType.NO_REPEAT, soundMouthSettings);
           soundController.playSound(spawnSoundEffect);
 
@@ -102,11 +104,11 @@ public abstract class SoundEffectProjectile
           SoundEffectName loopSoundEffectName = projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage);
           SoundEffectName stopSoundEffectName = projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage);
 
-          ComponentSound preloadLoop = ComponentSound.createComponentSoundPreload(loopSoundEffectName);
+          ComponentSound preloadLoop = ComponentSound.createComponentSoundPreload(loopSoundEffectName.getSoundEvent(), SoundCategory.HOSTILE);
           soundController.playSound(preloadLoop);
-          ComponentSound preLoadStop = ComponentSound.createComponentSoundPreload(stopSoundEffectName);
+          ComponentSound preLoadStop = ComponentSound.createComponentSoundPreload(stopSoundEffectName.getSoundEvent(), SoundCategory.HOSTILE);
           soundController.playSound(preLoadStop);
-          startupSound = ComponentSound.createComponentSound(startSoundEffectName,
+          startupSound = ComponentSound.createComponentSound(startSoundEffectName.getSoundEvent(), SoundCategory.HOSTILE,
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                                                              soundProjectileSettings);
           startupSound.setPlayCountdown(startSoundEffectName.getDurationInTicks());
@@ -117,7 +119,7 @@ public abstract class SoundEffectProjectile
         case FINISHED: {
           stopAllProjectileSounds();
           SoundEffectName stopSound = projectileSound(SoundPart.STOP, projectileSoundInfo.lifeStage);
-          stoppingSound = ComponentSound.createComponentSound(stopSound,
+          stoppingSound = ComponentSound.createComponentSound(stopSound.getSoundEvent(), SoundCategory.HOSTILE,
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.NO_REPEAT,
                                                               soundProjectileSettings);
           stoppingSound.setPlayCountdown(stopSound.getDurationInTicks());
@@ -141,8 +143,8 @@ public abstract class SoundEffectProjectile
       case IN_FLIGHT: {
         if (startupSound != null && startupSound.getPlayCountdown() <= 0) {
           stopAllProjectileSounds();
-          SoundEffectName loopSoundEffectName = projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage);
-          loopSound = ComponentSound.createComponentSound(loopSoundEffectName,
+          SoundEffectName inFlightSound = projectileSound(SoundPart.LOOP, projectileSoundInfo.lifeStage);
+          loopSound = ComponentSound.createComponentSound(inFlightSound.getSoundEvent(), SoundCategory.HOSTILE,
                   PROJECTILE_MIN_VOLUME, ComponentSound.RepeatType.REPEAT, soundProjectileSettings);
           soundController.playSound(loopSound);
         }

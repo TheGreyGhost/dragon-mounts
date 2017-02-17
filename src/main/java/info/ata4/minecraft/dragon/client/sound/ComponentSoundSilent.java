@@ -1,6 +1,8 @@
 package info.ata4.minecraft.dragon.client.sound;
 
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 
 /**
  * Created by TGG on 24/06/2016.
@@ -10,7 +12,7 @@ public class ComponentSoundSilent extends ComponentSound
 {
   public ComponentSoundSilent()
   {
-    super(SILENCE);
+    super(SILENCE, SoundCategory.HOSTILE);
     final float OFF_VOLUME = 0.0F;
     volume = OFF_VOLUME;
   }
@@ -23,5 +25,5 @@ public class ComponentSoundSilent extends ComponentSound
     setDonePlaying();
   }
 
-  static private ResourceLocation SILENCE = new ResourceLocation(SoundEffectName.SILENCE.getJsonName());
+  static private SoundEvent SILENCE = SoundEffectName.SILENCE.getSoundEvent();
 }

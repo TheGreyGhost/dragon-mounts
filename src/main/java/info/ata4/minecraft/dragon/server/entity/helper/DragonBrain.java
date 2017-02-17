@@ -19,6 +19,8 @@ import info.ata4.minecraft.dragon.server.entity.ai.targeting.EntityAIRangedBreat
 import info.ata4.minecraft.dragon.server.util.EntityClassPredicate;
 import java.util.ArrayList;
 import java.util.List;
+
+import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAIFollowParent;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
@@ -104,8 +106,13 @@ public class DragonBrain extends DragonHelper {
         tasks.addTask(1, new EntityAIDragonRide(dragon)); // mutex all
         tasks.addTask(2, new EntityAIDragonFollowOwner(dragon)); // mutex all
         tasks.addTask(3, new EntityAIMoveTowardsRestriction(dragon, 1)); // mutex 1
-        
-        if (dragon.isFlying()) {
+
+      Pair<Float, Float> ranges = dragon.getBreed().getBreathWeaponRange(dragon.getLifeStageHelper().getLifeStage());
+      float minAttackRange = ranges.getFirst();
+      float maxAttackRange = ranges.getSecond();
+
+
+      if (dragon.isFlying()) {
             tasks.addTask(3, new EntityAIDragonLand(dragon, 1)); // mutex 1
         } else {
             tasks.addTask(2, new EntityAISwimming(dragon)); // mutex 4
