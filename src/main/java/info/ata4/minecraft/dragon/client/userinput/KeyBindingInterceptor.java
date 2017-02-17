@@ -40,7 +40,7 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 public class KeyBindingInterceptor extends KeyBinding
 {
-  private static final Field keybindArrayField = ReflectionHelper.findField(KeyBinding.class, "keybindArray", "field_74516_a");
+  private static final Field keybindArrayField = ReflectionHelper.findField(KeyBinding.class, "KEYBIND_ARRAY", "field_74516_a");
   private static final Field keyCodeField = ReflectionHelper.findField(KeyBinding.class, "keyCode", "field_74512_d");
   private static final Field pressedField = ReflectionHelper.findField(KeyBinding.class, "pressed", "field_74513_e");
   private static final Field pressTimeField = ReflectionHelper.findField(KeyBinding.class, "pressTime", "field_151474_i");

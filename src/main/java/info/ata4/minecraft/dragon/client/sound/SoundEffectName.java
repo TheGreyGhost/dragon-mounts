@@ -68,7 +68,7 @@ public enum SoundEffectName
   private final SoundEvent soundEvent;
 
   private static SoundEvent registerSound(String soundName) {
-    ResourceLocation soundID = new ResourceLocation(DragonMounts.AID, soundName);
+    ResourceLocation soundID = new ResourceLocation(DragonMounts.getAID(), soundName);
     return GameRegistry.register(new SoundEvent(soundID).setRegistryName(soundID));
   }
 

@@ -38,6 +38,8 @@ public class DragonMounts {
     public static final String VERSION = "@VERSION@";
     public static final String GUIFACTORY = "info.ata4.minecraft.dragon.client.gui.ConfigGuiFactory";
 
+    public static String getAID() {return "dragonmounts";}  // todo test if this solves a static initialisation order problem
+
     @SidedProxy(
         serverSide = "info.ata4.minecraft.dragon.server.CommonProxy",
         clientSide = "info.ata4.minecraft.dragon.client.ClientProxy"
