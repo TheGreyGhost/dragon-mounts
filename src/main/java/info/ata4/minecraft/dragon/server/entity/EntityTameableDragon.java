@@ -142,8 +142,13 @@ public class EntityTameableDragon extends EntityTameable {
         } else {
             addHelper(new DragonBrain(this));
         }
-        
-        moveHelper = new DragonMoveHelper(this);
+
+    if (DragonMounts.instance.getConfig().isDebug()) {
+      addHelper(new DragonDebug(this));
+    }
+
+    animator = new DragonAnimatorCommon(this);
+    moveHelper = new DragonMoveHelper(this);
         aiSit = new EntityAISit(this);
         
         // init helpers
@@ -165,14 +170,8 @@ public class EntityTameableDragon extends EntityTameable {
 //        addHelper(new DragonBreedHelper(this, INDEX_BREED));
 //        addHelper(new DragonLifeStageHelper(this, INDEX_TICKS_SINCE_CREATION));
 //        addHelper(new DragonReproductionHelper(this, INDEX_BREEDER, INDEX_REPRO_COUNT));
-        addHelper(new DragonParticleHelper(this));
+//        addHelper(new DragonParticleHelper(this));
 
-        if (DragonMounts.instance.getConfig().isDebug()) {
-            addHelper(new DragonDebug(this));
-        }
-
-        animator = new DragonAnimatorCommon(this);
-        
         dataManager.register(DATA_FLYING, false);
         dataManager.register(DATA_SADDLED, false);
     }

@@ -74,15 +74,16 @@ public class ClientProxy extends CommonProxy {
       RenderingRegistry.registerEntityRenderingHandler(EntityBreathProjectileGhost.class,         // dummy - renders blank
               NullEntityRenderer::new);
 
+      ModelResourceLocation itemModelResourceLocation =
+              new ModelResourceLocation("dragonmounts:dragonorb", "inventory");
+      ModelLoader.setCustomModelResourceLocation(itemDragonOrb, DEFAULT_ITEM_SUBTYPE, itemModelResourceLocation);
+
       StartupClientOnly.preInitClientOnly();
     }
 
     @Override
     public void onInit(FMLInitializationEvent evt) {
       super.onInit(evt);
-      ModelResourceLocation itemModelResourceLocation =
-              new ModelResourceLocation("dragonmounts:dragonorb", "inventory");
-      ModelLoader.setCustomModelResourceLocation(itemDragonOrb, DEFAULT_ITEM_SUBTYPE, itemModelResourceLocation);
 
       StartupClientOnly.initClientOnly();
     }

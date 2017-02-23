@@ -28,7 +28,7 @@ import net.minecraftforge.fml.common.event.*;
     name = DragonMounts.NAME,
     version = DragonMounts.VERSION,
     useMetadata = true,
-    guiFactory = "info.ata4.minecraft.dragon.DragonMountsConfigGuiFactory"
+    guiFactory = "info.ata4.minecraft.dragon.client.gui.ConfigGuiFactory"
 )
 public class DragonMounts {
     

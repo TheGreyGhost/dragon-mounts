@@ -32,6 +32,28 @@ but not all the classes implement this fully yet (for example, BreathAffectedAre
 Pretty much all the other changes to the code are related to making sure the breath weapon nodes spawn from the dragon's mouth - which is affected by yaw and pitch and size etc - so I moved the positioning code into a common class for both server and client. That was pretty fiddly to get right.
 
 bugs:
+particles don't draw correctly
+R or F while riding crashes
+debug doesn't show AI tasks
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 OK dragon breed command doesn't alter the breath weapon
 
 Still to do:
