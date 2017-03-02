@@ -3,7 +3,7 @@ package info.ata4.minecraft.dragon.client.render;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeAir;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
-import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
+import info.ata4.minecraft.dragon.test.testclasses.DebugBreathFXSettings;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.VertexBuffer;
@@ -15,6 +15,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -46,12 +48,14 @@ public class BreathFXAir extends BreathFX {
    * @param power the power of the ball
    * @param partialTicksHeadStart if spawning multiple EntityFX per tick, use this parameter to spread the starting
    *                              location in the direction
+   * @param debugBreathFXSettings  used to control the BreathFX, for debugging purposes
    * @return the new BreathFXAir
    */
   public static BreathFXAir createBreathFXAir(World world, double x, double y, double z,
                                               double directionX, double directionY, double directionZ,
                                               BreathNode.Power power,
-                                              int tickCount, float partialTicksHeadStart)
+                                              int tickCount, float partialTicksHeadStart,
+                                              Optional<DebugBreathFXSettings> debugBreathFXSettings)
   {
     Vec3d direction = new Vec3d(directionX, directionY, directionZ).normalize();
 
@@ -68,13 +72,14 @@ public class BreathFXAir extends BreathFX {
     double tickCountInFlight = partialTicksHeadStart / 20.0;
 
     BreathFXAir breathFXAir = new BreathFXAir(world, x, y, z, actualMotion, breathNode,
-                                                    spawnTickCount, tickCountInFlight);
+                                                    spawnTickCount, tickCountInFlight, debugBreathFXSettings);
     return breathFXAir;
   }
 
   private BreathFXAir(World world, double x, double y, double z, Vec3d motion,
-                      BreathNode i_breathNode, double i_spawnTimeTicks, double timeInFlightTicks) {
-    super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
+                      BreathNode i_breathNode, double i_spawnTimeTicks, double timeInFlightTicks,
+                      Optional<DebugBreathFXSettings> debugBreathFXSettings) {
+    super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord, debugBreathFXSettings);
 
     breathNode = i_breathNode;
     particleGravity = Blocks.ICE.blockParticleGravity;  /// arbitrary block!  maybe not even required.
@@ -85,6 +90,10 @@ public class BreathFXAir extends BreathFX {
     motionX = motion.xCoord;
     motionY = motion.yCoord;
     motionZ = motion.zCoord;
+
+    if (debugBreathFXSettings.isPresent() && debugBreathFXSettings.get().freezeMotion) {
+      motionX = 0; motionY = 0; motionZ = 0;
+    }
 
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(
@@ -98,6 +107,10 @@ public class BreathFXAir extends BreathFX {
     final float MAX_ROTATION_SPEED = 6.0F; // revolutions per second
     rotationSpeedQuadrantsPerTick = MIN_ROTATION_SPEED + rand.nextFloat() * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
     rotationSpeedQuadrantsPerTick *= 4.0 / 20.0F; // convert to quadrants per tick
+
+    if (debugBreathFXSettings.isPresent() && debugBreathFXSettings.get().freezeAnimation) {
+      rotationSpeedQuadrantsPerTick = 0;
+    }
 
     spawnTimeTicks = i_spawnTimeTicks;
     ticksSinceSpawn = timeInFlightTicks;
@@ -323,9 +336,15 @@ public class BreathFXAir extends BreathFX {
     if (isCollided && onGround) {
         motionY -= 0.01F;         // ensure that we hit the ground next time too
     }
-    breathNode.updateAge(this);
+    if (debugBreathFXSettings.isPresent() && debugBreathFXSettings.get().freezeAging) {
+    } else {
+      breathNode.updateAge(this);
+    }
     particleAge = (int)breathNode.getAgeTicks();  // not used, but good for debugging
     if (breathNode.isDead()) {
+      setExpired();
+    }
+    if (debugBreathFXSettings.isPresent() && !debugBreathFXSettings.get().stillAlive) {
       setExpired();
     }
   }
