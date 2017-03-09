@@ -40,20 +40,6 @@ debug doesn't show AI tasks
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 OK dragon breed command doesn't alter the breath weapon
 
 Still to do:

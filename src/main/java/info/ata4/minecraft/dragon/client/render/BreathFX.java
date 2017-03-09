@@ -3,6 +3,7 @@ package info.ata4.minecraft.dragon.client.render;
 import info.ata4.minecraft.dragon.client.render.breeds.IEntityParticle;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
+import info.ata4.minecraft.dragon.test.testclasses.DebugBreathFXSettings;
 import info.ata4.minecraft.dragon.util.Pair;
 import info.ata4.minecraft.dragon.util.math.MathX;
 import net.minecraft.block.material.Material;
@@ -15,14 +16,16 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /** EntityFX used to refer to all BreathFX types
  * Created by TGG on 6/03/2016.
  */
 public class BreathFX extends Particle implements IEntityParticle {
   public BreathFX(World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
-                  double zSpeedIn) {
+                  double zSpeedIn, Optional<DebugBreathFXSettings> i_debugBreathFXSettings) {
     super(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+    debugBreathFXSettings = i_debugBreathFXSettings;
   }
 
   public void updateBreathMode(DragonBreathMode dragonBreathMode)
@@ -31,6 +34,7 @@ public class BreathFX extends Particle implements IEntityParticle {
   }
 
   protected BreathNode breathNode;
+  protected Optional<DebugBreathFXSettings> debugBreathFXSettings; // if present, used for debugging purposes
 
   /** This used to be in EntityMoveAndResizeHelper, had to move it out because Particles aren't Entities any more, and
    *   because all the particle sizes etc are now protected fields

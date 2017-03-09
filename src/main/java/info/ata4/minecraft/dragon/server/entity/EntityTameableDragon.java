@@ -135,8 +135,10 @@ public class EntityTameableDragon extends EntityTameable {
         addHelper(new DragonReproductionHelper(this, DATA_BREEDER, DATA_REPRO_COUNT));
         addHelper(new DragonSoundManager(this));
         addHelper(new DragonInteractHelper(this));
-        
-        if (isClient()) {
+
+        addHelper(new DragonBreathHelper(this, DATA_BREATH_WEAPON_TARGET, DATA_BREATH_WEAPON_MODE));
+
+    if (isClient()) {
             addHelper(new DragonParticleHelper(this));
 //            addHelper(new DragonAnimator(this));
         } else {
@@ -148,6 +150,7 @@ public class EntityTameableDragon extends EntityTameable {
     }
 
     animator = new DragonAnimatorCommon(this);
+    addHelper(animator);
     moveHelper = new DragonMoveHelper(this);
         aiSit = new EntityAISit(this);
         
@@ -739,13 +742,10 @@ public class EntityTameableDragon extends EntityTameable {
             throw new IllegalStateException("Asked for DragonBreathHelper but dragon is still egg stage");
         }
 
-        DragonBreathHelper dragonHelper = getHelper(DragonBreathHelper.class);
-        if (dragonHelper == null) { // lazy initialisation
-            dragonHelper = new DragonBreathHelper(this, DATA_BREATH_WEAPON_TARGET, DATA_BREATH_WEAPON_MODE);
-            addHelper(dragonHelper);
-        }
+        // removed lazy initialisation because it causes a concurrent modification exception (adding a new helper while
+        // foreach(onLivingUpdate)
 
-        return dragonHelper;
+        return getHelper(DragonBreathHelper.class);
     }
 
 //    public DragonAnimator getAnimator() {  //todo I commented this out - was it the correct one?

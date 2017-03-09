@@ -29,7 +29,7 @@ public class BreathWeaponFXEmitterForest extends BreathWeaponFXEmitter
                                                                         power,
                                                                         dragonBreathMode,
                                                                         tickCount,
-                                                                        partialTickHeadStart);
+                                                                        partialTickHeadStart, debugBreathFXSettings);
     return breathFXForest;
   }
 

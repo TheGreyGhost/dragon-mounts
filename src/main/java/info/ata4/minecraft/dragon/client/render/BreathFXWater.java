@@ -3,7 +3,7 @@ package info.ata4.minecraft.dragon.client.render;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNodeWater;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
-import info.ata4.minecraft.dragon.util.EntityMoveAndResizeHelper;
+import info.ata4.minecraft.dragon.test.testclasses.DebugBreathFXSettings;
 import info.ata4.minecraft.dragon.util.math.RotatingQuad;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.VertexBuffer;
@@ -16,6 +16,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -62,7 +64,8 @@ public class BreathFXWater extends BreathFX {
   public static BreathFXWater createBreathFXWater(World world, double x, double y, double z,
                                                 double directionX, double directionY, double directionZ,
                                                 BreathNode.Power power,
-                                                int tickCount, float partialTicksHeadStart)
+                                                int tickCount, float partialTicksHeadStart,
+                                                  Optional<DebugBreathFXSettings> debugBreathFXSettings)
   {
     Vec3d direction = new Vec3d(directionX, directionY, directionZ).normalize();
 
@@ -79,13 +82,14 @@ public class BreathFXWater extends BreathFX {
     double tickCountInFlight = partialTicksHeadStart / 20.0;
 
     BreathFXWater breathFXWater = new BreathFXWater(world, x, y, z, actualMotion, breathNode,
-                                                    spawnTickCount, tickCountInFlight);
+                                                    spawnTickCount, tickCountInFlight, debugBreathFXSettings);
     return breathFXWater;
   }
 
   private BreathFXWater(World world, double x, double y, double z, Vec3d motion,
-                        BreathNode i_breathNode, double i_spawnTimeTicks, double timeInFlightTicks) {
-    super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
+                        BreathNode i_breathNode, double i_spawnTimeTicks, double timeInFlightTicks,
+                        Optional<DebugBreathFXSettings> debugBreathFXSettings) {
+    super(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord, debugBreathFXSettings);
 
     breathNode = i_breathNode;
     particleGravity = Blocks.ICE.blockParticleGravity;  /// arbitrary block!  maybe not even required.
@@ -96,6 +100,9 @@ public class BreathFXWater extends BreathFX {
     motionX = motion.xCoord;
     motionY = motion.yCoord;
     motionZ = motion.zCoord;
+    if (debugBreathFXSettings.isPresent() && debugBreathFXSettings.get().freezeMotion) {
+      motionX = 0; motionY = 0; motionZ = 0;
+    }
 
     // set the texture to the flame texture, which we have previously added using TextureStitchEvent
     TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(waterSquirtCloudRL.toString());
@@ -241,30 +248,40 @@ public class BreathFXWater extends BreathFX {
     y += wiggle;
     z += wiggle;
 
+    // "lightmap" changes the brightness of the particle depending on the local illumination (block light, sky light)
+    //  in this example, it's held constant, but we still need to add it to each vertex anyway.
+    int combinedBrightness = this.getBrightnessForRender(partialTick);
+    int skyLightTimes16 = combinedBrightness >> 16 & 65535;
+    int blockLightTimes16 = combinedBrightness & 65535;
+
     float alphaValue = this.particleAlpha;
     vertexBuffer.pos(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
                                   y - edgeUDdirectionY * scaleUD,
                                   z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
                                   .tex(textureUV.getU(0), textureUV.getV(0))
             .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+            .lightmap(skyLightTimes16, blockLightTimes16)
             .endVertex();
     vertexBuffer.pos(x - edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
                      y + edgeUDdirectionY * scaleUD,
                      z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
                 .tex(textureUV.getU(1), textureUV.getV(1))
-                .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+            .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+            .lightmap(skyLightTimes16, blockLightTimes16)
                 .endVertex();
     vertexBuffer.pos(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
                      y + edgeUDdirectionY * scaleUD,
                      z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
                 .tex(textureUV.getU(2), textureUV.getV(2))
-                .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+            .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+            .lightmap(skyLightTimes16, blockLightTimes16)
                 .endVertex();
     vertexBuffer.pos(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
                      y - edgeUDdirectionY * scaleUD,
                      z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
                 .tex(textureUV.getU(3), textureUV.getV(3))
-                .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+            .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+            .lightmap(skyLightTimes16, blockLightTimes16)
                 .endVertex();
   }
 

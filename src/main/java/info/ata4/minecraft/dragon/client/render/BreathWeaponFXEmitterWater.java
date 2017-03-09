@@ -29,7 +29,7 @@ public class BreathWeaponFXEmitterWater extends BreathWeaponFXEmitter
             spawnDirection.xCoord, spawnDirection.yCoord, spawnDirection.zCoord,
             power,
             tickCount,
-            partialTickHeadStart);
+            partialTickHeadStart, debugBreathFXSettings);
     return breathFXWater;
   }
 

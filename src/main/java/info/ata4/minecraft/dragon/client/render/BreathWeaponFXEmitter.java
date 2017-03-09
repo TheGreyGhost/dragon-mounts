@@ -3,16 +3,14 @@ package info.ata4.minecraft.dragon.client.render;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.DragonBreathMode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.NodeLineSegment;
+import info.ata4.minecraft.dragon.test.testclasses.DebugBreathFXSettings;
 import info.ata4.minecraft.dragon.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by TGG on 21/06/2015.
@@ -31,6 +29,13 @@ public abstract class BreathWeaponFXEmitter
   protected Vec3d previousOrigin;
   protected Vec3d previousDirection;
   protected int previousTickCount;
+
+  protected Optional<DebugBreathFXSettings> debugBreathFXSettings = Optional.empty(); // if present, used to control any spawned particles
+
+  public void setDebugMode(Optional<DebugBreathFXSettings> i_debugBreathFXSettings)
+  {
+    debugBreathFXSettings = i_debugBreathFXSettings;
+  }
 
   /**
    * Set the current beam origin and target destination (used to calculate direction).
@@ -72,6 +77,10 @@ public abstract class BreathWeaponFXEmitter
    */
   protected void spawnMultipleWithSmoothedDirection(World world, BreathNode.Power power, int particlesPerTick, int tickCount)
   {
+    if (debugBreathFXSettings.isPresent() && debugBreathFXSettings.get().spawnSingleOnly) {
+      particlesPerTick = 1;
+    }
+
     // create a list of NodeLineSegments from the motion path of the BreathNodes
     Iterator<BreathFX> it = spawnedBreathFX.iterator();
     boolean foundLive = false;

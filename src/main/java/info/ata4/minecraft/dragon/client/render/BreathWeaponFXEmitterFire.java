@@ -23,7 +23,7 @@ public class BreathWeaponFXEmitterFire extends BreathWeaponFXEmitter
             spawnOrigin.xCoord, spawnOrigin.yCoord, spawnOrigin.zCoord,
             spawnDirection.xCoord, spawnDirection.yCoord, spawnDirection.zCoord,
             power,
-            partialTickHeadStart);
+            partialTickHeadStart, debugBreathFXSettings);
     return breathFXFire;
   }
 

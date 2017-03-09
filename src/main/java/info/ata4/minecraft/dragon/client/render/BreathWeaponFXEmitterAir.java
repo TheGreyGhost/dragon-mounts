@@ -25,7 +25,7 @@ public class BreathWeaponFXEmitterAir extends BreathWeaponFXEmitter
                                                             spawnDirection.zCoord,
                                                             power,
                                                             tickCount,
-                                                            partialTickHeadStart);
+                                                            partialTickHeadStart, debugBreathFXSettings);
     return breathFXAir;
   }
 

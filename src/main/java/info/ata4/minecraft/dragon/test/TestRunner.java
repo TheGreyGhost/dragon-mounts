@@ -1,8 +1,10 @@
 package info.ata4.minecraft.dragon.test;
 
+import info.ata4.minecraft.dragon.client.render.BreathWeaponFXEmitterAir;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathNode;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.EntityBreathProjectileGhost;
+import info.ata4.minecraft.dragon.test.testclasses.DebugBreathFXSettings;
 import info.ata4.minecraft.dragon.test.testclasses.TestForestBreath;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.command.CommandClone;
@@ -16,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import java.util.Optional;
 import java.util.Vector;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -37,7 +40,7 @@ public class TestRunner
         testForestBreath.test1(worldIn, playerIn);
         break;
       }
-      case 2: {
+      case 2: { // test lightning breath
         EntityTameableDragon dragon = new EntityTameableDragon(worldIn);
         BreathNode.Power power = BreathNode.Power.SMALL;
         ++testCounter;
@@ -64,6 +67,7 @@ public class TestRunner
 
         break;
       }
+
       default: {
         System.out.println("Test Number " + testNumber + " does not exist on server side.");
         return false;
@@ -83,6 +87,24 @@ public class TestRunner
     switch (testNumber) {
       case -1: {  // dummy (do nothing) - can never be called, just to prevent unreachable code compiler error
         break;
+      }
+      case 3: { // test various breath particles
+        DebugBreathFXSettings debugSettings = new DebugBreathFXSettings();
+        debugSettings.freezeMotion  = true;
+        debugSettings.freezeAnimation = true;
+        debugSettings.spawnSingleOnly = true;
+        debugSettings.freezeAging = true;
+        BreathWeaponFXEmitterAir bwAir = new BreathWeaponFXEmitterAir();
+        bwAir.setDebugMode(Optional.of(debugSettings));
+        Vec3d startpoint = playerIn.getPositionVector().addVector(2.0, 0.0, 0.0);
+        Vec3d endpoint = playerIn.getPositionVector().addVector(6.0, 0.0, 0.0);
+        bwAir.setBeamEndpoints(startpoint, endpoint);
+        bwAir.spawnBreathParticles(worldIn, BreathNode.Power.LARGE, 1);
+
+        System.out.println("breath particles spawned");
+
+        break;
+
       }
       default: {
         System.out.println("Test Number " + testNumber + " does not exist on client side.");

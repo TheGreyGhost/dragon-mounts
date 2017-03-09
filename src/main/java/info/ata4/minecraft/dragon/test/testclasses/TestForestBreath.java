@@ -3,6 +3,7 @@ package info.ata4.minecraft.dragon.test.testclasses;
 import info.ata4.minecraft.dragon.server.entity.EntityTameableDragon;
 import info.ata4.minecraft.dragon.server.entity.breeds.DragonBreed;
 import info.ata4.minecraft.dragon.server.entity.breeds.EnumDragonBreed;
+import info.ata4.minecraft.dragon.server.entity.helper.DragonLifeStage;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathAffectedBlock;
 import info.ata4.minecraft.dragon.server.entity.helper.breath.BreathWeapon;
 import info.ata4.minecraft.dragon.test.TestRunner;
@@ -18,13 +19,8 @@ import net.minecraft.world.World;
  * Created by TGG on 24/01/2016.
  */
 public class TestForestBreath {
-
-  // dummy test: check the correct functioning of the ladder - to see which blocks it can stay attached to
-  // The test region contains a ladder attached to a stone block.  We then replace it with different blocks and see
-  //   whether the ladder remains or breaks appropriately; eg
   // testA - test various ignition sources for generating an explosion when breathed upon
-  // testB - replace with a glass block
-  // testC - replace with diamond block
+
   public boolean test1(World worldIn, EntityPlayer playerIn)
   {
     BlockPos sourceRegionOrigin = new BlockPos(0, 204, 0);
@@ -58,6 +54,7 @@ public class TestForestBreath {
     DragonBreed forestDragonBreed = EnumDragonBreed.FOREST.getBreed();
 
     EntityTameableDragon dragon = new EntityTameableDragon(worldIn);
+    dragon.getLifeStageHelper().setLifeStage(DragonLifeStage.ADULT);
     BreathWeapon breathWeapon = forestDragonBreed.getBreathWeapon(dragon);  // just a dummy dragon
 
     BreathAffectedBlock bab = new BreathAffectedBlock();

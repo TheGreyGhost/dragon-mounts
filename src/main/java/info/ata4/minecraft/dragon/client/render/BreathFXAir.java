@@ -244,12 +244,19 @@ public class BreathFXAir extends BreathFX {
 //    y += wiggle;
 //    z += wiggle;
 
+    // "lightmap" changes the brightness of the particle depending on the local illumination (block light, sky light)
+    //  in this example, it's held constant, but we still need to add it to each vertex anyway.
+    int combinedBrightness = this.getBrightnessForRender(partialTick);
+    int skyLightTimes16 = combinedBrightness >> 16 & 65535;
+    int blockLightTimes16 = combinedBrightness & 65535;
+
     float alphaValue = this.particleAlpha;
     vertexBuffer.pos(x - edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
                      y - edgeUDdirectionY * scaleUD,
                      z - edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
                 .tex(textureUV.getU(0), textureUV.getV(0))
                 .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+                .lightmap(skyLightTimes16, blockLightTimes16)
                 .endVertex();
 
     vertexBuffer.pos(x - edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
@@ -257,18 +264,21 @@ public class BreathFXAir extends BreathFX {
                      z - edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
                 .tex(textureUV.getU(1), textureUV.getV(1))
                 .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+                .lightmap(skyLightTimes16, blockLightTimes16)
                 .endVertex();
     vertexBuffer.pos(x + edgeLRdirectionX * scaleLR + edgeUDdirectionX * scaleUD,
                      y + edgeUDdirectionY * scaleUD,
                      z + edgeLRdirectionZ * scaleLR + edgeUDdirectionZ * scaleUD)
                 .tex(textureUV.getU(2), textureUV.getV(2))
                 .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+                .lightmap(skyLightTimes16, blockLightTimes16)
                 .endVertex();
     vertexBuffer.pos(x + edgeLRdirectionX * scaleLR - edgeUDdirectionX * scaleUD,
                      y - edgeUDdirectionY * scaleUD,
                      z + edgeLRdirectionZ * scaleLR - edgeUDdirectionZ * scaleUD)
                 .tex(textureUV.getU(3), textureUV.getV(3))
                 .color(this.particleRed, this.particleGreen, this.particleBlue, alphaValue)
+                .lightmap(skyLightTimes16, blockLightTimes16)
                 .endVertex();
   }
 

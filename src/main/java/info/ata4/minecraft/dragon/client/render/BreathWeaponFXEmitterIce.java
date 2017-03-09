@@ -23,7 +23,7 @@ public class BreathWeaponFXEmitterIce extends BreathWeaponFXEmitter
             spawnOrigin.xCoord, spawnOrigin.yCoord, spawnOrigin.zCoord,
             spawnDirection.xCoord, spawnDirection.yCoord, spawnDirection.zCoord,
             power,
-            tickCount, partialTickHeadStart);
+            tickCount, partialTickHeadStart, debugBreathFXSettings);
     return breathFXIce;
   }
 
