@@ -262,6 +262,7 @@ public class DragonAnimatorCommon extends DragonHelper {
     /**
      * Updates the animation state. Called on every tick.
      */
+    @Override
     public void onLivingUpdate() {
         if (DebugFreezeAnimator.isFrozen()) {
             return;
@@ -341,7 +342,7 @@ public class DragonAnimatorCommon extends DragonHelper {
                     final int JAW_OPENING_TIME_FOR_ATTACK = 5;
                     boolean jawFlag = (ticksSinceLastAttack >= 0 && ticksSinceLastAttack < JAW_OPENING_TIME_FOR_ATTACK);
                     biteTimer.add(jawFlag ? 0.2f : -0.2f);
-                    breathTimer.set(0.0F);
+                    breathTimer.set(0.0F);  
                     break;
                 }
                 case STARTING: {
