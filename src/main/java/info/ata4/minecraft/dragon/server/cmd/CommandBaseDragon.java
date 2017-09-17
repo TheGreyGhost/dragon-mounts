@@ -24,7 +24,7 @@ public abstract class CommandBaseDragon extends CommandBase implements IDragonMo
     }
     
     @Override
-    public String getName() {
+    public String getCommandName() {
         return name;
     }
 }

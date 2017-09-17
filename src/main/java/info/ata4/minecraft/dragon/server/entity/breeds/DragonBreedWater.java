@@ -23,7 +23,7 @@ public class DragonBreedWater extends DragonBreed {
     DragonBreedWater() {
         super("sylphid", 0x4f69a8);
         
-        addImmunity(DamageSource.DROWN);
+        addImmunity(DamageSource.drown);
         
         addHabitatBlock(Blocks.WATER);
         addHabitatBlock(Blocks.FLOWING_WATER);

@@ -44,14 +44,14 @@ public abstract class DragonBreed {
         this.color = color;
         
         // ignore suffocation damage
-        addImmunity(DamageSource.DROWN);
-        addImmunity(DamageSource.IN_WALL);
+        addImmunity(DamageSource.drown);
+        addImmunity(DamageSource.inWall);
         
         // assume that cactus needles don't do much damage to animals with horned scales
-        addImmunity(DamageSource.CACTUS);
+        addImmunity(DamageSource.cactus);
         
         // ignore damage from vanilla ender dragon
-        addImmunity(DamageSource.DRAGON_BREATH);
+        addImmunity(DamageSource.dragonBreath);
     }
 
     public String getSkin() {
@@ -140,7 +140,7 @@ public abstract class DragonBreed {
         }
         
         // footprint loop, from EntitySnowman.onLivingUpdate with slight tweaks
-        World world = dragon.world;
+        World world = dragon.worldObj;
         for (int i = 0; i < 4; i++) {
             // place only if randomly selected
             if (world.rand.nextFloat() > footprintChance) {

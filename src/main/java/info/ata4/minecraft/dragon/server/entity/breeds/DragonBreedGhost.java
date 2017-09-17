@@ -31,7 +31,7 @@ public class DragonBreedGhost extends DragonBreed {
     DragonBreedGhost() {
         super("undead", 0xbebebe);
         
-        addImmunity(DamageSource.WITHER);
+        addImmunity(DamageSource.wither);
         
         addHabitatBlock(Blocks.WEB);
     }
@@ -69,19 +69,19 @@ public class DragonBreedGhost extends DragonBreed {
 
     @Override
     public boolean isHabitatEnvironment(EntityTameableDragon dragon) {
-        if (dragon.posY > dragon.world.getHeight() * 0.25) {
+        if (dragon.posY > dragon.worldObj.getHeight() * 0.25) {
             // woah dude, too high!
             return false;
         }
 
         BlockPos pos = dragon.getPosition();
         
-        if (dragon.world.canBlockSeeSky(pos)) {
+        if (dragon.worldObj.canBlockSeeSky(pos)) {
              // sun is shining!
             return false;
         }
         
-        if (dragon.world.getLight(pos) > 4) {
+        if (dragon.worldObj.getLight(pos) > 4) {
             // too bright!
             return false;
         }

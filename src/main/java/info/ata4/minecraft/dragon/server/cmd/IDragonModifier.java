@@ -37,7 +37,7 @@ public interface IDragonModifier {
             AxisAlignedBB aabb = player.getEntityBoundingBox()
                 .expand(MODIFIER_RANGE, MODIFIER_RANGE, MODIFIER_RANGE);
             
-            List<EntityTameableDragon> dragons = player.world
+            List<EntityTameableDragon> dragons = player.worldObj
                 .getEntitiesWithinAABB(EntityTameableDragon.class, aabb);
 
             // get closest dragon
@@ -54,7 +54,7 @@ public interface IDragonModifier {
             modifier.accept(closestDragon.get());
         } else {
             // scan all entities on all dimensions
-            for (WorldServer worldServer : server.worlds) {
+            for (WorldServer worldServer : server.worldServers) {
                 // need a copy of all dragon entities before applying modifier,
                 // since it could delete from the server entity list during iteration
                 List<EntityTameableDragon> dragons = worldServer.loadedEntityList

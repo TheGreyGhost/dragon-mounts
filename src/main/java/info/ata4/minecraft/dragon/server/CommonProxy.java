@@ -17,7 +17,6 @@ import info.ata4.minecraft.dragon.server.handler.DragonEggBlockHandler;
 import info.ata4.minecraft.dragon.server.item.ItemDragonBreedEgg;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -62,8 +61,7 @@ public class CommonProxy {
     }
     
     private void registerEntities() {
-        ResourceLocation res = new ResourceLocation(DragonMounts.AID, "dragon");
-        EntityRegistry.registerModEntity(res, EntityTameableDragon.class, "DragonMount",
+        EntityRegistry.registerModEntity(EntityTameableDragon.class, "DragonMount",
                 ENTITY_ID, DragonMounts.instance, ENTITY_TRACKING_RANGE, ENTITY_UPDATE_FREQ,
                 ENTITY_SEND_VELO_UPDATES);
     }
