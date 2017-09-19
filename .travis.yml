@@ -5,5 +5,5 @@ install: true
 script:
 - "./gradlew clean"
 - "./gradlew setupCIWorkspace"
-- "./gradlew build"
+- "./gradlew build --debug"
 - "./gradlew bintrayUpload"
